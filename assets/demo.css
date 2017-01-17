@@ -1,0 +1,24 @@
+h1{
+    font-size: 20px;
+    padding:15px;
+}
+.container{
+    width:980px;
+    position:relative;
+    margin:auto;
+}
+.mainPanel{width:700px;}
+label{margin-right: 10px;}
+.sidebar {
+    width: 220px;
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 430px;
+}
+.mainPanel {
+    padding:16px;
+    background:#f1f1f1;
+    border:1px solid #999;
+    border-radius:5px;
+}
