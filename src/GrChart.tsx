@@ -126,7 +126,7 @@ class GrChart extends React.Component <GrChartProps, any> {
 
   render() {
     return (
-      <div ref='chartContainer'>
+      <div>
         <div ref='chartArea' />
       </div>
     );

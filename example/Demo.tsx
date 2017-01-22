@@ -1,6 +1,7 @@
 import * as React from "react";
 import update from 'react/lib/update';
-import GrChart, {ChartParamsProps, ChartDataProps} from '../src/GrChart';
+import GrChart, { ChartParamsProps, ChartDataProps } from '../src/GrChart';
+
 import SyntheticEvent = React.SyntheticEvent;
 
 interface EventSeletorTarget extends EventTarget {

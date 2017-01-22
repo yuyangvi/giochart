@@ -1,15 +1,12 @@
 var webpack = require('webpack');
-
+var path = require('path');
 module.exports = {
   entry: './src/GrChart.tsx',
   output: {
     filename: "giochart.min.js",
-    path: __dirname + "/dist"
-  },
-
-  resolve: {
-    // Add '.ts' and '.tsx' as resolvable extensions.
-    extensions: ["", ".webpack.js", ".web.js", ".ts", ".tsx", ".js"]
+    path: __dirname + "/dist",
+    library: 'GrChart',
+    libraryTarget: 'umd'
   },
 
   module: {
@@ -25,13 +22,32 @@ module.exports = {
       ['es2015'],
     ],
   },
+  resolve: {
+    alias: {
+      'react': path.join(__dirname, 'node_modules', 'react')
+    },
+    extensions: ['', '.js']
+  },
+
 
   externals: {
-    "lodash": "_",
-    "react": "React",
-    "react-dom": "ReactDOM",
-    "g2": "G2"
+    "g2": "G2",
+    "lodash": "lodash",
+    'react': {
+      'commonjs': 'react',
+      'commonjs2': 'react',
+      'amd': 'react',
+      // React dep should be available as window.React, not window.react
+      'root': 'React'
+    },
+    'react-dom': {
+      'commonjs': 'react-dom',
+      'commonjs2': 'react-dom',
+      'amd': 'react-dom',
+      'root': 'ReactDOM'
+    }
   },
+
   plugins: [
     new webpack.optimize.UglifyJsPlugin({
       output: {
