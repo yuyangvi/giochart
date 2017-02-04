@@ -88,6 +88,12 @@ var GrChart = (function (_super) {
         }
         chart.render();
         this.chart = chart;
+        chart.setMode('select');
+        chart.select('rangeX');
+        //设置筛选功能,将选区传给GrLoader，其他组件通过context传导filter,
+        if (chartParams.chartType === 'line') {
+            chart.on('rangeselectend', this.context.selectHandler);
+        }
     };
     GrChart.prototype.createSourceConfig = function (chartParams, metas) {
         var sourceDef = {};
@@ -151,10 +157,9 @@ var GrChart = (function (_super) {
     return GrChart;
 }(React.Component));
 GrChart.contextTypes = {
-    chartData: React.PropTypes.any
-};
-GrChart.contextTypes = {
-    chartData: React.PropTypes.any
+    chartData: React.PropTypes.any,
+    selected: React.PropTypes.any,
+    selectHandler: React.PropTypes.func
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = GrChart;

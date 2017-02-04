@@ -33,15 +33,20 @@ var GrTable = (function (_super) {
         // TODO: 类型转换，筛选排序
         var colIds = lodash_1.map(chartData.meta, 'id');
         var jsonData = lodash_1.map(chartData.data, function (n, i) { return lodash_1.extend(lodash_1.zipObject(colIds, n), { key: i }); });
+        if (this.context.selected) {
+            var selected_1 = this.context.selected;
+            var cols_1 = Object.keys(selected_1);
+            jsonData = lodash_1.filter(jsonData, function (n) { return lodash_1.every(cols_1, function (c) { return (n[c] >= selected_1[c][0] && n[c] <= selected_1[c][1]); }); });
+            console.log(jsonData);
+        }
         return React.createElement(antd_1.Table, { dataSource: jsonData, columns: cols, pagination: jsonData.length > 20 ? undefined : false });
     };
     return GrTable;
 }(React.Component));
 GrTable.contextTypes = {
-    chartData: React.PropTypes.any
-};
-GrTable.contextTypes = {
-    chartData: React.PropTypes.any
+    chartData: React.PropTypes.any,
+    selected: React.PropTypes.any,
+    selectHandler: React.PropTypes.func
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = GrTable;

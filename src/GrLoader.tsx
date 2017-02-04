@@ -28,25 +28,32 @@ export const HttpStatus = {
 
 class GrLoader extends React.Component <GrChartProps, any> {
   static childContextTypes: React.ValidationMap<any> = {
-    chartData: React.PropTypes.any
+    chartData: React.PropTypes.any,
+    selected: React.PropTypes.any,
+    selectHandler: React.PropTypes.func
   };
 
-  refs: {
-    chartArea: HTMLElement;
-  };
-  chart: any;
-
-  constructor(props: any) {
+  constructor(props: ChartParamsProps) {
     super(props);
     // 加载状态
     this.state = {
       isLoaded: false,
       chartData: null,
+      selected: null
     };
+  }
+  selectHandler(evt: any) {
+    this.setState({
+      selected: evt.selected
+    });
   }
   //TODO: 用来给子孙节点中的GrChart自定义
   getChildContext() {
-    return { chartData: this.state.chartData };
+    return {
+      chartData: this.state.chartData,
+      selected: this.state.selected,
+      selectHandler: this.selectHandler.bind(this)
+    };
   }
 
   render() {
@@ -92,8 +99,5 @@ class GrLoader extends React.Component <GrChartProps, any> {
     //this.defaultRetryRequest().then(data => this.drawChart(chartParams, data));
   }
 }
-GrLoader.childContextTypes = {
-  chartData: React.PropTypes.any
-};
 
 export default GrLoader;

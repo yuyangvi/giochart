@@ -34,12 +34,22 @@ var GrLoader = (function (_super) {
         _this.state = {
             isLoaded: false,
             chartData: null,
+            selected: null
         };
         return _this;
     }
+    GrLoader.prototype.selectHandler = function (evt) {
+        this.setState({
+            selected: evt.selected
+        });
+    };
     //TODO: 用来给子孙节点中的GrChart自定义
     GrLoader.prototype.getChildContext = function () {
-        return { chartData: this.state.chartData };
+        return {
+            chartData: this.state.chartData,
+            selected: this.state.selected,
+            selectHandler: this.selectHandler.bind(this)
+        };
     };
     GrLoader.prototype.render = function () {
         return (React.createElement("div", { ref: 'container' }, this.props.children));
@@ -80,10 +90,9 @@ var GrLoader = (function (_super) {
     return GrLoader;
 }(React.Component));
 GrLoader.childContextTypes = {
-    chartData: React.PropTypes.any
-};
-GrLoader.childContextTypes = {
-    chartData: React.PropTypes.any
+    chartData: React.PropTypes.any,
+    selected: React.PropTypes.any,
+    selectHandler: React.PropTypes.func
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = GrLoader;

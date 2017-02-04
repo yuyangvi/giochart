@@ -1,6 +1,19 @@
 GrowingIO Chart component
+## Resources
+* API Reference
+   * [chartParams](API.md#chartParams)
+   * [chartData](API.md#chartData)
+* Examples
+  * [x] Simple Chart
+  * [x] Async DataSource Charts
+  * [ ] Interactive Data Filter
+  * [ ] Realtime Chart
+  * [x] Aggregate Chart
+  * [ ] ETL Plugin
+  * [ ] Analysic Panel
+* License
 
-## install
+## Install
 在package.json中的dependencies里添加
 ```
 "giochart": "git+https://github.com/yuyangvi/giochart.git#master",
@@ -26,19 +39,24 @@ online example: http://yuyangvi.github.io/giochart/examples/
 import React from 'react';
 import { GrLoader, GrChart, GrTable } from 'giochart';
 
-const chartParams = {};
+const chartParams = {...};
+const chartData = {...};
 
-const Demo = (props) => <div>
+const  Demo1 = (props) => <div><GrChart chartParams chartData />;
+const Demo2 = (props) => <div>
   <h1>simple Demo</h1>
   <GrLoader chartParams={chartParams}>
   {/*inside GrLoader it could be any JSX node*/}
       <GrChart chartParams />
       <div>
-          <GrTable />
+          <GrTable chartParams />
       </div>
   </GrLoader>
 </div>;
-React.render(<Demo />, document.getElementById('__react-content'));
+React.render(<div>
+  <Demo1 />
+  <Demo2 />
+</div>, document.getElementById('__react-content'));
 ```
 
 ## API
@@ -73,7 +91,7 @@ property
 <tr><td>visibleTo</td><td></td></tr>
 </tbody></table>
 
-服务端输出的chartData
+chartData的数据结构
 <table class="table table-bordered table-striped">
 <tbody><tr><td>meta</td><td>数据表头，数组由包含时间在内的维度结构体或指标结构体的元素组成</td></tr>
 <tr><td>data</td><td>二维数组</td></tr>

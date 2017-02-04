@@ -18,10 +18,11 @@ interface SourceConfig {
 }
 
 class GrChart extends React.Component <GrChartProps, any> {
-
   chart: any;
   static contextTypes: React.ValidationMap<any> = {
-    chartData: React.PropTypes.any
+    chartData: React.PropTypes.any,
+    selected: React.PropTypes.any,
+    selectHandler: React.PropTypes.func
   };
 
   componentWillReceiveProps(nextProps: GrChartProps, nextContext: any) {
@@ -106,6 +107,13 @@ class GrChart extends React.Component <GrChartProps, any> {
 
     chart.render();
     this.chart = chart;
+
+    chart.setMode('select');
+    chart.select('rangeX');
+    //设置筛选功能,将选区传给GrLoader，其他组件通过context传导filter,
+    if (chartParams.chartType === 'line') {
+      chart.on('rangeselectend', this.context.selectHandler);
+    }
   }
 
   createSourceConfig(chartParams: ChartParamsProps, metas: Meta[]): SourceConfig {
@@ -164,8 +172,5 @@ class GrChart extends React.Component <GrChartProps, any> {
     return chart[gt](adjust);
   }
 }
-GrChart.contextTypes = {
-  chartData: React.PropTypes.any
-};
 
 export default GrChart;
