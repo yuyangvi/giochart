@@ -14,11 +14,12 @@ label{margin-right: 10px;}
     position: absolute;
     top: 0;
     right: 0;
-    height: 430px;
+    height: 230px;
 }
-.mainPanel {
+.mainPanel>div>div{
     padding:16px;
-    background:#f1f1f1;
-    border:1px solid #999;
+    background:#fcfcfc;
+    border:1px solid #f1f1f1;
     border-radius:5px;
+    margin-bottom:16px;
 }

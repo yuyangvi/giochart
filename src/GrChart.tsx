@@ -1,86 +1,13 @@
 /***
  * 文档
  */
+import {GrChartProps, ChartParamsProps, ChartDataProps, Meta} from './chartProps';
 import * as React from "react";
+import * as ReactDOM from 'react-dom';
 import { find, filter, map, zipObject, fromPairs } from 'lodash';
 import G2 = require('g2');
-declare function fetch(a: any, b?: any): any;
-//数据统计必备字段，中端需要以下字段提供数据
-interface Filter {
-  op: string;
-  key: string;
-  value: string;
-  name: string;
-}
-interface Filters {
-  exprs: Filter[];
-  op: string;
-}
-//数据统计必备字段，中端需要以下字段提供数据
-export interface ChartParamsProps {
-  /* 数据统计的规则 'sum' or 'avg' */
-  aggregateType:string;
-  /* 指标 */
-  metrics: Metric[];
-  /* 维度 */
-  dimensions: Meta[];
-  /* 咱不知道是啥,好像没用 */
-  period: number;
-  /* 筛选条件 */
-  filter: Filters[] | Filter;
-  /* 周期,如day:8,1 */
-  timeRange: string;
-  /* 粒度 */
-  interval: number;
-  //排序 */
-  orders?: string | null;
-  /* 前xx条 */
-  top?: number
-//}
-//interface ChartParams {//留供前端识别的数据，中端只帮着保存，不参考它取数据
-  /* 图表ID */
-  id: string;
-  name: string;
-  /* 图表类型 */
-  chartType: string;
-  /* 不知道做啥的 */
-  status: string;
-  /* 包含颜色信息等配置信息杂项 */
-  attrs: any;
-  /* 创建者信息 */
-  createdAt: number;
-  creator: string;
-  creatorId: string;
-  /* 修改者信息 */
-  updatedAt: number;
-  updater: string;
-  updaterId: string;
-  //subscribed、subscriptionId	新版没有订阅,应该是没用了
-  userTag?: string;
-  versionNumber?: number;
-  visibleTo?: any;
-}
-interface Metric {
-  id: string;
-  level: string;
-  action?: string;
-}
-interface Meta {
-  id: string;
-  isDim: boolean;
-  name: string;
-  metricId?: Metric;
-  isStatic?: boolean;
-}
-export interface ChartDataProps {
-  data: number[][];
-  meta: Meta[];
-}
-export interface GrChartProps {
-  chartParams: ChartParamsProps;
-  chartData?: ChartDataProps;
-}
-export interface SourceConfig {
+
+interface SourceConfig {
   [colName: string]: {
     tickCount?: number;
     mask?: string;
@@ -89,47 +16,22 @@ export interface SourceConfig {
     nice?: boolean;
   }
 }
-export const HttpStatus = {
-  Ok                  : 200,
-  Created             : 201,
-  NoContent           : 204,
-  MovedPermanently    : 301,
-  SeeOther            : 303,
-  NotModified         : 304,
-  BadRequest          : 400,
-  Unauthorized        : 401,
-  Forbidden           : 403,
-  NotFound            : 404,
-  MethodNotAllowed    : 405,
-  NotAcceptable       : 406,
-  RequestTimeout      : 408,
-  UnsupportedEntity   : 422,
-  Locked              : 423,
-  TooManyRequests     : 429,
-  InternalServerError : 500,
-  NotImplemented      : 501
-};
 
 class GrChart extends React.Component <GrChartProps, any> {
-  refs: {
-    chartArea: HTMLElement;
-  };
+
   chart: any;
+  static contextTypes: React.ValidationMap<any> = {
+    chartData: React.PropTypes.any
+  };
 
-  constructor(props: any) {
-    super(props);
-    // 加载状态
-    this.state = {
-      isLoading: true
-    };
+  componentWillReceiveProps(nextProps: GrChartProps, nextContext: any) {
+    if (nextContext.chartData) {
+      this.chart && this.chart.destroy();
+      this.drawChart(nextProps.chartParams, nextContext.chartData);
+    }
   }
-
   render() {
-    return (
-      <div>
-        <div ref='chartArea' />
-      </div>
-    );
+    return <div></div>;
   }
 
   /*defaultRetryRequest() {
@@ -140,56 +42,28 @@ class GrChart extends React.Component <GrChartProps, any> {
     }
     return result;
   }*/
-  defaultRequest(chartParams: ChartParamsProps, callback: Function) {
-    return fetch(`/assets/demo.json`/*, {
-      credentials: 'same-origin',
-      contentType: 'application/json',
-      method: 'get',
-      //body: JSON.stringify(chartParams)
-    }*/)
-      .then((response: any) => {
-        let status = response.status;
-        if(status === HttpStatus.Ok) {
-          return response.json();
-        }
-      }).then( (data: ChartDataProps) => callback(chartParams, data));
-  }
 
   componentDidMount() {
-    // this._fetchChartData(this.props);
     let {chartParams, chartData} = this.props;
 
     if (this.props.hasOwnProperty('chartData')) {
       this.chart && this.chart.destroy();
       this.drawChart(chartParams, chartData);
-      return true;
     }
-    this.defaultRequest(chartParams, this.drawChart.bind(this));
-    //this.defaultRetryRequest().then(data => this.drawChart(chartParams, data));
-  }
-
-  shouldComponentUpdate(nextProps: GrChartProps) {
-    let {chartParams, chartData} = nextProps;
-    if (nextProps.hasOwnProperty('chartData')) {
-      this.chart && this.chart.destroy();
-      this.drawChart(chartParams, chartData);
-      return true;
-    }
-    return true;
   }
   drawChart(chartParams: ChartParamsProps, chartData: ChartDataProps) {
     let dom = document.createElement('div');
-    this.refs.chartArea.appendChild(dom);
+    ReactDOM.findDOMNode(this).appendChild(dom);
     let chart = new G2.Chart({
       container: dom,
-      height: dom.getBoundingClientRect().height || 450,
+      height: dom.getBoundingClientRect().height || 250,
       forceFit: true,
       plotCfg: {}
     });
 
     let sourceDef: SourceConfig = this.createSourceConfig(chartParams, chartData.meta);
     let colIds = map(chartData.meta, 'id');
-    let jsonData = map(chartData.data, n => zipObject(colIds, n));
+    let jsonData = map(chartData.data, (n: number[]) => zipObject(colIds, n));
     let frame = new G2.Frame(jsonData);
     let metrics = filter(chartData.meta, { isDim: false })
     let metricCols = map(metrics, 'id');
@@ -200,7 +74,7 @@ class GrChart extends React.Component <GrChartProps, any> {
       dimCols.push('metric');
       metricCols = ['val'];
       //设定id=>name
-      let metricDict = fromPairs(map(metrics, n => [n.id, n.name]));
+      let metricDict = fromPairs(map(metrics, (n: Meta) => [n.id, n.name]));
       let mColVals = frame.colArray('metric');
       let mColNames = mColVals.map((n: string) => metricDict[n]);
       frame.colReplace('metric', mColNames);
@@ -290,5 +164,8 @@ class GrChart extends React.Component <GrChartProps, any> {
     return chart[gt](adjust);
   }
 }
+GrChart.contextTypes = {
+  chartData: React.PropTypes.any
+};
 
 export default GrChart;

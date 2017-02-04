@@ -1,9 +1,11 @@
-import * as React from "react";
+import * as React from 'react';
 import update from 'react/lib/update';
-import GrChart, { ChartParamsProps, ChartDataProps } from '../src/GrChart';
-
+import GrLoader from '../src/GrLoader';
+import { ChartParamsProps } from '../src/chartProps';
 import SyntheticEvent = React.SyntheticEvent;
-
+import GrChart from '../src/GrChart';
+import GrTable from '../src/GrTable';
+import Aggregate from "../src/Aggregate";
 interface EventSeletorTarget extends EventTarget {
   value:string
 }
@@ -36,7 +38,7 @@ const lineParams: ChartParamsProps = {
   updaterId: 'GQPDMloN',
   versionNumber: 1
 };
-
+const aggParams: ChartParamsProps = {"metrics":[{"id":"PWq7nnvv","level":"complex"}],"id":"4PYqqxjP","name":"MKT | 新访问周期比","chartType":"comparison","top":10,"dimensions":[],"filter":{},"interval":86400000,"aggregateType":"sum","attrs":{"metricType":"none","colorTheme":"252, 95, 58","period":7,"timeRange":"day:8,1","metrics":{"PWq7nnvv":{"metricName":"新访问用户量"}}},"createdAt":1482908162272,"updatedAt":1482908162272,"creator":"Alex","updater":"Alex","versionNumber":1,"period":7,"timeRange":"day:8,1","orders":null,"creatorId":"EoZk8M9k","updaterId":"EoZk8M9k","status":"activated","visibleTo":{"type":"Private","ids":["EoZk8M9k"],"userIds":["EoZk8M9k"]}};
 class Demo extends React.Component<any, any> {
   constructor() {
     super();
@@ -91,7 +93,13 @@ class Demo extends React.Component<any, any> {
           </p>
         </div>
         <div className='mainPanel'>
-          <GrChart chartParams={this.state.chartParams} />
+          <GrLoader chartParams={this.state.chartParams}>
+            <GrChart chartParams={this.state.chartParams} />
+            <GrTable chartParams={this.state.chartParams} />
+          </GrLoader>
+          <GrLoader chartParams={aggParams}>
+            <Aggregate chartParams={aggParams} />
+          </GrLoader>
         </div>
       </div>
     );

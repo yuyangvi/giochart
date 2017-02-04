@@ -6,7 +6,8 @@
     "module": "commonjs",
     "target": "es5",
     "jsx": "react",
-    "allowJS": true
+    "allowJS": true,
+    "allowSyntheticDefaultImports": true
   },
   "include": [
     "./typings/index.d.ts",
