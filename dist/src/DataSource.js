@@ -5,6 +5,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var React = require("react");
+var lodash_1 = require("lodash");
 //数据统计必备字段，中端需要以下字段提供数据
 exports.HttpStatus = {
     Ok: 200,
@@ -26,34 +27,35 @@ exports.HttpStatus = {
     InternalServerError: 500,
     NotImplemented: 501
 };
-var GrLoader = (function (_super) {
-    __extends(GrLoader, _super);
-    function GrLoader(props) {
+var DataSource = (function (_super) {
+    __extends(DataSource, _super);
+    function DataSource(props) {
         var _this = _super.call(this, props) || this;
         // 加载状态
         _this.state = {
             isLoaded: false,
-            chartData: null,
-            selected: null
+            source: null,
+            selected: null,
         };
         return _this;
     }
-    GrLoader.prototype.selectHandler = function (evt) {
+    DataSource.prototype.selectHandler = function (evt) {
         this.setState({
             selected: evt.selected
         });
     };
     //TODO: 用来给子孙节点中的GrChart自定义
-    GrLoader.prototype.getChildContext = function () {
+    DataSource.prototype.getChildContext = function () {
         return {
-            chartData: this.state.chartData,
+            source: this.state.source,
             selected: this.state.selected,
             selectHandler: this.selectHandler.bind(this)
         };
     };
-    GrLoader.prototype.render = function () {
-        return (React.createElement("div", { ref: 'container' }, this.props.children));
+    DataSource.prototype.render = function () {
+        return React.createElement("div", null, this.props.children);
     };
+    //动态变化Dimension
     /*defaultRetryRequest() {
       let {chartParams} = this.props;
       let result = Promise.reject();
@@ -62,17 +64,9 @@ var GrLoader = (function (_super) {
       }
       return result;
     }*/
-    GrLoader.prototype.defaultRequest = function (chartParams, callback) {
-        //TODO:
-        var url = "https://gta.growingio.com/v2/projects/" + window.project.id + "/chartdata";
-        //let url = chartParams.chartType === 'comparison' ? '/assets/aggragte.json' : '/assets/demo.json';
-        return fetch(url, {
-            credentials: 'same-origin',
-            contentType: 'application/json',
-            authorization: 'Token 6cfe9f205f82524839616a7428748b085b51710639dd85b692bab403c6b3f3d7',
-            method: 'get',
-            body: JSON.stringify(chartParams)
-        })
+    DataSource.prototype.defaultRequest = function (chartParams, callback) {
+        var url = this.props.sourceUrl || "https://gta.growingio.com/_private/v3/projects/" + project.id + "/chartdata";
+        return fetch(url)
             .then(function (response) {
             var status = response.status;
             if (status === exports.HttpStatus.Ok) {
@@ -80,22 +74,25 @@ var GrLoader = (function (_super) {
             }
         }).then(function (data) { return callback(data); });
     };
-    GrLoader.prototype.componentDidMount = function () {
-        var _this = this;
-        // this._fetchChartData(this.props);
+    DataSource.prototype.componentDidMount = function () {
         var chartParams = this.props.chartParams;
-        this.defaultRequest(chartParams, function (chartData) {
-            _this.setState({ isLoaded: true, chartData: chartData });
-        });
-        //this.defaultRetryRequest().then(data => this.drawChart(chartParams, data));
+        this.defaultRequest(chartParams, this.afterFetch.bind(this));
     };
-    return GrLoader;
+    DataSource.prototype.afterFetch = function (chartData) {
+        var colIds = lodash_1.map(chartData.meta, function (n) { return (n.isDim ? n.id : n.metricId.id); });
+        var source = lodash_1.map(chartData.data, function (n) { return lodash_1.zipObject(colIds, n); });
+        this.setState({
+            isLoaded: true,
+            source: source
+        });
+    };
+    return DataSource;
 }(React.Component));
-GrLoader.childContextTypes = {
-    chartData: React.PropTypes.any,
+DataSource.childContextTypes = {
+    source: React.PropTypes.any,
     selected: React.PropTypes.any,
     selectHandler: React.PropTypes.func
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = GrLoader;
-//# sourceMappingURL=GrLoader.js.map
+exports.default = DataSource;
+//# sourceMappingURL=DataSource.js.map

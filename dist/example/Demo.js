@@ -17,7 +17,8 @@ var lineParams = {
     createdAt: 1483535473005,
     creator: 'liuhuaqing',
     creatorId: 'GQPDMloN',
-    dimensions: [],
+    dimensions: [{ id: 'tm', name: '时间' }],
+    dimensionsNames: ['时间'],
     filter: { op: '=', key: 'rt', value: '搜索引擎', name: '一级访问来源' },
     id: 'JoOWV0Ao',
     interval: 86400000,
@@ -25,6 +26,7 @@ var lineParams = {
         { id: '9yGbpp8x', level: 'complex' },
         { id: 'j9yKL8Py', level: 'simple', action: 'imp' }
     ],
+    metricsNames: ['访问用户量', '保存创建分群浏览量'],
     name: 'sssssssfff',
     orders: null,
     period: 7,
@@ -36,7 +38,31 @@ var lineParams = {
     updaterId: 'GQPDMloN',
     versionNumber: 1
 };
-var aggParams = { "metrics": [{ "id": "PWq7nnvv", "level": "complex" }], "id": "4PYqqxjP", "name": "MKT | 新访问周期比", "chartType": "comparison", "top": 10, "dimensions": [], "filter": {}, "interval": 86400000, "aggregateType": "sum", "attrs": { "metricType": "none", "colorTheme": "252, 95, 58", "period": 7, "timeRange": "day:8,1", "metrics": { "PWq7nnvv": { "metricName": "新访问用户量" } } }, "createdAt": 1482908162272, "updatedAt": 1482908162272, "creator": "Alex", "updater": "Alex", "versionNumber": 1, "period": 7, "timeRange": "day:8,1", "orders": null, "creatorId": "EoZk8M9k", "updaterId": "EoZk8M9k", "status": "activated", "visibleTo": { "type": "Private", "ids": ["EoZk8M9k"], "userIds": ["EoZk8M9k"] } };
+var aggParams = {
+    "metrics": [{ "id": "PWq7nnvv", "level": "complex" }],
+    "metricsNames": ['新访问周期比'],
+    "id": "4PYqqxjP", "name": "MKT | 新访问周期比",
+    "chartType": "comparison",
+    "top": 10,
+    "dimensions": [],
+    "dimensionsNames": [],
+    "filter": {},
+    "interval": 86400000,
+    "aggregateType": "sum",
+    "attrs": { "metricType": "none", "colorTheme": "252, 95, 58", "period": 7, "timeRange": "day:8,1", "metrics": { "PWq7nnvv": { "metricName": "新访问用户量" } } },
+    "createdAt": 1482908162272,
+    "updatedAt": 1482908162272,
+    "creator": "Alex",
+    "updater": "Alex",
+    "versionNumber": 1,
+    "period": 7,
+    "timeRange": "day:8,1",
+    "orders": null,
+    "creatorId": "EoZk8M9k",
+    "updaterId": "EoZk8M9k",
+    "status": "activated",
+    "visibleTo": { "type": "Private", "ids": ["EoZk8M9k"], "userIds": ["EoZk8M9k"] }
+};
 var Demo = (function (_super) {
     __extends(Demo, _super);
     function Demo() {

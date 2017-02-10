@@ -43,7 +43,6 @@ class GrTable extends React.Component <GrChartProps, any> {
       jsonData = filter(jsonData, (n: any) => every(cols,
         (c:string) => (n[c] >= selected[c][0] && n[c] <= selected[c][1])
       ));
-      console.log(jsonData);
     }
     return <Table dataSource={jsonData} columns={cols} pagination={ jsonData.length > 20? undefined: false } />
   }

@@ -18,8 +18,10 @@ export interface ChartParamsProps {
   aggregateType:string;
   /* 指标 */
   metrics: Metric[];
+  metricsNames: string[];
   /* 维度 */
   dimensions: Meta[];
+  dimensionsNames: string[];
   /* 咱不知道是啥,好像没用 */
   period: number;
   /* 筛选条件 */
@@ -63,7 +65,7 @@ interface Metric {
 }
 export interface Meta {
   id: string;
-  isDim: boolean;
+  isDim?: boolean;
   name: string;
   metricId?: Metric;
   isStatic?: boolean;
@@ -73,7 +75,16 @@ export interface ChartDataProps {
   meta: Meta[];
   desc: any;
 }
+
+export interface Source {
+  [k: number]: {
+    [column: string] : any;
+  }
+}
+
 export interface GrChartProps {
   chartParams: ChartParamsProps;
   chartData?: ChartDataProps;
+  sourceUrl?: string;
+  source?: Source;
 }

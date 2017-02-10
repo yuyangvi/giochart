@@ -14,13 +14,13 @@ var GrChart = (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     GrChart.prototype.componentWillReceiveProps = function (nextProps, nextContext) {
-        if (nextContext.chartData) {
+        if (nextContext.source) {
             this.chart && this.chart.destroy();
-            this.drawChart(nextProps.chartParams, nextContext.chartData);
+            this.drawChart(nextProps.chartParams, nextContext.source);
         }
     };
     GrChart.prototype.render = function () {
-        return <div></div>;
+        return React.createElement("div", null);
     };
     /*defaultRetryRequest() {
       let {chartParams} = this.props;
@@ -31,13 +31,13 @@ var GrChart = (function (_super) {
       return result;
     }*/
     GrChart.prototype.componentDidMount = function () {
-        var _a = this.props, chartParams = _a.chartParams, chartData = _a.chartData;
-        if (this.props.hasOwnProperty('chartData')) {
+        var _a = this.props, chartParams = _a.chartParams, source = _a.source;
+        if (this.props.hasOwnProperty('source')) {
             this.chart && this.chart.destroy();
-            this.drawChart(chartParams, chartData);
+            this.drawChart(chartParams, source);
         }
     };
-    GrChart.prototype.drawChart = function (chartParams, chartData) {
+    GrChart.prototype.drawChart = function (chartParams, source) {
         var dom = document.createElement('div');
         ReactDOM.findDOMNode(this).appendChild(dom);
         var chart = new G2.Chart({
@@ -46,23 +46,21 @@ var GrChart = (function (_super) {
             forceFit: true,
             plotCfg: {}
         });
-        var sourceDef = this.createSourceConfig(chartParams, chartData.meta);
-        var colIds = lodash_1.map(chartData.meta, 'id');
-        var jsonData = lodash_1.map(chartData.data, function (n) { return lodash_1.zipObject(colIds, n); });
-        var frame = new G2.Frame(jsonData);
-        var metrics = lodash_1.filter(chartData.meta, { isDim: false });
-        var metricCols = lodash_1.map(metrics, 'id');
-        var dimCols = lodash_1.map(lodash_1.filter(chartData.meta, { isDim: true }), 'id');
+        var frame = new G2.Frame(source);
+        var sourceDef = this.createSourceConfig(chartParams);
+        var metricCols = lodash_1.map(chartParams.metrics, 'id');
+        var dimCols = lodash_1.map(chartParams.dimensions, 'id');
         if (chartParams.chartType !== 'bubble' && chartParams.metrics.length > 1) {
             frame = G2.Frame.combinColumns(frame, metricCols, 'val', 'metric', dimCols);
             dimCols.push('metric');
-            metricCols = ['val'];
             //设定id=>name
-            var metricDict_1 = lodash_1.fromPairs(lodash_1.map(metrics, function (n) { return [n.id, n.name]; }));
+            var metricDict_1 = lodash_1.fromPairs(lodash_1.zip(metricCols, chartParams.metricsNames));
             var mColVals = frame.colArray('metric');
             var mColNames = mColVals.map(function (n) { return metricDict_1[n]; });
+            metricCols = ['val'];
             frame.colReplace('metric', mColNames);
         }
+        //sourceDef['metric'] = {alias:'指标', type: 'cat'};
         chart.source(frame, sourceDef);
         //做分组
         chart.axis('tm', { title: false });
@@ -84,21 +82,29 @@ var GrChart = (function (_super) {
                 .label('metric', { offset: 10, label: { fontSize: 14 } });
         }
         else if (dimCols.length > 1) {
-            geom.color(dimCols[1]);
+            geom.color('metric');
         }
         chart.render();
         this.chart = chart;
-        chart.setMode('select');
-        chart.select('rangeX');
-        //设置筛选功能,将选区传给GrLoader，其他组件通过context传导filter,
-        if (chartParams.chartType === 'line') {
-            chart.on('rangeselectend', this.context.selectHandler);
-        }
+        /*
+            chart.setMode('select');
+            chart.select('rangeX');
+            //设置筛选功能,将选区传给GrLoader，其他组件通过context传导filter,
+            if (chartParams.chartType === 'line') {
+              chart.on('rangeselectend', this.context.selectHandler);
+            }
+        */
     };
-    GrChart.prototype.createSourceConfig = function (chartParams, metas) {
+    GrChart.prototype.createSourceConfig = function (chartParams) {
         var sourceDef = {};
-        metas.forEach(function (m) { return sourceDef[m.id] = { alias: m.name }; });
-        if (lodash_1.find(metas, { id: 'tm' })) {
+        //射击
+        chartParams.metrics.forEach(function (m, i) {
+            sourceDef[m.id] = { alias: chartParams.metricsNames[i] };
+        });
+        chartParams.dimensions.forEach(function (m, i) {
+            sourceDef[m.id] = { alias: chartParams.dimensionsNames[i] };
+        });
+        if (lodash_1.find(chartParams.dimensions, { id: 'tm' })) {
             var timeDef = {
                 alias: '时间',
                 type: 'time',
@@ -157,9 +163,10 @@ var GrChart = (function (_super) {
     return GrChart;
 }(React.Component));
 GrChart.contextTypes = {
-    chartData: React.PropTypes.any,
+    source: React.PropTypes.any,
     selected: React.PropTypes.any,
     selectHandler: React.PropTypes.func
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = GrChart;
+//# sourceMappingURL=GrChart2.js.map

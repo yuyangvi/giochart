@@ -37,7 +37,6 @@ var GrTable = (function (_super) {
             var selected_1 = this.context.selected;
             var cols_1 = Object.keys(selected_1);
             jsonData = lodash_1.filter(jsonData, function (n) { return lodash_1.every(cols_1, function (c) { return (n[c] >= selected_1[c][0] && n[c] <= selected_1[c][1]); }); });
-            console.log(jsonData);
         }
         return React.createElement(antd_1.Table, { dataSource: jsonData, columns: cols, pagination: jsonData.length > 20 ? undefined : false });
     };

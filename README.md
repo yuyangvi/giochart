@@ -6,9 +6,10 @@ GrowingIO Chart component
 * Examples
   * [x] Simple Chart
   * [x] Async DataSource Charts
-  * [ ] Interactive Data Filter
+  * [x] Interactive Data Filter
   * [ ] Realtime Chart
   * [x] Aggregate Chart
+  * [ ] Output Image
   * [ ] ETL Plugin
   * [ ] Analysic Panel
 * License

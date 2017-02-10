@@ -3,7 +3,12 @@
  */
 import {GrChartProps, ChartParamsProps, ChartDataProps} from './chartProps';
 import * as React from "react";
+import update from 'react/lib/update';
+
+import { map, zipObject } from 'lodash';
 declare function fetch(a: any, b?: any): any;
+declare var project: any;
+
 //数据统计必备字段，中端需要以下字段提供数据
 export const HttpStatus = {
   Ok                  : 200,
@@ -26,9 +31,9 @@ export const HttpStatus = {
   NotImplemented      : 501
 };
 
-class GrLoader extends React.Component <GrChartProps, any> {
+class DataSource extends React.Component <GrChartProps, any> {
   static childContextTypes: React.ValidationMap<any> = {
-    chartData: React.PropTypes.any,
+    source: React.PropTypes.any,
     selected: React.PropTypes.any,
     selectHandler: React.PropTypes.func
   };
@@ -38,8 +43,8 @@ class GrLoader extends React.Component <GrChartProps, any> {
     // 加载状态
     this.state = {
       isLoaded: false,
-      chartData: null,
-      selected: null
+      source: null,
+      selected: null,
     };
   }
   selectHandler(evt: any) {
@@ -50,20 +55,16 @@ class GrLoader extends React.Component <GrChartProps, any> {
   //TODO: 用来给子孙节点中的GrChart自定义
   getChildContext() {
     return {
-      chartData: this.state.chartData,
+      source: this.state.source,
       selected: this.state.selected,
       selectHandler: this.selectHandler.bind(this)
     };
   }
 
   render() {
-    return (
-      <div ref='container'>
-        {this.props.children}
-      </div>
-    );
+    return <div>{this.props.children}</div>;
   }
-
+  //动态变化Dimension
   /*defaultRetryRequest() {
     let {chartParams} = this.props;
     let result = Promise.reject();
@@ -72,17 +73,17 @@ class GrLoader extends React.Component <GrChartProps, any> {
     }
     return result;
   }*/
+
   defaultRequest(chartParams: ChartParamsProps, callback: Function) {
-    //TODO:
-    let url = `https://gta.growingio.com/v2/projects/${window.project.id}/chartdata`;
-    //let url = chartParams.chartType === 'comparison' ? '/assets/aggragte.json' : '/assets/demo.json';
-    return fetch(url, {
-      credentials: 'same-origin',
-      contentType: 'application/json',
-      authorization: 'Token 6cfe9f205f82524839616a7428748b085b51710639dd85b692bab403c6b3f3d7',
-      method: 'get',
-      body: JSON.stringify(chartParams)
-    })
+    let url = this.props.sourceUrl || `https://gta.growingio.com/_private/v3/projects/${project.id}/chartdata`;
+    return fetch(url)
+      /*, {
+        credentials: 'same-origin',
+        contentType: 'application/json',
+        method: 'get',
+        //body: JSON.stringify(chartParams)
+      }
+    )*/
       .then((response: any) => {
         let status = response.status;
         if(status === HttpStatus.Ok) {
@@ -92,14 +93,19 @@ class GrLoader extends React.Component <GrChartProps, any> {
   }
 
   componentDidMount() {
-    // this._fetchChartData(this.props);
     let { chartParams } = this.props;
 
-    this.defaultRequest(chartParams, (chartData: ChartDataProps) => {
-      this.setState({ isLoaded: true, chartData });
+    this.defaultRequest(chartParams, this.afterFetch.bind(this));
+  }
+  afterFetch(chartData: ChartDataProps) {
+    let colIds = map(chartData.meta, n => (n.isDim ? n.id : n.metricId.id));
+    let source = map(chartData.data, (n: number[]) => zipObject(colIds, n));
+
+    this.setState({
+      isLoaded: true,
+      source
     });
-    //this.defaultRetryRequest().then(data => this.drawChart(chartParams, data));
   }
 }
 
-export default GrLoader;
+export default DataSource;
