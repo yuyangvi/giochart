@@ -20,7 +20,7 @@ export interface ChartParamsProps {
   metrics: Metric[];
   metricsNames: string[];
   /* 维度 */
-  dimensions: Meta[];
+  dimensions: string[];
   dimensionsNames: string[];
   /* 咱不知道是啥,好像没用 */
   period: number;
@@ -72,7 +72,7 @@ export interface Meta {
 }
 export interface ChartDataProps {
   data: number[][];
-  meta: Meta[];
+  metaData: Meta[];
   desc: any;
 }
 

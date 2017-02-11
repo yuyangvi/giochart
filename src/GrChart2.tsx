@@ -66,7 +66,7 @@ class GrChart extends React.Component <GrChartProps, any> {
     let sourceDef: SourceConfig = this.createSourceConfig(chartParams);
 
     let metricCols = map(chartParams.metrics, 'id');
-    let dimCols    = map(chartParams.dimensions, 'id');
+    let dimCols    = chartParams.dimensions;
 
     if (chartParams.chartType !== 'bubble' && chartParams.metrics.length > 1) {
       frame = G2.Frame.combinColumns(frame, metricCols, 'val', 'metric', dimCols);
@@ -79,12 +79,12 @@ class GrChart extends React.Component <GrChartProps, any> {
       metricCols = ['val'];
       frame.colReplace('metric', mColNames);
     }
+    console.log(frame);
     //sourceDef['metric'] = {alias:'指标', type: 'cat'};
     chart.source(frame, sourceDef);
     //做分组
     chart.axis('tm', { title: false });
     chart.axis('val', { title: false });
-
     let geom = this.caculateGeom(chart, chartParams.chartType, chartParams.attrs.subChartType);
 
     let pos;
@@ -93,14 +93,14 @@ class GrChart extends React.Component <GrChartProps, any> {
     } else if (chartParams.chartType === 'funnel') {
       pos = G2.Stat.summary.sum('metric*val');
     } else {
-      pos = dimCols[0] + '*' + metricCols[0]
+      pos = G2.Stat.summary.sum(dimCols[0] + '*' + metricCols[0]);
     }
     geom.position(pos);
 
     if (chartParams.chartType === 'funnel') {
       geom.color('metric', ['#C82B3D', '#EB4456', '#F9815C', '#F8AB60', '#EDCC72'])
           .label('metric', { offset: 10, label: { fontSize: 14 } });
-    } else if (dimCols.length > 1) {
+    } else if (dimCols.length > 1) { //TODO: metrics
       geom.color('metric');
     }
 
@@ -126,10 +126,11 @@ class GrChart extends React.Component <GrChartProps, any> {
     );
     chartParams.dimensions.forEach(
       (m, i:number) => {
-        sourceDef[m.id] = { alias: chartParams.dimensionsNames[i] }
+        sourceDef[m] = { alias: chartParams.dimensionsNames[i], type: 'cat' }
       }
     );
-    if (find(chartParams.dimensions, { id: 'tm' })) {
+
+    if (chartParams.dimensions.includes('tm')) {
       let timeDef = {
         alias: '时间',
         type: 'time',
@@ -151,6 +152,7 @@ class GrChart extends React.Component <GrChartProps, any> {
       }
       sourceDef['tm'] = timeDef;
     }
+
     return sourceDef;
   }
 
