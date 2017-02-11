@@ -4,7 +4,7 @@
 import {GrChartProps, ChartParamsProps, ChartDataProps, Meta, Source} from './chartProps';
 import * as React from "react";
 import * as ReactDOM from 'react-dom';
-import { find, map, fromPairs, zip } from 'lodash';
+import { map, fromPairs, zip, pick, filter, isEmpty } from 'lodash';
 import G2 = require('g2');
 
 interface SourceConfig {
@@ -20,14 +20,27 @@ class GrChart extends React.Component <GrChartProps, any> {
   chart: any;
   static contextTypes: React.ValidationMap<any> = {
     source: React.PropTypes.any,
-    selected: React.PropTypes.any,
-    selectHandler: React.PropTypes.func
+    selected: React.PropTypes.any
+    /*selectHandler: React.PropTypes.func*/
   };
 
   componentWillReceiveProps(nextProps: GrChartProps, nextContext: any) {
     if (nextContext.source) {
-      this.chart && this.chart.destroy();
-      this.drawChart(nextProps.chartParams, nextContext.source);
+      let source = nextContext.source;
+      if (nextContext.selected) {
+        //算维度的差集
+        let selected = pick(nextContext.selected, nextProps.chartParams.dimensions);
+        if (isEmpty(selected)) {
+          source = filter(source, nextContext.selected);
+        }
+      }
+      //如果只是context修改
+      if (nextContext === this.context) {
+        console.log('shift context');
+      } else {
+        this.chart && this.chart.destroy();
+        this.drawChart(nextProps.chartParams, source);
+      }
     }
   }
   render() {
@@ -79,7 +92,7 @@ class GrChart extends React.Component <GrChartProps, any> {
       metricCols = ['val'];
       frame.colReplace('metric', mColNames);
     }
-    console.log(frame);
+
     //sourceDef['metric'] = {alias:'指标', type: 'cat'};
     chart.source(frame, sourceDef);
     //做分组
@@ -87,13 +100,16 @@ class GrChart extends React.Component <GrChartProps, any> {
     chart.axis('val', { title: false });
     let geom = this.caculateGeom(chart, chartParams.chartType, chartParams.attrs.subChartType);
 
-    let pos;
+    let pos, selectCols;
     if (chartParams.chartType === 'bubble') {
       pos = metricCols[0] + '*' + metricCols[1];
+      selectCols = metricCols;
     } else if (chartParams.chartType === 'funnel') {
       pos = G2.Stat.summary.sum('metric*val');
+      selectCols = ['metric'];
     } else {
       pos = G2.Stat.summary.sum(dimCols[0] + '*' + metricCols[0]);
+      selectCols = [dimCols[0]];
     }
     geom.position(pos);
 
@@ -102,6 +118,15 @@ class GrChart extends React.Component <GrChartProps, any> {
           .label('metric', { offset: 10, label: { fontSize: 14 } });
     } else if (dimCols.length > 1) { //TODO: metrics
       geom.color('metric');
+    }
+    if (this.props.hasOwnProperty('select')) {
+      geom.selected(true, {
+        selectedMode: 'single',
+        style: { fill: '#fe9929' }
+      });
+      if (dimCols[0] !== 'tm') {
+        chart.on('plotclick', (evt: any) => { this.selectHandler(evt, selectCols) });
+      }
     }
 
     chart.render();
@@ -114,6 +139,17 @@ class GrChart extends React.Component <GrChartProps, any> {
       chart.on('rangeselectend', this.context.selectHandler);
     }
 */
+  }
+  selectHandler(ev: any, selectCols: string[]) {
+    let shape = ev.shape;
+    if (shape && shape.get('selected')) {
+      let item = shape.get('origin');
+      //过滤
+      this.props.select(pick(item._origin, selectCols));
+    } else {
+      let item = shape.get('origin');
+      console.log(item);
+    }
   }
 
   createSourceConfig(chartParams: ChartParamsProps): SourceConfig {
@@ -167,7 +203,7 @@ class GrChart extends React.Component <GrChartProps, any> {
     }
 
     if (gt === 'bar') {
-      chart.coord('rect').transpose();
+      //chart.coord('rect').transpose();
       return chart.interval(adjust);
     } else if (gt === 'vbar') {
       return chart.interval(adjust);

@@ -87,4 +87,5 @@ export interface GrChartProps {
   chartData?: ChartDataProps;
   sourceUrl?: string;
   source?: Source;
+  select?: (evt: any) => any;
 }

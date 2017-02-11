@@ -47,7 +47,7 @@ class DimensionPanel extends React.Component <any, any> {
   }
   render() {
     return (
-      <ul onClick={this.addDimension.bind(this)}>
+      <ul className='dimensionPanel' onClick={this.addDimension.bind(this)}>
         <li><a href="javascript://" data-key="rt">来源</a></li>
         <li><a href="javascript://" data-key="region">地区</a></li>
         <li><a href="javascript://" data-key="db">设备</a></li>

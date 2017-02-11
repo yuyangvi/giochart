@@ -17,7 +17,7 @@ const originParams: ChartParamsProps = {
   id:'rREppgm9',
   name:'GIO 3.0 logo 浏览量',
   chartType:'table',
-  top:10,
+  top:100,
   metricsNames:['GrowingIO_221796_浏览量'],
   dimensions:['tm'],
   dimensionsNames:['时间'],
@@ -50,15 +50,16 @@ class Demo extends React.Component<any, any> {
   constructor() {
     super();
     this.state = {
-      dim: null
+      dim: null,
+      select: null
     };
   }
   addDimension(dim: string[]) {
-    /*let chartParams = update(
-      originParams,
-      { dimensions: { $push: [dim] } }
-    );*/
     this.setState({ dim });
+  }
+  select(selected: any) {
+    console.log(this.refs);
+    this.refs.dataSource1.setState({ selected });
   }
   render() {
     let chartParams = originParams;
@@ -70,9 +71,9 @@ class Demo extends React.Component<any, any> {
     return (
       <div className='container'>
         <div className='mainPanel'>
-          <DataSource chartParams={chartParams}>
+          <DataSource chartParams={chartParams} ref='dataSource1'>
             <GrChart chartParams={lineParams} />
-            { barParams ? <GrChart chartParams={barParams} /> : null }
+            { barParams ? <GrChart chartParams={barParams} select={this.select.bind(this)} /> : null }
             <DimensionPanel addDimension={this.addDimension.bind(this)} />
           </DataSource>
         </div>

@@ -4,9 +4,9 @@
     "sourceMap": true,
     "noImplicitAny": true,
     "module": "commonjs",
-    "target": "es5",
     "jsx": "react",
     "allowJS": true,
+    "lib": ["es6","ES2016.Array.Include","DOM","DOM.Iterable","ScriptHost"],
     "allowSyntheticDefaultImports": true
   },
   "include": [

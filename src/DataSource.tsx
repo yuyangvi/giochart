@@ -43,24 +43,25 @@ class DataSource extends React.Component <GrChartProps, any> {
     this.state = {
       isLoaded: false,
       source: null,
-      selected: null,
+      selected: null
     };
   }
-  selectHandler(evt: any) {
+  /*selectHandler(evt: any) {
     this.setState({
       selected: evt.selected
     });
-  }
+  }*/
   //TODO: 用来给子孙节点中的GrChart自定义
   getChildContext() {
     return {
       source: this.state.source,
-      selected: this.state.selected,
+      selected: this.state.selected
+      /*,
       selectHandler: this.selectHandler.bind(this)
+      */
     };
   }
   componentWillReceiveProps(nextProps: GrChartProps) {
-    console.log(nextProps.chartParams);
     this.defaultRequest(nextProps.chartParams, this.afterFetch.bind(this));
   }
 
@@ -112,7 +113,7 @@ class DataSource extends React.Component <GrChartProps, any> {
     }));
 
     let source = map(chartData.data, (n: number[]) => {
-      let res = zipObject(colIds, n);
+      let res: any = zipObject(colIds, n);
       if (res.tm) {
         res.tm = parseInt(res.tm);
       }
