@@ -23,3 +23,10 @@ label{margin-right: 10px;}
     border-radius:5px;
     margin-bottom:16px;
 }
+.dimensionPanel {
+    position:absolute;
+    right:0;
+    width: 230px;
+    top:0;
+    bottom:0;
+}

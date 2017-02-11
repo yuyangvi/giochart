@@ -40,10 +40,9 @@ class DimensionPanel extends React.Component <any, any> {
   //staticDimension
   addDimension(e: SyntheticEvent<HTMLElement>) {
     let key = e.target.getAttribute('data-key');
+
     if (key) {
-      this.props.addDimension(
-        filter(allDimensions, {id: key})
-      );
+      this.props.addDimension(key.split(','));
     }
   }
   render() {

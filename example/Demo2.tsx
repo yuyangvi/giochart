@@ -11,55 +11,68 @@ interface EventSeletorTarget extends EventTarget {
 interface SyntheticSeletorEvent extends SyntheticEvent<HTMLSelectElement> {
   target: EventSeletorTarget
 }
-const lineParams: ChartParamsProps = {
-  aggregateType: 'sum',
-  attrs: { metricType: 'none', period: 7, timeRange: 'day:8,1', subChartType: 'total' },
-  chartType: 'line',
-  createdAt: 1483535473005,
-  creator: 'liuhuaqing',
-  creatorId: 'GQPDMloN',
-  dimensions: [{id: 'tm', name: '时间'}],
+
+const originParams: ChartParamsProps = {
+  metrics:[{ id:'4PYKzgx9', level:'simple', action:'imp' }],
+  id:'rREppgm9',
+  name:'GIO 3.0 logo 浏览量',
+  chartType:'table',
+  top:10,
+  metricsNames:['GrowingIO_221796_浏览量'],
+  dimensions:['tm'],
   dimensionsNames:['时间'],
-  filter: {op: '=', key: 'rt', value: '搜索引擎', name: '一级访问来源'},
-  id: 'JoOWV0Ao',
-  interval: 86400000,
-  metrics: [
-    {id: '9yGbpp8x', level: 'complex'},
-    {id: 'j9yKL8Py', level: 'simple', action: 'imp'}
-  ],
-  metricsNames:['访问用户量', '保存创建分群浏览量'],
-  name: 'sssssssfff',
-  orders: null,
-  period: 7,
-  status: 'activated',
-  timeRange: 'day:8,1',
-  top: 10,
-  updatedAt: 1483535473005,
-  updater: 'liuhuaqing',
-  updaterId: 'GQPDMloN',
-  versionNumber: 1
+  filter:{},
+  interval:86400000,
+  aggregateType:'sum',
+  attrs:{
+    'metricType':'none',
+    'period':7,
+    'timeRange':'day:8,1',
+    'metrics':{
+      'z98xev09':{metricName:'GrowingIO_221796_浏览量'}}
+  },
+  'createdAt':1482896072289,
+  'updatedAt':1482896072289,
+  'creator':'张溪梦',
+  'updater':'张溪梦',
+  'versionNumber':1,
+  'period':7,
+  'timeRange':'day:8,1',
+  'orders':null,
+  'creatorId':'GQPDxPNm',
+  'updaterId':'GQPDxPNm',
+  'status':'activated',
+  'visibleTo':{type:'Public'},
+  'userTag':null
 };
+const lineParams = update(originParams, { chartType: { $set: 'line' } });
 class Demo extends React.Component<any, any> {
   constructor() {
     super();
     this.state = {
-      chartParams: lineParams
+      dim: null
     };
   }
-  addDimension(dim: Meta) {
-    let chartParams = update(
-      lineParams,
-      { dimensions: { $push: dim } }
-    );
-    this.setState({ chartParams });
+  addDimension(dim: string[]) {
+    /*let chartParams = update(
+      originParams,
+      { dimensions: { $push: [dim] } }
+    );*/
+    this.setState({ dim });
   }
   render() {
+    let chartParams = originParams;
+    let barParams = null;
+    if (this.state.dim) {
+      chartParams = update(originParams, { dimensions: { $push: this.state.dim } });
+      barParams = update(chartParams, { dimensions: { $set: this.state.dim }, chartType: { $set: 'bar' } });
+    }
     return (
       <div className='container'>
         <div className='mainPanel'>
-          <DataSource chartParams={this.state.chartParams}>
+          <DataSource chartParams={chartParams}>
             <GrChart chartParams={lineParams} />
-            <GrChart chartParams={lineParams} />
+            { barParams ? <GrChart chartParams={barParams} /> : null }
             <DimensionPanel addDimension={this.addDimension.bind(this)} />
           </DataSource>
         </div>

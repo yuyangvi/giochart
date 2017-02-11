@@ -5,10 +5,9 @@ import {GrChartProps, ChartParamsProps, ChartDataProps} from './chartProps';
 import * as React from "react";
 import update from 'react/lib/update';
 
-import { map, zipObject } from 'lodash';
+import { map, zipObject, flatten } from 'lodash';
 declare function fetch(a: any, b?: any): any;
-declare var project: any;
-
+declare const project: any;
 //数据统计必备字段，中端需要以下字段提供数据
 export const HttpStatus = {
   Ok                  : 200,
@@ -60,6 +59,10 @@ class DataSource extends React.Component <GrChartProps, any> {
       selectHandler: this.selectHandler.bind(this)
     };
   }
+  componentWillReceiveProps(nextProps: GrChartProps) {
+    console.log(nextProps.chartParams);
+    this.defaultRequest(nextProps.chartParams, this.afterFetch.bind(this));
+  }
 
   render() {
     return <div>{this.props.children}</div>;
@@ -75,21 +78,23 @@ class DataSource extends React.Component <GrChartProps, any> {
   }*/
 
   defaultRequest(chartParams: ChartParamsProps, callback: Function) {
-    let url = this.props.sourceUrl || `https://gta.growingio.com/_private/v3/projects/${project.id}/chartdata`;
-    return fetch(url)
-      /*, {
+    let url = this.props.sourceUrl || `https://gta.growingio.com/v3/projects/${project.id}/chartdata`;
+    let headers = new Headers();
+    headers.append('authorization', 'Token 6cfe9f205f82524839616a7428748b085b51710639dd85b692bab403c6b3f3d7');
+    let request = new Request(url, {headers: headers});
+    return fetch(request, {
         credentials: 'same-origin',
         contentType: 'application/json',
-        method: 'get',
-        //body: JSON.stringify(chartParams)
-      }
-    )*/
-      .then((response: any) => {
-        let status = response.status;
-        if(status === HttpStatus.Ok) {
-          return response.json();
-        }
-      }).then( (data: ChartDataProps) => callback(data));
+        method: 'post',
+        body: JSON.stringify(chartParams)
+      })
+        .then((response: any) => {
+          let status = response.status;
+          if(status === HttpStatus.Ok) {
+            return response.json();
+          }
+        })
+      .then( (data: ChartDataProps) => callback(data));
   }
 
   componentDidMount() {
@@ -98,8 +103,21 @@ class DataSource extends React.Component <GrChartProps, any> {
     this.defaultRequest(chartParams, this.afterFetch.bind(this));
   }
   afterFetch(chartData: ChartDataProps) {
-    let colIds = map(chartData.meta, n => (n.isDim ? n.id : n.metricId.id));
-    let source = map(chartData.data, (n: number[]) => zipObject(colIds, n));
+    let colIds: string[] = flatten(map(chartData.metaData, n => {
+      if (n.isDim) {
+        return n.id;
+      }
+      let id = n.metricId.id;
+      return [id, '_' + id];
+    }));
+
+    let source = map(chartData.data, (n: number[]) => {
+      let res = zipObject(colIds, n);
+      if (res.tm) {
+        res.tm = parseInt(res.tm);
+      }
+      return res;
+    });
 
     this.setState({
       isLoaded: true,
