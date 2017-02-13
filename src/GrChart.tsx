@@ -7,6 +7,13 @@ import * as ReactDOM from 'react-dom';
 import { map, fromPairs, zip, pick, filter, isEmpty } from 'lodash';
 import G2 = require('g2');
 
+
+declare var require: {
+  <T>(path: string): T;
+  (paths: string[], callback: (...modules: any[]) => void): void;
+  ensure: (paths: string[], callback: (require: <T>(path: string) => T) => void) => void;
+};
+
 interface SourceConfig {
   [colName: string]: {
     tickCount?: number;
@@ -30,17 +37,16 @@ class GrChart extends React.Component <GrChartProps, any> {
       if (nextContext.selected) {
         //算维度的差集
         let selected = pick(nextContext.selected, nextProps.chartParams.dimensions);
-        if (isEmpty(selected)) {
-          source = filter(source, nextContext.selected);
+        if (!isEmpty(selected) && this.chart) {
+          return;
         }
+        source = filter(source, nextContext.selected);
       }
-      //如果只是context修改
-      if (nextContext === this.context) {
-        console.log('shift context');
-      } else {
-        this.chart && this.chart.destroy();
-        this.drawChart(nextProps.chartParams, source);
-      }
+      // TODO: 如果只是context修改
+      console.log(nextProps.chartParams.chartType);
+      this.chart && this.chart.destroy();
+      this.drawChart(nextProps.chartParams, source);
+
     }
   }
   render() {
@@ -64,12 +70,16 @@ class GrChart extends React.Component <GrChartProps, any> {
       this.drawChart(chartParams, source);
     }
   }
+  componentWillUnmount() {
+    this.chart && this.chart.destroy();
+  }
+
   drawChart(chartParams: ChartParamsProps, source: Source) {
     let dom = document.createElement('div');
     ReactDOM.findDOMNode(this).appendChild(dom);
     let chart = new G2.Chart({
       container: dom,
-      height: dom.getBoundingClientRect().height || 250,
+      height: dom.getBoundingClientRect().height || 350,
       forceFit: true,
       plotCfg: {}
     });
@@ -101,13 +111,18 @@ class GrChart extends React.Component <GrChartProps, any> {
     chart.axis('val', { title: false });
     let geom = this.caculateGeom(chart, chartParams.chartType, chartParams.attrs.subChartType);
 
-    let pos,selectCols;
+    let pos;
+    let selectCols:string[];
     if (chartParams.chartType === 'bubble') {
       pos = metricCols[0] + '*' + metricCols[1];
-      selectCols = metricCols;
+      selectCols = metricCols as string[];
     } else if (chartParams.chartType === 'funnel') {
       pos = G2.Stat.summary.sum('metric*val');
       selectCols = ['metric'];
+    } else if (chartParams.chartType === 'map') {
+      // TODO:列出
+      const mapData = require('china-geojson/src/geojson/china.json');
+      pos = G2.Stat.map.region(dimCols[0], mapData);
     } else {
       pos = G2.Stat.summary.sum(dimCols[0] + '*' + metricCols[0]);
       selectCols = [dimCols[0]];
@@ -117,6 +132,11 @@ class GrChart extends React.Component <GrChartProps, any> {
     if (chartParams.chartType === 'funnel') {
       geom.color('metric', ['#C82B3D', '#EB4456', '#F9815C', '#F8AB60', '#EDCC72'])
           .label('metric', { offset: 10, label: { fontSize: 14 } });
+    } else if (chartParams.chartType === 'map') {
+      geom.color(metricCols[0], '#F4EC91-#AF303C').style({
+        stroke: '#333',
+        lineWidth: 1
+      });
     } else if (dimCols.length > 1) { //TODO: metrics
       geom.color('metric');
     }
@@ -217,6 +237,8 @@ class GrChart extends React.Component <GrChartProps, any> {
       return chart.point();
     } else if (gt === 'line') {
       return chart.line().size(2);
+    } else if (gt === 'map') {
+      return chart.polygon();
     }
     return chart[gt](adjust);
   }

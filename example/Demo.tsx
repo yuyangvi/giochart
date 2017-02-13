@@ -3,7 +3,7 @@ import * as update from 'react/lib/update';
 import DataSource from '../src/DataSource';
 import { ChartParamsProps, Meta } from '../src/chartProps';
 import SyntheticEvent = React.SyntheticEvent;
-import GrChart from '../src/GrChart2';
+import GrChart from '../src/GrChart';
 import DimensionPanel from "../src/DimensionPanel";
 interface EventSeletorTarget extends EventTarget {
   value:string
@@ -21,7 +21,7 @@ const originParams: ChartParamsProps = {
   metricsNames:['GrowingIO_221796_浏览量'],
   dimensions:['tm'],
   dimensionsNames:['时间'],
-  filter:{},
+  filter:{op: "=", key: "countryCode", value: "CN", name: "国家代码"},
   interval:86400000,
   aggregateType:'sum',
   attrs:{
@@ -47,6 +47,7 @@ const originParams: ChartParamsProps = {
 };
 const lineParams = update(originParams, { chartType: { $set: 'line' } });
 class Demo extends React.Component<any, any> {
+  dataSource:React.Component<any,any>;
   constructor() {
     super();
     this.state = {
@@ -56,22 +57,27 @@ class Demo extends React.Component<any, any> {
   }
   addDimension(dim: string[]) {
     this.setState({ dim });
+    this.dataSource.setState({ selected: null });
   }
   select(selected: any) {
-    console.log(this.refs);
-    this.refs.dataSource1.setState({ selected });
+    this.dataSource.setState({ selected });
   }
   render() {
+    let dim = this.state.dim
     let chartParams = originParams;
     let barParams = null;
-    if (this.state.dim) {
-      chartParams = update(originParams, { dimensions: { $push: this.state.dim } });
-      barParams = update(chartParams, { dimensions: { $set: this.state.dim }, chartType: { $set: 'bar' } });
+    if (dim) {
+      chartParams = update(originParams, { dimensions: { $push: dim } });
+      barParams = update(chartParams, {
+        dimensions: { $set: dim },
+        chartType: { $set: (dim[0] === 'region' ? 'map' : 'bar') }
+      });
     }
+    //ref='dataSource1'
     return (
       <div className='container'>
         <div className='mainPanel'>
-          <DataSource chartParams={chartParams} ref='dataSource1'>
+          <DataSource chartParams={chartParams} ref={(DataSource)=>{this.dataSource=DataSource;}}>
             <GrChart chartParams={lineParams} />
             { barParams ? <GrChart chartParams={barParams} select={this.select.bind(this)} /> : null }
             <DimensionPanel addDimension={this.addDimension.bind(this)} />
