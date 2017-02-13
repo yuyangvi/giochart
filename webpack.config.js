@@ -1,3 +1,4 @@
+//var webpack=require('webpack');
 module.exports = {
     entry: [
     'webpack-dev-server/client?http://0.0.0.0:9090',
@@ -22,6 +23,7 @@ module.exports = {
     },
 
     module: {
+        //devtools:'source-map',
         loaders: [
             // All files with a '.ts' or '.tsx' extension will be handled by 'awesome-typescript-loader'.
             { test: /\.tsx?$/, loader: "awesome-typescript-loader" },
@@ -42,4 +44,6 @@ module.exports = {
         "react": "React",
         "react-dom": "ReactDOM"
     },
+
+
 };
