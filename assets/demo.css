@@ -4,7 +4,6 @@ h1{
 }
 .container{
     width:980px;
-    position:relative;
     margin:auto;
 }
 .mainPanel{width:700px;}
@@ -22,4 +21,20 @@ label{margin-right: 10px;}
     border:1px solid #f1f1f1;
     border-radius:5px;
     margin-bottom:16px;
+}
+.dimensionPanel {
+    position:absolute;
+    list-style: none;
+    right:0;
+    width: 230px;
+    top:0;
+    bottom:0;
+    background:#fc5f3a;
+    margin:0;
+    padding: 20px 20px;
+}
+.dimensionPanel li a{
+    line-height: 50px;
+    color: #fff;
+    font-size: 20px;
 }

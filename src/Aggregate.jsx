@@ -38,6 +38,33 @@ var Aggregate = (function (_super) {
             this.drawComparison(chartParams, chartData);
         }
     };
+    Aggregate.prototype.drawNumber = function (chartParams, chartData) {
+        var dom = document.createElement('div');
+        ReactDOM.findDOMNode(this).appendChild(dom);
+        var Frame = G2.Frame;
+        var jsonData = lodash_1.map(chartData.data, function (n) { return lodash_1.zipObject(['tm', 'val'], n); });
+        var frame = new G2.Frame(jsonData);
+        var rect = dom.getBoundingClientRect();
+        var chart = new G2.Chart({
+            container: dom,
+            width: rect.width,
+            height: 54,
+            plotCfg: {
+                margin: [1, 0, 1, 0],
+            }
+        });
+        chart.source(frame, {
+            tm: { type: 'time' }
+        });
+        chart.axis(false);
+        chart.tooltip(false);
+        chartParams.attrs.colorTheme = chartParams.attrs && chartParams.attrs.colorTheme || '125, 128, 243';
+        chart.area().color("l(90) 0:rgba(" + chartParams.attrs.colorTheme + ", 0.3) 1:rgba(" + chartParams.attrs.colorTheme + ", 0.1)").shape('smooth').position('tm*val');
+        chart.line().shape('smooth').color("rgb(" + chartParams.attrs.colorTheme + ")").position('tm*val').size(2);
+        chart.render();
+        this.chart = chart;
+        return chart;
+    };
     Aggregate.prototype.drawComparison = function (chartParams, chartData) {
         var dom = document.createElement('div');
         ReactDOM.findDOMNode(this).appendChild(dom);
@@ -45,14 +72,12 @@ var Aggregate = (function (_super) {
             container: dom,
             height: dom.getBoundingClientRect().height || 250,
             forceFit: true,
-            plotCfg: { margin: [40, 0, 40, 60] }
+            plotCfg: { margin: [40, 10, 40, 60] }
         });
         var sourceDef = this.createSourceConfig(chartParams, chartData.meta);
         var colIds = ['tm', 'val', 'tm_', 'val_'];
-        //
         var jsonData = lodash_1.map(chartData.data, function (n) { return lodash_1.zipObject(colIds, n); });
         var frame = new G2.Frame(jsonData);
-        ;
         sourceDef['val'] = sourceDef['val_'] = {
             min: 0,
             max: Math.max(G2.Frame.max(frame, 'val'), G2.Frame.max(frame, 'val_'))
@@ -72,23 +97,21 @@ var Aggregate = (function (_super) {
         var bCanvas = chart.get('backCanvas');
         bCanvas.addShape('text', {
             attrs: {
-                x: 606,
+                x: 586,
                 y: 0,
                 text: chartData.desc.data[0],
-                fontFamily: 'Hiragino Sans GB',
                 fontSize: 24,
                 textAlign: 'right',
                 textBaseline: 'top',
                 fill: '#666'
             }
         });
-        var ratio = 100 * (chartData.desc.data[1] / chartData.desc.data[0] - 1);
+        var ratio = 100 * (chartData.desc.data[0] / chartData.desc.data[1] - 1);
         bCanvas.addShape('text', {
             attrs: {
-                x: 666,
+                x: 656,
                 y: 0,
                 text: ratio.toPrecision(3) + '%',
-                fontFamily: 'Hiragino Sans GB',
                 fontSize: 14,
                 textAlign: 'right',
                 textBaseline: 'top',
@@ -97,7 +120,7 @@ var Aggregate = (function (_super) {
         });
         bCanvas.addShape('text', {
             attrs: {
-                x: 666,
+                x: 656,
                 y: 20,
                 text: '相比7天前',
                 fontSize: 12,
