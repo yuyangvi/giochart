@@ -56,9 +56,10 @@ class Demo extends React.Component<any, any> {
   }
   addDimension(dim: string[]) {
     this.setState({ dim });
+    this.refs['dataSource1'].setState({ selected: null });
   }
   select(selected: any) {
-    this.refs.dataSource1.setState({ selected });
+    this.refs['dataSource1'].setState({ selected });
   }
   render() {
     let dim = this.state.dim

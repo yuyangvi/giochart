@@ -63,6 +63,10 @@ class GrChart extends React.Component <GrChartProps, any> {
       this.drawChart(chartParams, source);
     }
   }
+  componentWillUnmount() {
+    this.chart && this.chart.destroy();
+  }
+
   drawChart(chartParams: ChartParamsProps, source: Source) {
     let dom = document.createElement('div');
     ReactDOM.findDOMNode(this).appendChild(dom);
@@ -107,8 +111,8 @@ class GrChart extends React.Component <GrChartProps, any> {
       pos = G2.Stat.summary.sum('metric*val');
       selectCols = ['metric'];
     } else if (chartParams.chartType === 'map') {
+      // TODO:列出
       const mapData = require('china-geojson/src/geojson/china.json');
-      console.log(dimCols);
       pos = G2.Stat.map.region(dimCols[0], mapData);
     } else {
       pos = G2.Stat.summary.sum(dimCols[0] + '*' + metricCols[0]);
