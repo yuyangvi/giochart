@@ -1,11 +1,11 @@
 var webpack = require('webpack');
 var path = require('path');
 module.exports = {
-  entry: './src/GrChart.tsx',
+  entry: './src/index.ts',
   output: {
     filename: "giochart.min.js",
     path: __dirname + "/dist",
-    library: 'GrChart',
+    library: 'GIO',
     libraryTarget: 'umd'
   },
 
