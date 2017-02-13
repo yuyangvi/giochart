@@ -47,6 +47,7 @@ const originParams: ChartParamsProps = {
 };
 const lineParams = update(originParams, { chartType: { $set: 'line' } });
 class Demo extends React.Component<any, any> {
+  dataSource:React.Component<any,any>;
   constructor() {
     super();
     this.state = {
@@ -56,10 +57,10 @@ class Demo extends React.Component<any, any> {
   }
   addDimension(dim: string[]) {
     this.setState({ dim });
-    this.refs['dataSource1'].setState({ selected: null });
+    this.dataSource.setState({ selected: null });
   }
   select(selected: any) {
-    this.refs['dataSource1'].setState({ selected });
+    this.dataSource.setState({ selected });
   }
   render() {
     let dim = this.state.dim
@@ -72,11 +73,10 @@ class Demo extends React.Component<any, any> {
         chartType: { $set: (dim[0] === 'region' ? 'map' : 'bar') }
       });
     }
-
     return (
       <div className='container'>
         <div className='mainPanel'>
-          <DataSource chartParams={chartParams} ref='dataSource1'>
+          <DataSource chartParams={chartParams} ref={ (DataSource) => { this.dataSource = DataSource; }}>
             <GrChart chartParams={lineParams} />
             { barParams ? <GrChart chartParams={barParams} select={this.select.bind(this)} /> : null }
             <DimensionPanel addDimension={this.addDimension.bind(this)} />

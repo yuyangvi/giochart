@@ -7,6 +7,13 @@ import * as ReactDOM from 'react-dom';
 import { map, fromPairs, zip, pick, filter, isEmpty } from 'lodash';
 import G2 = require('g2');
 
+
+declare var require: {
+  <T>(path: string): T;
+  (paths: string[], callback: (...modules: any[]) => void): void;
+  ensure: (paths: string[], callback: (require: <T>(path: string) => T) => void) => void;
+};
+
 interface SourceConfig {
   [colName: string]: {
     tickCount?: number;
@@ -103,10 +110,11 @@ class GrChart extends React.Component <GrChartProps, any> {
     chart.axis('val', { title: false });
     let geom = this.caculateGeom(chart, chartParams.chartType, chartParams.attrs.subChartType);
 
-    let pos, selectCols;
+    let pos;
+    let selectCols:string[];
     if (chartParams.chartType === 'bubble') {
       pos = metricCols[0] + '*' + metricCols[1];
-      selectCols = metricCols;
+      selectCols = metricCols as string[];
     } else if (chartParams.chartType === 'funnel') {
       pos = G2.Stat.summary.sum('metric*val');
       selectCols = ['metric'];
