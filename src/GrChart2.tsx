@@ -78,6 +78,7 @@ class GrChart extends React.Component <GrChartProps, any> {
     let frame = new G2.Frame(source);
     let sourceDef: SourceConfig = this.createSourceConfig(chartParams);
 
+    //let metricCols = (map(chartParams.metrics, 'id')) as string[];
     let metricCols = map(chartParams.metrics, 'id');
     let dimCols    = chartParams.dimensions;
 
@@ -100,7 +101,7 @@ class GrChart extends React.Component <GrChartProps, any> {
     chart.axis('val', { title: false });
     let geom = this.caculateGeom(chart, chartParams.chartType, chartParams.attrs.subChartType);
 
-    let pos, selectCols;
+    let pos,selectCols;
     if (chartParams.chartType === 'bubble') {
       pos = metricCols[0] + '*' + metricCols[1];
       selectCols = metricCols;

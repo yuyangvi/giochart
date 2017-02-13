@@ -6,10 +6,22 @@
   "scripts": {
     "build": "webpack --config webpack.prod.config.js",
     "start": "webpack-dev-server --config webpack.config.js --hot --inline --display-modules --progress --colors --port=9090",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "author": "",
   "license": "ISC",
+  "jest": {
+    "transform": {
+      ".(ts|tsx)": "<rootDir>/node_modules/ts-jest/preprocessor.js"
+    },
+    "testResultsProcessor": "<rootDir>/node_modules/ts-jest/coverageprocessor.js",
+    "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$",
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js"
+    ]
+  },
   "dependencies": {
     "antd": "^2.6.4",
     "g2": "2.2.2",
@@ -31,6 +43,7 @@
     "css-loader": "^0.26.1",
     "source-map-loader": "^0.1.5",
     "style-loader": "^0.13.1",
+    "ts-jest": "^18.0.3",
     "typescript": "^2.1.4",
     "webpack": "^1.14.0",
     "webpack-dev-server": "^1.16.2"

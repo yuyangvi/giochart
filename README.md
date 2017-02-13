@@ -15,7 +15,7 @@ GrowingIO Chart component
 * License
 
 ## Install
-在package.json中的dependencies里添加
+在package.json中的dependenc ies里添加
 ```
 "giochart": "git+https://github.com/yuyangvi/giochart.git#master",
 ```
