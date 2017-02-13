@@ -73,11 +73,10 @@ class Demo extends React.Component<any, any> {
         chartType: { $set: (dim[0] === 'region' ? 'map' : 'bar') }
       });
     }
-    //ref='dataSource1'
     return (
       <div className='container'>
         <div className='mainPanel'>
-          <DataSource chartParams={chartParams} ref={(DataSource)=>{this.dataSource=DataSource;}}>
+          <DataSource chartParams={chartParams} ref={ (DataSource) => { this.dataSource = DataSource; }}>
             <GrChart chartParams={lineParams} />
             { barParams ? <GrChart chartParams={barParams} select={this.select.bind(this)} /> : null }
             <DimensionPanel addDimension={this.addDimension.bind(this)} />

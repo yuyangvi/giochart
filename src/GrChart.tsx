@@ -88,7 +88,6 @@ class GrChart extends React.Component <GrChartProps, any> {
     let frame = new G2.Frame(source);
     let sourceDef: SourceConfig = this.createSourceConfig(chartParams);
 
-    //let metricCols = (map(chartParams.metrics, 'id')) as string[];
     let metricCols = map(chartParams.metrics, 'id');
     let dimCols    = chartParams.dimensions;
 
