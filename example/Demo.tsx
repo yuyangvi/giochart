@@ -3,7 +3,7 @@ import * as update from 'react/lib/update';
 import DataSource from '../src/DataSource';
 import { ChartParamsProps, Meta } from '../src/chartProps';
 import SyntheticEvent = React.SyntheticEvent;
-import GrChart from '../src/GrChart2';
+import GrChart from '../src/GrChart';
 import DimensionPanel from "../src/DimensionPanel";
 interface EventSeletorTarget extends EventTarget {
   value:string
@@ -21,7 +21,7 @@ const originParams: ChartParamsProps = {
   metricsNames:['GrowingIO_221796_浏览量'],
   dimensions:['tm'],
   dimensionsNames:['时间'],
-  filter:{},
+  filter:{op: "=", key: "countryCode", value: "CN", name: "国家代码"},
   interval:86400000,
   aggregateType:'sum',
   attrs:{
@@ -61,12 +61,17 @@ class Demo extends React.Component<any, any> {
     this.refs.dataSource1.setState({ selected });
   }
   render() {
+    let dim = this.state.dim
     let chartParams = originParams;
     let barParams = null;
-    if (this.state.dim) {
-      chartParams = update(originParams, { dimensions: { $push: this.state.dim } });
-      barParams = update(chartParams, { dimensions: { $set: this.state.dim }, chartType: { $set: 'bar' } });
+    if (dim) {
+      chartParams = update(originParams, { dimensions: { $push: dim } });
+      barParams = update(chartParams, {
+        dimensions: { $set: dim },
+        chartType: { $set: (dim[0] === 'region' ? 'map' : 'bar') }
+      });
     }
+
     return (
       <div className='container'>
         <div className='mainPanel'>

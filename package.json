@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "antd": "^2.6.4",
+    "china-geojson": "^1.0.0",
     "g2": "2.2.2",
     "less": "^2.7.2",
     "less-loader": "^2.2.3",
@@ -29,6 +30,7 @@
     "@types/react-dom": "^0.14.20",
     "awesome-typescript-loader": "^3.0.0-beta.17",
     "css-loader": "^0.26.1",
+    "json-loader": "^0.5.4",
     "source-map-loader": "^0.1.5",
     "style-loader": "^0.13.1",
     "typescript": "^2.1.4",

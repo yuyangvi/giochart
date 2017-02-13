@@ -68,7 +68,7 @@ class GrChart extends React.Component <GrChartProps, any> {
     ReactDOM.findDOMNode(this).appendChild(dom);
     let chart = new G2.Chart({
       container: dom,
-      height: dom.getBoundingClientRect().height || 250,
+      height: dom.getBoundingClientRect().height || 350,
       forceFit: true,
       plotCfg: {}
     });
@@ -106,6 +106,10 @@ class GrChart extends React.Component <GrChartProps, any> {
     } else if (chartParams.chartType === 'funnel') {
       pos = G2.Stat.summary.sum('metric*val');
       selectCols = ['metric'];
+    } else if (chartParams.chartType === 'map') {
+      const mapData = require('china-geojson/src/geojson/china.json');
+      console.log(dimCols);
+      pos = G2.Stat.map.region(dimCols[0], mapData);
     } else {
       pos = G2.Stat.summary.sum(dimCols[0] + '*' + metricCols[0]);
       selectCols = [dimCols[0]];
@@ -115,6 +119,11 @@ class GrChart extends React.Component <GrChartProps, any> {
     if (chartParams.chartType === 'funnel') {
       geom.color('metric', ['#C82B3D', '#EB4456', '#F9815C', '#F8AB60', '#EDCC72'])
           .label('metric', { offset: 10, label: { fontSize: 14 } });
+    } else if (chartParams.chartType === 'map') {
+      geom.color(metricCols[0], '#F4EC91-#AF303C').style({
+        stroke: '#333',
+        lineWidth: 1
+      });
     } else if (dimCols.length > 1) { //TODO: metrics
       geom.color('metric');
     }
@@ -215,6 +224,8 @@ class GrChart extends React.Component <GrChartProps, any> {
       return chart.point();
     } else if (gt === 'line') {
       return chart.line().size(2);
+    } else if (gt === 'map') {
+      return chart.polygon();
     }
     return chart[gt](adjust);
   }
