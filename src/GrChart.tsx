@@ -30,17 +30,16 @@ class GrChart extends React.Component <GrChartProps, any> {
       if (nextContext.selected) {
         //算维度的差集
         let selected = pick(nextContext.selected, nextProps.chartParams.dimensions);
-        if (isEmpty(selected)) {
-          source = filter(source, nextContext.selected);
+        if (!isEmpty(selected) && this.chart) {
+          return;
         }
+        source = filter(source, nextContext.selected);
       }
-      //如果只是context修改
-      if (nextContext === this.context) {
-        console.log('shift context');
-      } else {
-        this.chart && this.chart.destroy();
-        this.drawChart(nextProps.chartParams, source);
-      }
+      // TODO: 如果只是context修改
+      console.log(nextProps.chartParams.chartType);
+      this.chart && this.chart.destroy();
+      this.drawChart(nextProps.chartParams, source);
+
     }
   }
   render() {

@@ -58,7 +58,6 @@ class Demo extends React.Component<any, any> {
     this.setState({ dim });
   }
   select(selected: any) {
-    console.log(this.refs);
     this.refs.dataSource1.setState({ selected });
   }
   render() {

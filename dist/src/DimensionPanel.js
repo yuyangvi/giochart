@@ -8,7 +8,6 @@ var __extends = (this && this.__extends) || function (d, b) {
 * 分为 来源\设备\地区\用户广告几种
 * */
 var React = require("react");
-var lodash_1 = require("lodash");
 var allDimensions = [
     { id: 'p', name: '页面' },
     { id: 'rp', name: '页面来源' },
@@ -46,20 +45,24 @@ var DimensionPanel = (function (_super) {
     }
     //staticDimension
     DimensionPanel.prototype.addDimension = function (e) {
-        var key = e.currentTarget.getAttribute('key');
+        var key = e.target.getAttribute('data-key');
         if (key) {
-            this.props.addDimension(lodash_1.filter(allDimensions, { id: key }));
+            this.props.addDimension(key.split(','));
         }
     };
     DimensionPanel.prototype.render = function () {
-        return (<ul onClick={this.addDimension.bind(this)}>
-        <li><a href="javascript://" key="rt">来源</a></li>
-        <li><a href="javascript://" key="region">地区</a></li>
-        <li><a href="javascript://" key="db">设备</a></li>
-        <li><a href="javascript://" key="utm_source">广告</a></li>
-      </ul>);
+        return (React.createElement("ul", { className: 'dimensionPanel', onClick: this.addDimension.bind(this) },
+            React.createElement("li", null,
+                React.createElement("a", { href: "javascript://", "data-key": "rt" }, "\u6765\u6E90")),
+            React.createElement("li", null,
+                React.createElement("a", { href: "javascript://", "data-key": "region" }, "\u5730\u533A")),
+            React.createElement("li", null,
+                React.createElement("a", { href: "javascript://", "data-key": "db" }, "\u8BBE\u5907")),
+            React.createElement("li", null,
+                React.createElement("a", { href: "javascript://", "data-key": "utm_source" }, "\u5E7F\u544A"))));
     };
     return DimensionPanel;
 }(React.Component));
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = DimensionPanel;
+exports.__esModule = true;
+exports["default"] = DimensionPanel;
+//# sourceMappingURL=DimensionPanel.js.map
