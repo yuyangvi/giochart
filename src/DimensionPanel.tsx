@@ -38,9 +38,8 @@ const allDimensions = [
 
 class DimensionPanel extends React.Component <any, any> {
   //staticDimension
-  addDimension(e: SyntheticEvent<HTMLElement>) {
-    let key = e.target.getAttribute('data-key');
-
+  addDimension(e: SyntheticEvent<HTMLUListElement>) {
+    let key = (e.target as Element).getAttribute('data-key');
     if (key) {
       this.props.addDimension(key.split(','));
     }
