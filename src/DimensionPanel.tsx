@@ -3,8 +3,7 @@
 * */
 import * as React from "react";
 import SyntheticEvent = React.SyntheticEvent;
-import { filter } from 'lodash';
-import { GrChartProps } from './chartProps';
+
 const allDimensions = [
   {id: 'p', name: '页面'},
   {id: 'rp', name: '页面来源'},

@@ -95,7 +95,7 @@ class Aggregate extends React.Component <GrChartProps, any> {
       plotCfg: {margin:[40, 10, 40, 60]}
     });
 
-    let sourceDef: SourceConfig = this.createSourceConfig(chartParams, chartData.meta);
+    let sourceDef: SourceConfig = this.createSourceConfig(chartParams, chartData.metaData);
     let colIds = ['tm', 'val', 'tm_', 'val_'];
 
     let jsonData = map(chartData.data, (n: number[]) => zipObject(colIds, n));
