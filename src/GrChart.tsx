@@ -4,8 +4,9 @@
 import {GrChartProps, ChartParamsProps, ChartDataProps, Meta, Source} from './chartProps';
 import * as React from "react";
 import * as ReactDOM from 'react-dom';
-import { map, fromPairs, zip, pick, filter, isEmpty } from 'lodash';
+import { map, fromPairs, zip, pick, filter, isEmpty , isEqual} from 'lodash';
 import G2 = require('g2');
+import IsEqualCustomizer = _.IsEqualCustomizer;
 
 
 declare var require: {
@@ -40,15 +41,24 @@ class GrChart extends React.Component <GrChartProps, any> {
         if (!isEmpty(selected) && this.chart) {
           return;
         }
-        source = filter(source, nextContext.selected);
-      }
-      // TODO: 如果只是context修改
-      console.log(nextProps.chartParams.chartType);
-      this.chart && this.chart.destroy();
-      this.drawChart(nextProps.chartParams, source);
+        let filterSource = filter(source, nextContext.selected);
+        this.chart.changeData(filterSource);
+      } else {
+        // TODO: 如果只是context修改
+        console.log(nextProps.chartParams.chartType);
 
+        // this.chart && this.chart.destroy();
+        // this.drawChart(nextProps.chartParams, source);
+        // props & context更改后重画
+        if(!isEqual(this.context.source,nextContext.source)||!isEqual(this.props.chartParams,nextProps.chartParams)){
+          this.chart && this.chart.destroy();
+          this.drawChart(nextProps.chartParams, source);
+        }
+        this.chart.changeData(source);
+      }
     }
   }
+
   render() {
     return <div></div>;
   }
@@ -146,7 +156,8 @@ class GrChart extends React.Component <GrChartProps, any> {
       });
       if (dimCols[0] !== 'tm') {
         // plotclick=图表坐标系内的事件  itemselected=图形元素上的事件
-        chart.on('itemselected', (evt: any) => { this.selectHandler(evt, selectCols) });
+        chart.on('plotclick', (evt: any) => { this.selectHandler(evt, selectCols) });
+      //chart.on('itemunselected', (evt: any) => { this.unselectHandler(evt, selectCols) });
       }
     }
 
@@ -168,9 +179,10 @@ class GrChart extends React.Component <GrChartProps, any> {
       //过滤
       this.props.select(pick(item._origin, selectCols));
     } else {
-      if(shape){
+      if(shape && !shape.get('selected')){
         let item = shape.get('origin');
         console.log(item);
+          this.props.select(null);
       }
     }
   }
@@ -244,6 +256,7 @@ class GrChart extends React.Component <GrChartProps, any> {
     }
     return chart[gt](adjust);
   }
+
 }
 
 export default GrChart;

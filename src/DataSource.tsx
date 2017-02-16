@@ -4,7 +4,7 @@
 import {GrChartProps, ChartParamsProps, ChartDataProps} from './chartProps';
 import * as React from "react";
 
-import { map, zipObject, flatten } from 'lodash';
+import { map, zipObject, flatten, isEqual } from 'lodash';
 declare function fetch(a: any, b?: any): any;
 declare const project: any;
 //数据统计必备字段，中端需要以下字段提供数据
@@ -50,7 +50,7 @@ class DataSource extends React.Component <GrChartProps, any> {
       selected: evt.selected
     });
   }*/
-  //TODO: 用来给子孙节点中的GrChart自定义
+  //TODO: 用来给子孙节点中的GrChart自定义 Demo props state改变触发 DataSource取数据返回触发
   getChildContext() {
     return {
       source: this.state.source,
@@ -61,7 +61,9 @@ class DataSource extends React.Component <GrChartProps, any> {
     };
   }
   componentWillReceiveProps(nextProps: GrChartProps) {
-    this.defaultRequest(nextProps.chartParams, this.afterFetch.bind(this));
+    if(this.props.chartParams!=nextProps.chartParams){
+      this.defaultRequest(nextProps.chartParams, this.afterFetch.bind(this));
+    }
   }
 
   render() {
