@@ -5,6 +5,8 @@ import { ChartParamsProps, Meta } from '../src/chartProps';
 import SyntheticEvent = React.SyntheticEvent;
 import GrChart from '../src/GrChart';
 import DimensionPanel from "../src/DimensionPanel";
+import {isEqual} from 'lodash';
+
 interface EventSeletorTarget extends EventTarget {
   value:string
 }
@@ -56,14 +58,16 @@ class Demo extends React.Component<any, any> {
     };
   }
   addDimension(dim: string[]) {
-    this.setState({ dim });
-    this.dataSource.setState({ selected: null });
+    if(!isEqual(this.state.dim,dim)){
+      this.setState({ dim });
+      this.dataSource.setState({ selected: null });
+    }
   }
   select(selected: any) {
     this.dataSource.setState({ selected });
   }
   render() {
-    let dim = this.state.dim
+    let dim = this.state.dim;
     let chartParams = originParams;
     let barParams = null;
     if (dim) {
