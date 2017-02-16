@@ -9,7 +9,7 @@ const GIO = {
   DataSource,
   DimensionPanel,
   GrChart,
-  GrTable,
+  GrTable
 };
 
 export default GIO;

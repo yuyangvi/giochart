@@ -3,7 +3,6 @@
  */
 import {GrChartProps, ChartParamsProps, ChartDataProps} from './chartProps';
 import * as React from "react";
-import update from 'react/lib/update';
 
 import { map, zipObject, flatten } from 'lodash';
 declare function fetch(a: any, b?: any): any;

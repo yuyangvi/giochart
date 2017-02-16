@@ -1,7 +1,14 @@
 var webpack = require('webpack');
 var path = require('path');
 module.exports = {
-  entry: './src/index.ts',
+  //entry: './src/index.ts',
+  entry:[
+    "./src/Aggregate.tsx",
+    "./src/DataSource.tsx",
+    "./src/DimensionPanel.tsx",
+    "./src/GrTable.tsx",
+    "./src/GrChart.tsx"
+  ],
   output: {
     filename: "giochart.min.js",
     path: __dirname + "/dist",
@@ -11,6 +18,11 @@ module.exports = {
 
   module: {
     loaders: [
+      // All files with a '.json'(china.json)
+      { test: /\.json$/, loader: "json-loader" },
+      // index.less
+      { test: /\.less$/, loader: 'style!css!less' },
+
       // All files with a '.ts' or '.tsx' extension will be handled by 'awesome-typescript-loader'.
       { test: /\.tsx?$/, loader: "awesome-typescript-loader" },
       { test: /\.js$/, exclude: /node_modules/, loader: 'babel'}
@@ -26,7 +38,7 @@ module.exports = {
     alias: {
       'react': path.join(__dirname, 'node_modules', 'react')
     },
-    extensions: ['', '.js']
+    extensions: ["", ".js"]
   },
 
 
@@ -49,14 +61,20 @@ module.exports = {
   },
 
   plugins: [
-    new webpack.optimize.UglifyJsPlugin({
-      output: {
-        comments: false,
-      },
-      compress: {
-        warnings: false
-      }
-    })
+      new webpack.optimize.UglifyJsPlugin({
+        output: {
+          comments: false,
+        },
+        compress: {
+          warnings: false
+        }
+      }),
+      // production?
+      new webpack.DefinePlugin({
+          'process.env': {
+              'NODE_ENV': JSON.stringify('production')
+          }
+      }),
   ]
 
 };

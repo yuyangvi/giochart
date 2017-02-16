@@ -145,7 +145,8 @@ class GrChart extends React.Component <GrChartProps, any> {
         style: { fill: '#fe9929' }
       });
       if (dimCols[0] !== 'tm') {
-        chart.on('plotclick', (evt: any) => { this.selectHandler(evt, selectCols) });
+        // plotclick=图表坐标系内的事件  itemselected=图形元素上的事件
+        chart.on('itemselected', (evt: any) => { this.selectHandler(evt, selectCols) });
       }
     }
 
@@ -167,8 +168,10 @@ class GrChart extends React.Component <GrChartProps, any> {
       //过滤
       this.props.select(pick(item._origin, selectCols));
     } else {
-      let item = shape.get('origin');
-      console.log(item);
+      if(shape){
+        let item = shape.get('origin');
+        console.log(item);
+      }
     }
   }
 
