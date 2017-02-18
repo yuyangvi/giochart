@@ -82,7 +82,7 @@ class DataSource extends React.Component <GrChartProps, any> {
   defaultRequest(chartParams: ChartParamsProps, callback: Function) {
     let url = this.props.sourceUrl || `https://gta.growingio.com/v3/projects/${project.id}/chartdata`;
     let headers = new Headers();
-    headers.append('authorization', 'Token 6cfe9f205f82524839616a7428748b085b51710639dd85b692bab403c6b3f3d7');
+    headers.append('authorization', 'Token 87d28b96cb586fa1be64fb4c1a7ae93faff2542448dab9be6a716e70f41b5d3d');
     let request = new Request(url, {headers: headers});
     return fetch(request, {
         credentials: 'same-origin',
@@ -101,9 +101,9 @@ class DataSource extends React.Component <GrChartProps, any> {
 
   componentDidMount() {
     let { chartParams } = this.props;
-
     this.defaultRequest(chartParams, this.afterFetch.bind(this));
   }
+
   afterFetch(chartData: ChartDataProps) {
     let colIds: string[] = flatten(map(chartData.metaData, n => {
       if (n.isDim) {
