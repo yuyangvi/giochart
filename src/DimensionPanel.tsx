@@ -39,17 +39,33 @@ class DimensionPanel extends React.Component <any, any> {
   //staticDimension
   addDimension(e: SyntheticEvent<HTMLUListElement>) {
     let key = (e.target as Element).getAttribute('data-key');
+    let mode = (e.target as Element).getAttribute('data-mode');
+
+    //modeValue true=替换 false=追加
+    let modeValue = (mode == "replace");
     if (key) {
-      this.props.addDimension(key.split(','));
+      this.props.addDimension(key.split(','),modeValue);
     }
   }
   render() {
     return (
       <ul className='dimensionPanel' onClick={this.addDimension.bind(this)}>
-        <li><a href="javascript://" data-key="rt">来源</a></li>
-        <li><a href="javascript://" data-key="region">地区</a></li>
-        <li><a href="javascript://" data-key="db">设备</a></li>
-        <li><a href="javascript://" data-key="utm_source">广告</a></li>
+        <li>来源
+          <a href="javascript://" data-key="rt" data-mode="replace">替换</a>
+          <a href="javascript://" data-key="rt" data-mode="add">追加</a>
+        </li>
+        <li>地区
+          <a href="javascript://" data-key="region" data-mode="replace">替换</a>
+          <a href="javascript://" data-key="region" data-mode="add">追加</a>
+        </li>
+        <li>设备
+          <a href="javascript://" data-key="db" data-mode="replace">替换</a>
+          <a href="javascript://" data-key="db" data-mode="add">追加</a>
+        </li>
+        <li>广告
+          <a href="javascript://" data-key="utm_source" data-mode="replace">替换</a>
+          <a href="javascript://" data-key="utm_source" data-mode="add">追加</a>
+        </li>
       </ul>
     );
   }

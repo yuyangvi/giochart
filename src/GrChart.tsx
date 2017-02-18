@@ -4,7 +4,7 @@
 import {GrChartProps, ChartParamsProps, ChartDataProps, Meta, Source} from './chartProps';
 import * as React from "react";
 import * as ReactDOM from 'react-dom';
-import { map, fromPairs, zip, pick, filter, isEmpty , isEqual} from 'lodash';
+import { some, map, fromPairs, zip, pick, filter, isEmpty , isEqual, isMatch, difference} from 'lodash';
 import G2 = require('g2');
 import IsEqualCustomizer = _.IsEqualCustomizer;
 
@@ -26,6 +26,9 @@ interface SourceConfig {
 }
 class GrChart extends React.Component <GrChartProps, any> {
   chart: any;
+  selectMode: string = "multiple";
+  lastSelectedShape: Object = null;
+
   static contextTypes: React.ValidationMap<any> = {
     source: React.PropTypes.any,
     selected: React.PropTypes.any
@@ -35,14 +38,54 @@ class GrChart extends React.Component <GrChartProps, any> {
   componentWillReceiveProps(nextProps: GrChartProps, nextContext: any) {
     if (nextContext.source) {
       let source = nextContext.source;
-      if (nextContext.selected) {
-        //算维度的差集
-        let selected = pick(nextContext.selected, nextProps.chartParams.dimensions);
-        if (!isEmpty(selected) && this.chart) {
+      if (!isEmpty(nextContext.selected)) {
+        //算维度的差集 a，b  自己b 出a
+        // let selected = pick(nextContext.selected, nextProps.chartParams.dimensions);
+        // if (!isEmpty(selected) && this.chart) {
+        //   return;
+        // }
+        // let selected=filter(nextContext.selected, (item:any)=>{
+        //   return item[nextProps.chartParams.dimensions[0]]== undefined;
+        // });
+        //算维度的差集 a，b  自己b 出a
+        let selected = filter(nextContext.selected, (item)=>{
+          return isEmpty(pick(item, nextProps.chartParams.dimensions));
+        });
+
+        if(isEmpty(selected)){
           return;
         }
-        let filterSource = filter(source, nextContext.selected);
-        this.chart.changeData(filterSource);
+
+        /*
+         source = [
+           { 'a': 1, 'b': 2, 'c': 3 },
+           { 'a': 2, 'b': 2, 'c': 3 },
+           { 'a': 2, 'b': 3, 'c': 3 },
+         ];
+
+         selected=[
+           {'a':1},
+           {'a':3},
+           {'b':3}
+         ];
+
+         filterSource=[
+           { 'a': 1, 'b': 2, 'c': 3 },
+           { 'a': 2, 'b': 3, 'c': 3 }
+         ]
+         */
+        let filterSource = filter(source, (sourceItem)=>{
+          return some(selected, (selectedItem)=>{
+             return isMatch(sourceItem, selectedItem);
+          });
+        });
+
+        if(isEmpty(filterSource)){
+          this.chart.changeData(source);
+        }else{
+          this.chart.changeData(filterSource);
+        }
+
       } else {
         // TODO: 如果只是context修改
         console.log(nextProps.chartParams.chartType);
@@ -151,7 +194,7 @@ class GrChart extends React.Component <GrChartProps, any> {
     }
     if (this.props.hasOwnProperty('select')) {
       geom.selected(true, {
-        selectedMode: 'single',
+        selectedMode: 'single', // 'multiple' || 'single'
         style: { fill: '#fe9929' }
       });
       if (dimCols[0] !== 'tm') {
@@ -172,18 +215,26 @@ class GrChart extends React.Component <GrChartProps, any> {
     }
 */
   }
+
+
   selectHandler(ev: any, selectCols: string[]) {
     let shape = ev.shape;
-    if (shape && shape.get('selected')) {
-      let item = shape.get('origin');
-      //过滤
-      this.props.select(pick(item._origin, selectCols));
-    } else {
-      if(shape && !shape.get('selected')){
-        let item = shape.get('origin');
-        console.log(item);
-          this.props.select(null);
-      }
+    if(shape){
+      let mode = ev.geom._attrs.selectedCfg.selectedMode;
+      if (shape.get('selected')) {
+          let item = shape.get('origin');
+          //过滤
+          let metaSelected = pick(item._origin, selectCols);
+          if(mode == "single"){
+            this.props.select(metaSelected, this.lastSelectedShape);
+            this.lastSelectedShape = metaSelected;
+          } else {
+            this.props.select(metaSelected, null);
+          }
+        } else {
+          let item = shape.get('origin');
+          this.props.select(null, pick(item._origin, selectCols));
+        }
     }
   }
 
