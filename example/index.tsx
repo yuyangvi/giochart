@@ -1,9 +1,9 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
-import Demo from "./Demo";
+import Retension from "./Retension";
 
 ReactDOM.render(
-  <Demo />,
+  <Retension />,
   document.getElementById("example")
 );

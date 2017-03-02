@@ -3,11 +3,15 @@ var path = require('path');
 module.exports = {
   //entry: './src/index.ts',
   entry:[
+    /*
     "./src/Aggregate.tsx",
-    "./src/DataSource.tsx",
     "./src/DimensionPanel.tsx",
     "./src/GrTable.tsx",
-    "./src/GrChart.tsx"
+
+    "./src/GrTable.tsx",
+    "./src/DimensionPanel.tsx",*/
+    "./src/DataSource.tsx",
+    "./src/Chart.tsx"
   ],
   output: {
     filename: "giochart.min.js",

@@ -1,16 +1,15 @@
 /***
  * 文档
  */
-import {GrChartProps, ChartParamsProps, ChartDataProps, Meta} from './chartProps';
+import {ChartProps, Metric, DataRequestProps} from './ChartProps';
 import * as React from "react";
 import * as moment from 'moment';
 import { map, zipObject, extend, filter, every } from 'lodash';
 import { Table } from 'antd';
-
 import 'antd/lib/table/style/index.js';
 const sorterDecorator = (column: string) => (a:any, b:any) => (a[column] > b[column] ? 1 : -1);
 
-class GrTable extends React.Component <GrChartProps, any> {
+class GrTable extends React.Component <ChartProps, any> {
   static contextTypes: React.ValidationMap<any> = {
     chartData: React.PropTypes.any,
     selected: React.PropTypes.any,
@@ -21,12 +20,12 @@ class GrTable extends React.Component <GrChartProps, any> {
   }
 
   render() {
-    let chartData = this.props.chartData || this.context.chartData;
-    if (!chartData) {
+    let source = this.props.source || this.context.source;
+    if (!source) {
       return null;
     }
 
-    let cols = chartData.meta.map((m: Meta) => ({
+    let cols = source.meta.map((m: Metric) => ({
       title: m.name,
       dataIndex: m.id,
       key: m.id,
@@ -34,17 +33,14 @@ class GrTable extends React.Component <GrChartProps, any> {
       render: m.id === 'tm' ? GrTable.formatDate : undefined
     }));
 
-    // TODO: 类型转换，筛选排序
-    let colIds = map(chartData.meta, 'id');
-    let jsonData = map(chartData.data, (n: number[], i: number) => extend(zipObject(colIds, n), { key: i }));
     if (this.context.selected) {
       let selected = this.context.selected;
       let cols = Object.keys(selected);
-      jsonData = filter(jsonData, (n: any) => every(cols,
-        (c:string) => (n[c] >= selected[c][0] && n[c] <= selected[c][1])
+      source = filter(source, (n: any) => every(cols,
+        (c: string) => (n[c] >= selected[c][0] && n[c] <= selected[c][1])
       ));
     }
-    return <Table dataSource={jsonData} columns={cols} pagination={ jsonData.length > 20? undefined: false } />
+    return <Table dataSource={source} columns={cols} pagination={ source.length > 20 ? undefined: false } />
   }
 }
 

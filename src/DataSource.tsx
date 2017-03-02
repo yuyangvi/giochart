@@ -1,9 +1,8 @@
 /***
  * 文档
  */
-import {GrChartProps, ChartParamsProps, ChartDataProps} from './chartProps';
+import {DataRequestProps, ResponseParams, DataLoaderProps} from './ChartProps';
 import * as React from "react";
-
 import { map, zipObject, flatten, isEqual } from 'lodash';
 declare function fetch(a: any, b?: any): any;
 declare const project: any;
@@ -29,102 +28,101 @@ export const HttpStatus = {
   NotImplemented      : 501
 };
 
-class DataSource extends React.Component <GrChartProps, any> {
+class DataSource extends React.Component <DataLoaderProps, any> {
   static childContextTypes: React.ValidationMap<any> = {
     source: React.PropTypes.any,
+    columns: React.PropTypes.array,
     selected: React.PropTypes.any,
     selectHandler: React.PropTypes.func
   };
 
-  constructor(props: ChartParamsProps) {
+  constructor(props: DataLoaderProps) {
     super(props);
     // 加载状态
     this.state = {
       isLoaded: false,
+      columns: null,
       source: null,
       selected: null
     };
   }
   /*selectHandler(evt: any) {
-    this.setState({
-      selected: evt.selected
-    });
-  }*/
+   this.setState({
+   selected: evt.selected
+   });
+   }*/
   //TODO: 用来给子孙节点中的GrChart自定义 Demo props state改变触发 DataSource取数据返回触发
   getChildContext() {
     return {
+      columns: this.state.columns,
       source: this.state.source,
       selected: this.state.selected
       /*,
-      selectHandler: this.selectHandler.bind(this)
-      */
+       selectHandler: this.selectHandler.bind(this)
+       */
     };
   }
-  componentWillReceiveProps(nextProps: GrChartProps) {
-    if(this.props.chartParams!=nextProps.chartParams){
-      this.defaultRequest(nextProps.chartParams, this.afterFetch.bind(this));
+  componentWillReceiveProps(nextProps: DataLoaderProps) {
+    // TODO status改变也会触发，所以多了一层判断
+    if(this.props.params !== nextProps.params){
+      this.defaultRequest(nextProps.params, this.afterFetch.bind(this));
     }
   }
 
   render() {
-    return <div>{this.props.children}</div>;
+    // TODO div高度
+    return <div style={this.props.style}>{this.props.children}</div>;
   }
   //动态变化Dimension
-  /*defaultRetryRequest() {
-    let {chartParams} = this.props;
-    let result = Promise.reject();
-    for (let i = 3; i > 0; i--) {
-      result = result.catch(this.defaultRequest.bind(this, chartParams, this.drawChart));
-    }
-    return result;
-  }*/
+  /* defaultRetryRequest() {
+   let {chartParams} = this.props;
+   let result = Promise.reject();
+   for (let i = 3; i > 0; i--) {
+   result = result.catch(this.defaultRequest.bind(this, chartParams, this.drawChart));
+   }
+   return result;
+   } */
 
-  defaultRequest(chartParams: ChartParamsProps, callback: Function) {
-    let url = this.props.sourceUrl || `https://gta.growingio.com/v3/projects/${project.id}/chartdata`;
+  defaultRequest(chartParams: DataRequestProps, callback: Function) {
+    //let url = `https://gta.growingio.com/v3/projects/${project.id}/chartdata`;
+    /*if (chartParams.hasOwnProperty('sourceUrl')) {
+
+    }*/
+    //let url = `http://gta.growingio.dev:18443/v4/projects/${project.id}/chartdata`;
+    let url = `/v4/projects/${project.id}/chartdata`;
     let headers = new Headers();
-    headers.append('authorization', 'Token 87d28b96cb586fa1be64fb4c1a7ae93faff2542448dab9be6a716e70f41b5d3d');
+    headers.append('authorization', 'Token 5ac75d524422179e2123f1da5d8c2622e5330dff8173edf90e52fc4f49d63efe');
     let request = new Request(url, {headers: headers});
     return fetch(request, {
-        credentials: 'same-origin',
-        contentType: 'application/json',
-        method: 'post',
-        body: JSON.stringify(chartParams)
+      credentials: 'same-origin',
+      contentType: 'application/json',
+      method: 'post',
+      body: JSON.stringify(chartParams)
+    })
+      .then((response: any) => {
+        let status = response.status;
+        if(status === HttpStatus.Ok) {
+          return response.json();
+        }
       })
-        .then((response: any) => {
-          let status = response.status;
-          if(status === HttpStatus.Ok) {
-            return response.json();
-          }
-        })
-      .then( (data: ChartDataProps) => callback(data));
+      .then((data: ResponseParams) => callback(data));
   }
 
   componentDidMount() {
-    let { chartParams } = this.props;
-    this.defaultRequest(chartParams, this.afterFetch.bind(this));
+    let { params } = this.props;
+    this.defaultRequest(params, this.afterFetch.bind(this));
   }
 
-  afterFetch(chartData: ChartDataProps) {
-    let colIds: string[] = flatten(map(chartData.metaData, n => {
-      if (n.isDim) {
-        return n.id;
-      }
-      let id = n.metricId.id;
-      return [id, '_' + id];
-    }));
-
-    let source = map(chartData.data, (n: number[]) => {
-      let res: any = zipObject(colIds, n);
-      if (res.tm) {
-        res.tm = parseInt(res.tm);
-      }
-      return res;
-    });
-
+  afterFetch(chartData: ResponseParams) {
+    const columns = chartData.meta.columns;
+    const colIds = map(chartData.meta.columns, "id");
+    const source = map(chartData.data, (n: number[]) => zipObject(colIds, n));
     this.setState({
       isLoaded: true,
+      columns,
       source
     });
+    this.props.onLoad && this.props.onLoad(this.state);
   }
 }
 

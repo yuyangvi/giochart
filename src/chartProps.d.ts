@@ -1,91 +1,84 @@
-/**
- * Created by yuyang on 2017/2/3.
- */
-//数据统计必备字段，中端需要以下字段提供数据
+// 拉取数据的请求配置
+export interface DataRequestProps {
+  type?: string; // Enum: funnel, retention
+  metrics: Metric[]; // 指标
+  dimensions: string[]; // 维度
+  granularities: Granulariy[]; // 粒度
+  filter?: Filter[]; // 过滤
+  timeRange: string; // 时间区域 day:8,1
+  userTag?: string; // 用户分群ID
+  limit?: number; // 数据行限制 10
+  orders?: Order[]; // 排序
+  aggregateType?: string; // 聚合类型: sum, avg
+  attrs?: Object; // 属性
+  interval?: number; // 时间粒度 deperated
+}
 interface Filter {
   op: string;
   key: string;
   value: string;
-  name: string;
-}
-interface Filters {
-  exprs: Filter[];
-  op: string;
-}
-//数据统计必备字段，中端需要以下字段提供数据
-export interface ChartParamsProps {
-  /* 数据统计的规则 'sum' or 'avg' */
-  aggregateType:string;
-  /* 指标 */
-  metrics: Metric[];
-  metricsNames: string[];
-  /* 维度 */
-  dimensions: string[];
-  dimensionsNames: string[];
-  /* 咱不知道是啥,好像没用 */
-  period: number;
-  /* 筛选条件 */
-  filter: Filters[] | Filter | {};
-  /* 周期,如day:8,1 */
-  timeRange: string;
-  /* 粒度 */
-  interval: number;
-  //排序 */
-  orders?: string | null;
-  /* 前xx条 */
-  top?: number
-//}
-//interface ChartParams {//留供前端识别的数据，中端只帮着保存，不参考它取数据
-  /* 图表ID */
-  id: string;
-  name: string;
-  /* 图表类型 */
-  chartType: string;
-  /* 不知道做啥的 */
-  status: string;
-  /* 包含颜色信息等配置信息杂项 */
-  attrs: any;
-  /* 创建者信息 */
-  createdAt: number;
-  creator: string;
-  creatorId: string;
-  /* 修改者信息 */
-  updatedAt: number;
-  updater: string;
-  updaterId: string;
-  //subscribed、subscriptionId	新版没有订阅,应该是没用了
-  userTag?: string;
-  versionNumber?: number;
-  visibleTo?: any;
-}
-interface Metric {
-  id: string;
-  level: string;
-  action?: string;
-}
-export interface Meta {
-  id: string;
-  isDim?: boolean;
-  name: string;
-  metricId?: Metric;
-  isStatic?: boolean;
-}
-export interface ChartDataProps {
-  data: number[][];
-  metaData: Meta[];
-  desc: any;
 }
 
-export interface Source {
-  [k: number]: {
-    [column: string] : any;
+interface Order {
+  id: string;
+  isDim: boolean;
+  orderType: string;//Enum
+}
+interface Granulariy {
+  id: string;
+  interval?: number;
+  period?: number;
+  values?: string[];
+}
+/*
+export interface DrawParamsProps {
+  adjust?: string;
+  chartType: string;
+  dimensions: string[];
+  metrics: Metric[];
+  granularity: any;
+}
+*/
+// 绘制接口
+export interface DrawParamsProps {
+  adjust?: string;
+  chartType: string;
+  columns: Metric[],
+  granularities?: Granulariy[];
+}
+export interface Metric {
+  id: string;
+  level?: string;
+  name?: string;
+  action?: string;
+  isDim?: boolean;
+  rate?: boolean;
+}
+
+//ResponseParams
+export interface ResponseParams {
+  meta: {
+    columns: Metric[];
+  },
+  data: {
+    [k: number]: number[];
   }
 }
 
-export interface GrChartProps {
-  chartParams: ChartParamsProps;
-  chartData?: ChartDataProps;
+export type Source = Array<{[column: string]: number}>;
+
+export interface DataLoaderProps {
+  style?: any;
+  params: DataRequestProps;
   sourceUrl?: string;
+  source?: Source;
+  onLoad?: (state: any) => void
+}
+
+export interface ChartProps {
+  chartParams?: DrawParamsProps;//为空则从上层context里去算
+  chartType?: string; //chartParams若存在，可以为空,
+  granularities?: Granulariy[];
   source?: Source;
   select?: (evt: any, unselect:any) => any;
 }

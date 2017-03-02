@@ -11,11 +11,14 @@
   },
   "include": [
     "./typings/index.d.ts",
-    "./src/components/*",
-    "./example/*"
+    "./src/components/Chart.tsx",
+    "./src/components/DataSource.tsx",
+    "./example/*.tsx"
   ],
   "exclude": [
     "node_modules",
-    "./dist/*"
+    "./dist/*",
+    "./src/components/GrTable.tsx",
+    "./src/components/GrChart.tsx"
   ]
 }
