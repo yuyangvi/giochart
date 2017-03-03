@@ -29,12 +29,12 @@ const getChartConfig: any = (chartType: string) => {
   const defaultMetric = {
     combinMetrics: false,
     geom: "line",
-    size: 2
+
   };
   // 将图表类型变成不同步骤的组合
   const chartTypeMap: any[string] = {
     bar:  { geom: "interval" },
-    line: { geom: "line" }
+    line: { geom: "line", size: 2 }
   };
   return merge({}, defaultMetric, chartTypeMap[chartType]);
 };
@@ -43,8 +43,8 @@ class Chart extends React.Component <ChartProps, any> {
   private static contextTypes: React.ValidationMap<any> = {
     selected: React.PropTypes.any,
     source: React.PropTypes.any,
-    columns: React.PropTypes.array
-    /*selectHandler: React.PropTypes.func*/
+    columns: React.PropTypes.array,
+    selectHandler: React.PropTypes.func
   };
   private chart: any;
   private selectMode: string = "multiple";
@@ -76,6 +76,7 @@ class Chart extends React.Component <ChartProps, any> {
         interval: { fill: '#d5375f' }
       }
     });
+
     G2.Global.setTheme(theme);
   }
 
@@ -160,16 +161,19 @@ class Chart extends React.Component <ChartProps, any> {
 
     const canvasRect = dom.getBoundingClientRect();
     if (!chartParams.chartType) {
+      //TODO invariant
       console.error('Error 101: 图表没有指定类型或类型不合法，请访问ChartParams.md获取类型定义的方案');
       return;
+    /*
     } else if (canvasRect.height === 0) {
       console.error("Error 103: 绘制图形取决于外框高度,而当前外框的高度为0,如果你已经设置了高度，那可能绘制发生在了样式生效前");
       return;
+    */
     }
     const chart = new G2.Chart({
       container: dom,
       forceFit: true,
-      height: canvasRect.height,
+      height: canvasRect.height || 350,
       plotCfg: {}
     });
 
@@ -193,6 +197,7 @@ class Chart extends React.Component <ChartProps, any> {
     // TODO funnel
     const geom = chart[chartCfg.geom](chartParams.adjust);
     // position
+    //我靠，维度不同的时间也不一样?
     const pos = chartCfg.pos ?
       (metricCols[0] + "*" + metricCols[1]) :
       G2.Stat.summary.sum(dimCols[0] + "*" + metricCols[0]);
@@ -254,8 +259,10 @@ class Chart extends React.Component <ChartProps, any> {
         sourceDef[m.id].formatter = (n: number): string => `${(100*n).toPrecision(3)}%`;
       }
     });
-    // TODO
-    sourceDef['tm'].formatter = (n: number): string => (n > 0 ? `第${n}天` : `当天`);
+    /* TODO
+    if (sourceDef['tm']) {
+      sourceDef['tm'].formatter = (n: number): string => (n > 0 ? `第${n}天` : `当天`);
+    }*/
     // 设置
     if (chartParams.granularities) {
       chartParams.granularities.forEach((glt: Granulariy) => {

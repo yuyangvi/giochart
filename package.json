@@ -24,16 +24,16 @@
     ]
   },
   "dependencies": {
-    "antd": "^2.6.4",
+    "antd": "^0.10.0",
     "china-geojson": "^1.0.0",
-    "g2": "2.2.2",
+    "g2": "^2.2.2",
     "less": "^2.7.2",
     "less-loader": "^2.2.3",
     "lodash": "^4.17.4",
     "moment": "^2.17.1",
-    "react": "^15.4.2",
-    "react-addons-update": "^15.4.2",
-    "react-dom": "^15.4.2"
+    "react": "^0.14.2",
+    "react-addons-update": "^0.14.2",
+    "react-dom": "^0.14.2"
   },
   "devDependencies": {
     "@types/antd": "^0.12.31",
