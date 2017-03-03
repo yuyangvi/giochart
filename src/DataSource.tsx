@@ -46,11 +46,13 @@ class DataSource extends React.Component <DataLoaderProps, any> {
       selected: null
     };
   }
-  /*selectHandler(evt: any) {
+  /*
+  selectHandler(evt: any) {
    this.setState({
    selected: evt.selected
    });
-   }*/
+  }
+  */
   //TODO: 用来给子孙节点中的GrChart自定义 Demo props state改变触发 DataSource取数据返回触发
   getChildContext() {
     return {
@@ -73,7 +75,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
     // TODO div高度
     return <div style={this.props.style}>{this.props.children}</div>;
   }
-  //动态变化Dimension
+  // 动态变化Dimension
   /* defaultRetryRequest() {
    let {chartParams} = this.props;
    let result = Promise.reject();
@@ -81,7 +83,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
    result = result.catch(this.defaultRequest.bind(this, chartParams, this.drawChart));
    }
    return result;
-   } */
+  } */
 
   defaultRequest(chartParams: DataRequestProps, callback: Function) {
     //let url = `https://gta.growingio.com/v3/projects/${project.id}/chartdata`;
@@ -90,10 +92,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
     }*/
     //let url = `http://gta.growingio.dev:18443/v4/projects/${project.id}/chartdata`;
     let url = `/v4/projects/${project.id}/chartdata`;
-    let headers = new Headers();
-    headers.append('authorization', 'Token 5ac75d524422179e2123f1da5d8c2622e5330dff8173edf90e52fc4f49d63efe');
-    let request = new Request(url, {headers: headers});
-    return fetch(request, {
+    return fetch(url, {
       credentials: 'same-origin',
       contentType: 'application/json',
       method: 'post',

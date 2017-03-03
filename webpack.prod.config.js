@@ -11,7 +11,8 @@ module.exports = {
     "./src/GrTable.tsx",
     "./src/DimensionPanel.tsx",*/
     "./src/DataSource.tsx",
-    "./src/Chart.tsx"
+    "./src/Chart.tsx",
+    './src/index.tsx'
   ],
   output: {
     filename: "giochart.min.js",
