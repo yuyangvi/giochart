@@ -33,7 +33,6 @@ class GrTable extends React.Component <ChartProps, any> {
   render() {
     let source = this.props.source || this.context.source;
     let chartParams = this.props.chartParams || this.generateChartParams(this.context.columns);
-    console.log(chartParams, source);
     if (!source || !chartParams) {
       return null;
     }
@@ -53,6 +52,9 @@ class GrTable extends React.Component <ChartProps, any> {
         (c: string) => (n[c] >= selected[c][0] && n[c] <= selected[c][1])
       ));
     }*/
+
+    //需要计算色值
+
     return <Table dataSource={source} columns={cols} pagination={ source.length > 20 ? undefined: false } />
   }
 }

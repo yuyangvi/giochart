@@ -10,9 +10,9 @@ module.exports = {
 
     "./src/GrTable.tsx",
     "./src/DimensionPanel.tsx",*/
+    './src/index.tsx',
     "./src/DataSource.tsx",
-    "./src/Chart.tsx",
-    './src/index.tsx'
+    "./src/Chart.tsx"
   ],
   output: {
     filename: "giochart.min.js",
@@ -43,7 +43,7 @@ module.exports = {
     alias: {
       'react': path.join(__dirname, 'node_modules', 'react')
     },
-    extensions: ["", ".js"]
+    extensions: ["", ".js", ".tsx"]
   },
 
 
@@ -61,6 +61,7 @@ module.exports = {
       'commonjs': 'react-dom',
       'commonjs2': 'react-dom',
       'amd': 'react-dom',
+
       'root': 'ReactDOM'
     }
   },
