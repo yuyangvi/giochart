@@ -29,4 +29,5 @@ class GioChart extends React.Component <GioProps, any> {
     );
   }
 }
+export { Chart, DataSource };
 export default GioChart;
