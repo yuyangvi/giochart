@@ -38,63 +38,65 @@ online example: http://yuyangvi.github.io/giochart/examples/
 
 ```js
 import React from 'react';
-import { GrLoader, GrChart, GrTable } from 'giochart';
+import GioChart, { Chart, DataSource, GrTable } from 'giochart';
 
-const chartParams = {...};
+const dataParams = {...};
 const chartData = {...};
+const drawParams ={...};
+const jsonArray=[{...}, {...}];
+// 独立数据源绘图，drawParams根据数据源返回的meta.columns计算
+const  Section1 = (props) => <GioChart chartType='line' params={dataParams} />;
 
-const  Demo1 = (props) => <div><GrChart chartParams chartData />;
-const Demo2 = (props) => <div>
-  <h1>simple Demo</h1>
-  <GrLoader chartParams={chartParams}>
-  {/*inside GrLoader it could be any JSX node*/}
-      <GrChart chartParams />
-      <div>
-          <GrTable chartParams />
-      </div>
-  </GrLoader>
-</div>;
+// 手工提供数据源
+const  Section2 = (props) => <Chart drawChart source={jsonArray} />;
+
+// 一对多图形,手工控制
+const Section3 = (props) => (
+  <div>
+    <h1>simple Demo</h1>
+    <DataSource params={dataParams}>
+    {/*inside GrLoader it could be any JSX node*/}
+        <Chart drawParams />
+        <div>
+            <GrTable drawParams />
+        </div>
+    </DataSource>
+  </div>);
 React.render(<div>
-  <Demo1 />
-  <Demo2 />
+  <Section1 />
+  <Section2 />
+  <Section3 />
 </div>, document.getElementById('__react-content'));
 ```
 
 ## API
-property
-输入
-
+DataSource
+params输入
 数据统计必备字段，中端需要以下字段提供数据
-<table class="table table-bordered table-striped">
-<tbody><tr><td>aggregateType</td><td>数据统计的规则 求和／平均等</td></tr>
-<tr><td>metrics</td><td>指标</td></tr>
-<tr><td>dimensions</td><td>维度</td></tr>
-<tr><td>period</td><td>咱不知道是啥,好像没用</td></tr>
-<tr><td>filter</td><td>筛选条件</td></tr>
-<tr><td>timeRange</td><td>周期</td></tr>
-<tr><td>interval</td><td>粒度</td></tr>
-<tr><td>order</td><td>排序</td></tr>
-<tr><td>top</td><td>前xx条</td></tr>
-</tbody></table>
+```
+export interface DataRequestProps {
+  type?: string; // Enum: funnel, retention
+  metrics: Metric[]; // 指标
+  dimensions: string[]; // 维度
+  granularities: Granulariy[]; // 粒度
+  filter?: Filter[]; // 过滤
+  timeRange: string; // 时间区域 day:8,1
+  userTag?: string; // 用户分群ID
+  limit?: number; // 数据行限制 10
+  orders?: Order[]; // 排序
+  aggregateType?: string; // 聚合类型: sum, avg
+  attrs?: Object; // 属性
+  interval?: number; // 时间粒度 deperated
+}
+```
 
-留供前端识别的数据，中端只帮着保存，不参考它取数据
-
-<table class="table table-bordered table-striped">
-<tbody><tr><td>id</td><td>图表ID</td></tr>
-<tr><td>chartType</td><td>图表类型</td></tr>
-<tr><td>status</td><td>不知道做啥的</td></tr>
-<tr><td>attrs</td><td>包含颜色信息等配置信息</td></tr>
-<tr><td>createdAt、creator、creatorId</td><td>创建者信息</td></tr>
-<tr><td>updatedAt、updater、updaterId</td><td>修改者信息</td></tr>
-<tr><td>subscribed、subscriptionId</td><td>新版没有订阅,应该是没用了</td></tr>
-<tr><td>userTag</td><td></td></tr>
-<tr><td>versionNumber</td><td></td></tr>
-<tr><td>visibleTo</td><td></td></tr>
-</tbody></table>
-
-chartData的数据结构
-<table class="table table-bordered table-striped">
-<tbody><tr><td>meta</td><td>数据表头，数组由包含时间在内的维度结构体或指标结构体的元素组成</td></tr>
-<tr><td>data</td><td>二维数组</td></tr>
-<tr><td>desc</td><td>？如果前端可以通过数组计算出来，建议不要让后端算了</td></tr>
-</tbody></table>
+Chart
+chartParams输入格式
+```
+export interface DrawParamsProps {
+  adjust?: string;
+  chartType: string;
+  columns: Metric[];// 指标和维度的数组，为了保证绘图的准确，请将xy轴的字段分别放在维度序列和指标序列最前面
+  granularities?: Granulariy[];
+}
+```
