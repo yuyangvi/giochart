@@ -13,12 +13,12 @@
     "./typings/index.d.ts",
     "./src/components/Chart.tsx",
     "./src/components/DataSource.tsx",
+    "./src/components/GrTable.tsx",
     "./example/*.tsx"
   ],
   "exclude": [
     "node_modules",
     "./dist/*",
-    "./src/components/GrTable.tsx",
     "./src/components/GrChart.tsx"
   ]
 }

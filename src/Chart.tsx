@@ -4,13 +4,6 @@ import * as ReactDOM from "react-dom";
 import {ChartProps, DrawParamsProps, Metric, Source, Granulariy} from "./ChartProps";
 import G2 = require("g2");
 
-/*
-declare const require: {
-  <T>(path: string): T;
-  (paths: string[], callback: (...modules: any[]) => voidcls): void;
-  ensure: (paths: string[], callback: (require: <T>(path: string) => T) => void) => void;
-};
-*/
 interface G2Scale{
   type: string;
   formatter?: (n: any) => string;
