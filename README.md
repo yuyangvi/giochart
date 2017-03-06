@@ -48,7 +48,7 @@ const jsonArray=[{...}, {...}];
 const  Section1 = (props) => <GioChart chartType='line' params={dataParams} />;
 
 // 手工提供数据源
-const  Section2 = (props) => <Chart drawChart source={jsonArray} />;
+const  Section2 = (props) => <Chart chartParams={drawParams} source={jsonArray} />;
 
 // 一对多图形,手工控制
 const Section3 = (props) => (
@@ -56,9 +56,9 @@ const Section3 = (props) => (
     <h1>simple Demo</h1>
     <DataSource params={dataParams}>
     {/*inside GrLoader it could be any JSX node*/}
-        <Chart drawParams />
+        <Chart chartParams={drawParams} />
         <div>
-            <GrTable drawParams />
+            <GrTable chartParams={drawParams} />
         </div>
     </DataSource>
   </div>);
