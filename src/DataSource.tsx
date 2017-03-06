@@ -94,7 +94,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
     // let headers = new Headers();
     // headers.append('authorization', 'Token 5ac75d524422179e2123f1da5d8c2622e5330dff8173edf90e52fc4f49d63efe');
     // let request = new Request(url, {headers: headers});
-    let url = `/_private/v4/projects/${project.id}/chartdata`;
+    let url = `/v4/projects/${project.id}/chartdata`;
     return fetch(url, {
       credentials: 'same-origin',
       contentType: 'application/json',

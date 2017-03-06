@@ -63,7 +63,9 @@ module.exports = {
       'amd': 'react-dom',
 
       'root': 'ReactDOM'
-    }
+    },
+    "antd": "antd",
+    "moment": "moment"
   },
 
   plugins: [

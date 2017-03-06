@@ -5,7 +5,7 @@ import {ChartProps, Metric} from './ChartProps';
 import * as React from "react";
 import * as moment from 'moment';
 import { Table } from 'antd';
-import 'antd/lib/table/style/index.js';
+// import 'antd/lib/table/style/index.js';
 const sorterDecorator = (column: string) => (a:any, b:any) => (a[column] > b[column] ? 1 : -1);
 
 class GrTable extends React.Component <ChartProps, any> {

@@ -6,20 +6,15 @@
 import * as React from "react";
 import DataSource from "./DataSource";
 import Chart from "./Chart";
-import {DataLoaderProps, DataRequestProps, DrawParamsProps, Metric } from './ChartProps';
+import GrTable from './GrTable';
+
+import { DataRequestProps } from './ChartProps';
 interface GioProps {
   chartType: string;
   params: DataRequestProps;
   style?: any;
 }
 
-const generateChartParams = (props: GioProps, columns: Metric[]): DrawParamsProps => {
-  return {
-    chartType: props.chartType,
-    columns: columns,
-    granularities: props.params.granularities
-  };
-};
 class GioChart extends React.Component <GioProps, any> {
   render() {
     return (
@@ -29,5 +24,5 @@ class GioChart extends React.Component <GioProps, any> {
     );
   }
 }
-export { Chart, DataSource };
+export { Chart, DataSource, GrTable };
 export default GioChart;
