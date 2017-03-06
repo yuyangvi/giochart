@@ -19,7 +19,10 @@ class GioChart extends React.Component <GioProps, any> {
   render() {
     return (
       <DataSource params={this.props.params} style={this.props.style}>
-        <Chart chartType='line' granularities={this.props.params.granularities} />
+        { this.props.chartType === 'table' ?
+          <GrTable granularities={this.props.params.granularities} /> :
+          <Chart chartType={this.props.chartType} granularities={this.props.params.granularities}/>
+        }
       </DataSource>
     );
   }
