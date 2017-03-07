@@ -81,4 +81,5 @@ export interface ChartProps {
   granularities?: Granulariy[];
   source?: Source;
   select?: (evt: any, unselect:any) => any;
+  extraColumns?: any[];
 }
