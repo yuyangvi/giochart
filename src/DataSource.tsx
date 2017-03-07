@@ -4,7 +4,7 @@
 import {DataRequestProps, ResponseParams, DataLoaderProps} from './ChartProps';
 import * as React from "react";
 import { map, zipObject, flatten, isEqual } from 'lodash';
-declare function fetch(a: any, b?: any): any;
+//declare function fetch(a: any, b?: any): any;
 declare const project: any;
 //数据统计必备字段，中端需要以下字段提供数据
 export const HttpStatus = {
@@ -40,8 +40,8 @@ class DataSource extends React.Component <DataLoaderProps, any> {
     super(props);
     // 加载状态
     this.state = {
-      isLoaded: false,
       columns: null,
+      isLoaded: false,
       source: null,
       selected: null
     };
@@ -86,28 +86,24 @@ class DataSource extends React.Component <DataLoaderProps, any> {
   } */
 
   defaultRequest(chartParams: DataRequestProps, callback: Function) {
-    let url = `/v4/projects/${project.id}/chartdata`;
-    /*if (chartParams.hasOwnProperty('sourceUrl')) {
+    let fetchObj;
+    if (this.props.hasOwnProperty("sourceUrl")) {
+      fetchObj = fetch(this.props.sourceUrl);
+    } else {
+      fetchObj = fetch(`/v4/projects/${project.id}/chartdata`/*, {
+        credentials: 'same-origin',
+        contentType: 'application/json',
+        method: 'post',
+        body: JSON.stringify(chartParams)
+      }*/);
+    }
 
-    }*/
-    /*
-     let url = `http://gta.growingio.dev:18443/v4/projects/${project.id}/chartdata`;
-    let headers = new Headers();
-    headers.append('authorization', 'Token 5ac75d524422179e2123f1da5d8c2622e5330dff8173edf90e52fc4f49d63efe');
-    let request = new Request(url, {headers: headers});
-    */
-    return fetch(url, {
-      credentials: 'same-origin',
-      contentType: 'application/json',
-      method: 'post',
-      body: JSON.stringify(chartParams)
+    fetchObj.then((response: any) => {
+      let status = response.status;
+      if(status === HttpStatus.Ok) {
+        return response.json();
+      }
     })
-      .then((response: any) => {
-        let status = response.status;
-        if(status === HttpStatus.Ok) {
-          return response.json();
-        }
-      })
       .then((data: ResponseParams) => callback(data));
   }
 

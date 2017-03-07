@@ -20,17 +20,17 @@ const retensionRequestParams: DataRequestProps = {
 const retensionDrawParams: DrawParamsProps = {
   chartType: 'line',
   columns:[
-    { id: "tm", name: "时间", isDim: true},
-    { id: "retention_rate", name: "留存率", isDim: false, rate: true},
-    { id: "rt", name: "分组", isDim:true}
-  ]
+      {"id":"tm","name":"时间", isDim: true},
+      {"id":"0gw432","name":"访问用户量", isDim: false}
+  ],
+  granularities: [{"id": "tm", "interval": 86400 }]
 };
 class Retension extends React.Component<any, any> {
-    render() {
+    public render() {
         return (
-            <div className="container">
-              <GioChart chartType='line' params={retensionRequestParams} style={{ height: 350 }} />
-            </div>
+            <DataSource params={retensionRequestParams} sourceUrl="/assets/demo.json">
+                <Chart chartParams={retensionDrawParams} />
+            </DataSource>
         );
     }
 }

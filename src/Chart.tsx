@@ -34,28 +34,28 @@ const getChartConfig: any = (chartType: string) => {
 
 class Chart extends React.Component <ChartProps, any> {
   private static contextTypes: React.ValidationMap<any> = {
+    columns: React.PropTypes.array,
     selected: React.PropTypes.any,
     source: React.PropTypes.any,
-    columns: React.PropTypes.array,
     selectHandler: React.PropTypes.func
   };
   private chart: any;
   private selectMode: string = "multiple";
-  private lastSelectedShape: Object = null;
+  private lastSelectedShape: any = null;
   private constructor(props: ChartProps) {
     super();
-    //强制切换theme
+    // 强制切换theme
     const colors = [
-      '#fc5f3a', '#fa9d1b',
-      '#48a1f9', '#9ecefe',
-      '#349a38', '#7fd182',
-      '#d5375f', '#ff8ba8',
-      '#3e4a9c', '#8d9bf3',
-      '#525566', '#a1a4b3',
-      '#25ada1', '#8ae1d8',
-      '#755920', '#dab873',
-      '#8d49a4', '#da97f1',
-      '#f5d360', '#ffbd9c'
+      "#fc5f3a", "#fa9d1b",
+      "#48a1f9", "#9ecefe",
+      "#349a38", "#7fd182",
+      "#d5375f", "#ff8ba8",
+      "#3e4a9c", "#8d9bf3",
+      "#525566", "#a1a4b3",
+      "#25ada1", "#8ae1d8",
+      "#755920", "#dab873",
+      "#8d49a4", "#da97f1",
+      "#f5d360", "#ffbd9c"
     ];
     const theme = G2.Util.mix(true, {}, G2.Theme, {
       animate: false,
@@ -63,10 +63,11 @@ class Chart extends React.Component <ChartProps, any> {
         default: colors,
         intervalStack: colors
       },
-      defaultColor: '#fc5f3a',
+      defaultColor: "#fc5f3a",
       shape: {
-        area: { fill: '#fc5f3a' },
-        interval: { fill: '#d5375f' }
+        area: { fill: "#fc5f3a" },
+        interval: { fill: "#d5375f" },
+        line: {stroke: '#fc5f3a'}
       }
     });
 
@@ -77,7 +78,7 @@ class Chart extends React.Component <ChartProps, any> {
     if (nextContext.source) {
       const source: Source = nextContext.source;
       if (!isEmpty(nextContext.selected)) {
-        const dimCols = map(filter(nextProps.chartParams.columns, { isDim: true }), 'id');
+        const dimCols = map(filter(nextProps.chartParams.columns, { isDim: true }), "id");
         const selected = filter(nextContext.selected, (item) => {
           return isEmpty(pick(item, dimCols));
         });
@@ -155,7 +156,7 @@ class Chart extends React.Component <ChartProps, any> {
     const canvasRect = dom.getBoundingClientRect();
     if (!chartParams.chartType) {
       //TODO invariant
-      console.error('Error 101: 图表没有指定类型或类型不合法，请访问ChartParams.md获取类型定义的方案');
+      console.error("Error 101: 图表没有指定类型或类型不合法，请访问ChartParams.md获取类型定义的方案");
       return;
     /*
     } else if (canvasRect.height === 0) {
@@ -172,8 +173,8 @@ class Chart extends React.Component <ChartProps, any> {
 
     const sourceDef = this.buildSourceConfig(chartParams);
     // 建立Frame
-    const metricCols = map(filter(chartParams.columns, { isDim: false }), 'id');
-    const dimCols    = map(filter(chartParams.columns, { isDim: true }), 'id');
+    const metricCols = map(filter(chartParams.columns, { isDim: false }), "id");
+    const dimCols    = map(filter(chartParams.columns, { isDim: true }), "id");
     let frame      = new G2.Frame(source);
     // 需要多值域合并
     const chartCfg = getChartConfig(chartParams.chartType);
@@ -186,6 +187,7 @@ class Chart extends React.Component <ChartProps, any> {
       frame.colReplace("metric", mColNames);
     }
     chart.source(frame, sourceDef);
+
     // geom
     // TODO funnel
     const geom = chart[chartCfg.geom](chartParams.adjust);
@@ -194,6 +196,7 @@ class Chart extends React.Component <ChartProps, any> {
     const pos = chartCfg.pos ?
       (metricCols[0] + "*" + metricCols[1]) :
       G2.Stat.summary.sum(dimCols[0] + "*" + metricCols[0]);
+
     geom.position(pos);
     // color
     if (dimCols.length > 1) {
@@ -246,16 +249,16 @@ class Chart extends React.Component <ChartProps, any> {
     chartParams.columns.forEach((m: Metric) => {
       sourceDef[m.id] = {
         alias: m.name,
-        type: (m.id !== 'tm' && m.isDim) ? 'cat' : 'linear'
+        type: (m.id !== "tm" && m.isDim) ? "cat" : "linear"
       };
       if (m.rate) {
         sourceDef[m.id].formatter = (n: number): string => `${(100*n).toPrecision(3)}%`;
       }
     });
-    /* TODO
-    if (sourceDef['tm']) {
-      sourceDef['tm'].formatter = (n: number): string => (n > 0 ? `第${n}天` : `当天`);
-    }*/
+    // TODO
+    if (sourceDef["tm"] ) {
+      sourceDef["tm"].formatter = (n: number): string => (n > 0 ? `第${n}天` : `当天`);
+    }
     // 设置
     if (chartParams.granularities) {
       chartParams.granularities.forEach((glt: Granulariy) => {
@@ -264,6 +267,10 @@ class Chart extends React.Component <ChartProps, any> {
             mask: (glt.interval >= 86400) ? "mm-dd" : "HH:mm",
             nice: true,
             type: ( chartConfig.geom === "line" ? "time" : "timeCat" ) // TODO 可能有其他case
+          };
+        } else if (glt.counter == 'day') {
+          sourceDef[glt.id] = {
+            formatter: (n: number): string => (n > 0 ? `第${n}天` : `当天`)
           };
         }
       });
