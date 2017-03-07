@@ -13,6 +13,7 @@ interface GioProps {
   chartType: string;
   params: DataRequestProps;
   style?: any;
+  extraColumns?: any;
 }
 
 class GioChart extends React.Component <GioProps, any> {
@@ -20,7 +21,7 @@ class GioChart extends React.Component <GioProps, any> {
     return (
       <DataSource params={this.props.params} style={this.props.style}>
         { this.props.chartType === 'table' ?
-          <GrTable granularities={this.props.params.granularities} /> :
+          <GrTable granularities={this.props.params.granularities} extraColumns={this.props.extraColumns}/> :
           <Chart chartType={this.props.chartType} granularities={this.props.params.granularities}/>
         }
       </DataSource>

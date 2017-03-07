@@ -64,7 +64,7 @@ class GrTable extends React.Component <ChartProps, any> {
         generateColRender(m, calculateWeight(G2.Frame.range(frame, m.id), G2.Frame.median(frame, m.id)))
       )
     }));
-    if (this.props.hasOwnProperty("extraColumns")) {
+    if (this.props.hasOwnProperty("extraColumns") && this.props.extraColumns) {
       cols = cols.concat(this.props.extraColumns);
     }
     /*
