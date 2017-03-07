@@ -64,6 +64,9 @@ class GrTable extends React.Component <ChartProps, any> {
         generateColRender(m, calculateWeight(G2.Frame.range(frame, m.id), G2.Frame.median(frame, m.id)))
       )
     }));
+    if (this.props.hasOwnProperty("source")) {
+
+    }
     /*
     if (this.context.selected) {
       let selected = this.context.selected;

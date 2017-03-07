@@ -8,14 +8,13 @@ GrowingIO Chart component
   * [x] Async DataSource Charts
   * [x] Interactive Data Filter
   * [ ] Realtime Chart
-  * [x] Aggregate Chart
+  * [ ] Aggregate Chart
   * [ ] Output Image
-  * [ ] ETL Plugin
-  * [ ] Analysic Panel
+  * [X] Analysic Panel
 * License
 
 ## Install
-在package.json中的dependenc ies里添加
+在package.json中的dependencies里添加
 ```
 "giochart": "git+https://github.com/yuyangvi/giochart.git#master",
 ```
