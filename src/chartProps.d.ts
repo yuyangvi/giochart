@@ -29,6 +29,7 @@ interface Granulariy {
   interval?: number;
   period?: number;
   values?: string[];
+  counter?: string;
 }
 /*
 export interface DrawParamsProps {

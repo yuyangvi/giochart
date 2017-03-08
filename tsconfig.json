@@ -7,17 +7,19 @@
     "jsx": "react",
     "allowJS": true,
     "lib": ["es6","ES2016.Array.Include","DOM","DOM.Iterable","ScriptHost"],
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "declaration": true,
+    "declarationDir": "./"
+
   },
   "include": [
     "./typings/index.d.ts",
     "./src/components/Chart.tsx",
     "./src/components/DataSource.tsx",
-    "./src/components/GrTable.tsx",
     "./example/*.tsx"
   ],
   "exclude": [
-    "node_modules",
+    "node_modules/*",
     "./dist/*",
     "./src/components/GrChart.tsx"
   ]

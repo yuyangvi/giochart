@@ -4,7 +4,7 @@
 import {DataRequestProps, ResponseParams, DataLoaderProps} from './ChartProps';
 import * as React from "react";
 import { map, zipObject, flatten, isEqual } from 'lodash';
-declare function fetch(a: any, b?: any): any;
+//declare function fetch(a: any, b?: any): any;
 declare const project: any;
 //数据统计必备字段，中端需要以下字段提供数据
 export const HttpStatus = {
@@ -40,8 +40,8 @@ class DataSource extends React.Component <DataLoaderProps, any> {
     super(props);
     // 加载状态
     this.state = {
-      isLoaded: false,
       columns: null,
+      isLoaded: false,
       source: null,
       selected: null
     };
@@ -90,7 +90,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
   defaultRequest(chartParams: DataRequestProps, callback: Function) {
     let fetchObj;
     // Todo 检查是否是DEV环境
-    if (this.props.hasOwnProperty('sourceUrl')) {
+    if (this.props.hasOwnProperty("sourceUrl")) {
       fetchObj = fetch(this.props.sourceUrl);
     } else {
       fetchObj = fetch(`/v4/projects/${project.id}/chartdata`, {
