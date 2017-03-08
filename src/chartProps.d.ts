@@ -83,3 +83,23 @@ export interface ChartProps {
   select?: (evt: any, unselect:any) => any;
   extraColumns?: any[];
 }
+/*
+type ChartProps = StandardChartProps | SingleChartProps | SingleTableProps;
+*/
+//标准Chart
+export interface StandardChartProps {
+  chartParams: DrawParamsProps;
+  source?: Source;
+  select?: (evt: any, unselect:any) => any;
+}
+//字段是从数据源取得的Chart的格式
+export interface SingleChartProps {
+  chartType: string;
+  chartParams: DrawParamsProps;
+  granularities?: Granulariy[];
+}
+//从数据源取得的表格的格式
+export interface SingleTableProps {
+  granularities?: Granulariy[];
+  select?: (evt: any, unselect:any) => any;
+}

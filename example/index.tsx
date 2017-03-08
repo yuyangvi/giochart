@@ -1,10 +1,10 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import 'antd/lib/table/style/index.js';
 
-import Linkage from "./Linkage";
+// import Linkage from "./Linkage";
+import Retension from "./Retension";
 
 ReactDOM.render(
-  <Linkage />,
+  <Retension />,
   document.getElementById("example")
 );

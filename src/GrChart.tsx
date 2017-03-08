@@ -118,7 +118,7 @@ class GrChart extends React.Component <GrChartProps, any> {
       forceFit: true,
       plotCfg: {}
     });
-
+    console.log(source);
 
     let frame = new G2.Frame(source);
     let sourceDef: SourceConfig = this.createSourceConfig(chartParams);

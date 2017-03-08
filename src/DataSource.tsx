@@ -73,7 +73,9 @@ class DataSource extends React.Component <DataLoaderProps, any> {
 
   render() {
     // TODO div高度
-    return <div style={this.props.style}>{this.props.children}</div>;
+    const children = this.props.children;
+    return <div>{children}</div>;
+    // return React.Children.count(children) < 2 ? React.Children.only(children) : <div>{children}</div>
   }
   // 动态变化Dimension
   /* defaultRetryRequest() {
@@ -86,29 +88,24 @@ class DataSource extends React.Component <DataLoaderProps, any> {
   } */
 
   defaultRequest(chartParams: DataRequestProps, callback: Function) {
-    let url = `/v4/projects/${project.id}/chartdata`;
-    /*if (chartParams.hasOwnProperty('sourceUrl')) {
-
-    }*/
-    /*
-     let url = `http://gta.growingio.dev:18443/v4/projects/${project.id}/chartdata`;
-    let headers = new Headers();
-    headers.append('authorization', 'Token 5ac75d524422179e2123f1da5d8c2622e5330dff8173edf90e52fc4f49d63efe');
-    let request = new Request(url, {headers: headers});
-    */
-    return fetch(url, {
-      credentials: 'same-origin',
-      contentType: 'application/json',
-      method: 'post',
-      body: JSON.stringify(chartParams)
-    })
-      .then((response: any) => {
-        let status = response.status;
-        if(status === HttpStatus.Ok) {
-          return response.json();
-        }
-      })
-      .then((data: ResponseParams) => callback(data));
+    let fetchObj;
+    // Todo 检查是否是DEV环境
+    if (this.props.hasOwnProperty('sourceUrl')) {
+      fetchObj = fetch(this.props.sourceUrl);
+    } else {
+      fetchObj = fetch(`/v4/projects/${project.id}/chartdata`, {
+        credentials: 'same-origin',
+        contentType: 'application/json',
+        method: 'post',
+        body: JSON.stringify(chartParams)
+      });
+    }
+    fetchObj.then((response: any) => {
+      let status = response.status;
+      if(status === HttpStatus.Ok) {
+        return response.json();
+      }
+    }).then((data: ResponseParams) => callback(data));
   }
 
   componentDidMount() {

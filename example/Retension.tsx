@@ -26,12 +26,12 @@ const retensionDrawParams: DrawParamsProps = {
   ]
 };
 class Retension extends React.Component<any, any> {
-    render() {
-        return (
-            <div className="container">
-              <GioChart chartType='line' params={retensionRequestParams} style={{ height: 350 }} />
-            </div>
-        );
-    }
+  render() {
+    return (
+      <DataSource params={retensionRequestParams} sourceUrl="/assets/retension.json">
+        <Chart chartParams={retensionDrawParams} />
+      </DataSource>
+    );
+  }
 }
 export default Retension;
