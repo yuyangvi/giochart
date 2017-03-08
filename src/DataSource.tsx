@@ -73,7 +73,9 @@ class DataSource extends React.Component <DataLoaderProps, any> {
 
   render() {
     // TODO div高度
-    return <div style={this.props.style}>{this.props.children}</div>;
+    const children = this.props.children;
+    return <div>{children}</div>;
+    // return React.Children.count(children) < 2 ? React.Children.only(children) : <div>{children}</div>
   }
   // 动态变化Dimension
   /* defaultRetryRequest() {
@@ -87,6 +89,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
 
   defaultRequest(chartParams: DataRequestProps, callback: Function) {
     let fetchObj;
+    // Todo 检查是否是DEV环境
     if (this.props.hasOwnProperty("sourceUrl")) {
       fetchObj = fetch(this.props.sourceUrl);
     } else {
@@ -97,14 +100,12 @@ class DataSource extends React.Component <DataLoaderProps, any> {
         body: JSON.stringify(chartParams)
       });
     }
-
     fetchObj.then((response: any) => {
       let status = response.status;
       if(status === HttpStatus.Ok) {
         return response.json();
       }
-    })
-      .then((data: ResponseParams) => callback(data));
+    }).then((data: ResponseParams) => callback(data));
   }
 
   componentDidMount() {

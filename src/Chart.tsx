@@ -33,15 +33,9 @@ const getChartConfig: any = (chartType: string) => {
 };
 
 class Chart extends React.Component <ChartProps, any> {
-  private static contextTypes: React.ValidationMap<any> = {
-    columns: React.PropTypes.array,
-    selected: React.PropTypes.any,
-    source: React.PropTypes.any,
-    selectHandler: React.PropTypes.func
-  };
   private chart: any;
-  private selectMode: string = "multiple";
-  private lastSelectedShape: any = null;
+  // private selectMode: string = "multiple";
+  private lastSelectedShape: Object = null;
   private constructor(props: ChartProps) {
     super();
     // 强制切换theme
@@ -73,59 +67,37 @@ class Chart extends React.Component <ChartProps, any> {
 
     G2.Global.setTheme(theme);
   }
-
-  private componentWillReceiveProps(nextProps: ChartProps, nextContext: any) {
-    if (nextContext.source) {
-      const source: Source = nextContext.source;
-      if (!isEmpty(nextContext.selected)) {
-        const dimCols = map(filter(nextProps.chartParams.columns, { isDim: true }), "id");
-        const selected = filter(nextContext.selected, (item) => {
-          return isEmpty(pick(item, dimCols));
-        });
-
-        if (isEmpty(selected)) {
+  private componentWillReceiveProps(nextProps: ChartProps) {
+    if (nextProps.source) {
+      const source: Source = nextProps.source;
+      if (!isEmpty(nextProps.selected)) { // 需要筛选数据
+        const dimCols = map(filter(nextProps.chartParams.columns, { isDim: true }), 'id');
+        const filteredSelected = filter(nextProps.selected, (item) =>  isEmpty(pick(item, dimCols)));
+        if (isEmpty(filteredSelected)) {
           return;
         }
-        const filterSource = filter(source, (sourceItem) => {
-          return some(selected, (selectedItem) => {
-            return isMatch(sourceItem, selectedItem);
-          });
-        });
+        const filterSource = filter(source, (sourceItem) =>
+          some(filteredSelected, (selectedItem) =>
+            isMatch(sourceItem, selectedItem)
+          )
+        );
 
         if (isEmpty(filterSource)) {
           this.chart.changeData(source);
         } else {
           this.chart.changeData(filterSource);
         }
-
-      } else {
-        // TODO: 如果只是context修改
-        if (!isEqual(this.context.source, nextContext.source) ||
-          !isEqual(this.props.chartParams, nextProps.chartParams)) {
+      } else { // 不需要筛选数据，或者取消筛选
+        if (!isEqual(this.props.chartParams, nextProps.chartParams)) { //配置修改了，重新绘制
           if (this.chart) {
             this.chart.destroy();
           }
-          const chartParams = nextProps.chartParams || this.generateChartParams(nextContext.columns);
-          chartParams && this.drawChart(chartParams, source);
-        }
-        if (this.chart) {
-          this.chart.changeData(source);
+          this.drawChart(nextProps.chartParams, source);
         } else {
-          const chartParams = nextProps.chartParams || this.generateChartParams(nextContext.columns);
-          chartParams && this.drawChart(chartParams, source);
+          this.chart.changeData(source);
         }
       }
     }
-  }
-  private generateChartParams(columns: Metric[]) {
-    if (!columns) {
-      return;
-    }
-    return {
-      chartType: this.props.chartType,
-      columns: columns,
-      granularities: this.props.granularities
-    };
   }
 
   public render() {
