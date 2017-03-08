@@ -1,4 +1,4 @@
-GrTable
+#GrTable
 ##usage
 ```
 import { GrTable } from 'giochart';

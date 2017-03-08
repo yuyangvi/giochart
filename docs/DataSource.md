@@ -1,4 +1,4 @@
-DataSource
+#DataSource
 ##usage
 ```
 import { DataSource,ContextListener } from 'giochart';

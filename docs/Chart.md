@@ -1,5 +1,4 @@
-Chart
-
+#Chart
 ##Usage
 ```
 import { Chart } from 'giochart';

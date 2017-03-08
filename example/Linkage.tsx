@@ -67,7 +67,7 @@ class Demo extends React.Component<any, any> {
     let dim: string[] = this.state.dim;
     let barParams = null;
 
-    //modeValue true=替换 false=追加
+    // modeValue true=替换 false=追加
     if (dim) {
       if(this.state.modeValue){
         this.params = update(originParams, {dimensions: {$push: dim}});

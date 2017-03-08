@@ -1,19 +1,12 @@
-GrowingIO Chart component
+#GrowingIO Chart component
 ## Resources
-* API Reference
-   * [Server Request & Response](docs/GQL.md)
-   * [Chart](docs/Table.md)
-   * [GrTable](docs/GrTable.md)
-   * [DataSource](docs/DataSource.md)
-   * [Interactive](docs/Interactive.md)
-* Examples
-  * [x] Simple Chart
-  * [x] DataSource & ContextListener
-  * [x] Interactive Data Filter
-  * [ ] Realtime Chart
-  * [ ] Aggregate Chart
-  * [X] Analysic Panel
-* License
+## API Reference
+   * [Server Request & Response](docs/GQL.md) 服务器请求数据格式文档
+   * [Chart](docs/Chart.md) 基本图形文档
+   * [GrTable](docs/GrTable.md) 表格文档
+   * [DataSource](docs/DataSource.md) 通用数据源加载
+   * [Interactive](docs/Interactive.md) 关于可视化交互
+## License
 
 ## Install
 在package.json中的dependencies里添加
