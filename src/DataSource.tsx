@@ -93,12 +93,12 @@ class DataSource extends React.Component <DataLoaderProps, any> {
     if (this.props.hasOwnProperty("sourceUrl")) {
       fetchObj = fetch(this.props.sourceUrl);
     } else {
-      fetchObj = fetch(`/v4/projects/${project.id}/chartdata`, /*{
+      fetchObj = fetch(`/v4/projects/${project.id}/chartdata`, {
         credentials: "same-origin",
         contentType: "application/json",
         method: "post",
         body: JSON.stringify(chartParams)
-      }*/);
+      });
     }
     fetchObj.then((response: any) => {
       const status = response.status;

@@ -1,15 +1,17 @@
 GrowingIO Chart component
 ## Resources
 * API Reference
-   * [chartParams](API.md#chartParams)
-   * [chartData](API.md#chartData)
+   * [Server Request & Response](docs/GQL.md)
+   * [Chart](docs/Table.md)
+   * [GrTable](docs/GrTable.md)
+   * [DataSource](docs/DataSource.md)
+   * [Interactive](docs/Interactive.md)
 * Examples
   * [x] Simple Chart
-  * [x] Async DataSource Charts
+  * [x] DataSource & ContextListener
   * [x] Interactive Data Filter
   * [ ] Realtime Chart
   * [ ] Aggregate Chart
-  * [ ] Output Image
   * [X] Analysic Panel
 * License
 
@@ -29,9 +31,7 @@ npm start
 ```
 
 ## Example
-http://localhost:8000/examples/
-
-online example: http://yuyangvi.github.io/giochart/examples/
+http://localhost:9090
 
 ## Usage
 
@@ -55,9 +55,9 @@ const Section3 = (props) => (
     <h1>simple Demo</h1>
     <DataSource params={dataParams}>
     {/*inside GrLoader it could be any JSX node*/}
-        <Chart chartParams={drawParams} />
+        <ContextListener chartParams={drawParams} />
         <div>
-            <GrTable chartParams={drawParams} />
+            <ContextListener chartParams={otherParams} />
         </div>
     </DataSource>
   </div>);

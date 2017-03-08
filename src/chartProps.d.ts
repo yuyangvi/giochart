@@ -49,7 +49,6 @@ export interface DrawParamsProps {
 }
 export interface Metric {
   id: string;
-  level?: string;
   name?: string;
   action?: string;
   isDim?: boolean;
@@ -79,7 +78,7 @@ export interface DataLoaderProps {
 // 标准Chart
 export interface ChartProps {
   chartParams: DrawParamsProps;
-  source?: Source;
+  source: Source;
   select?: (evt: any, unselect: any) => any;
   selected?: any;
   extraColumns?: any;
