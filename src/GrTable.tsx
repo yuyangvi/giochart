@@ -8,61 +8,47 @@ import { Table } from 'antd';
 import G2 = require("g2");
 
 // import 'antd/lib/table/style/index.js';
-const sorterDecorator = (column: string) => (a:any, b:any) => (a[column] > b[column] ? 1 : -1);
+const sorterDecorator = (column: string) => (a: any, b: any) => (a[column] > b[column] ? 1 : -1);
 
-//根据中位数计算,这段难理解，自己斟酌
-const calculateWeight = (range:[number, number],  median: number) => (v: number) => {
+// 根据中位数计算颜色,这段难理解，自己斟酌
+const calculateWeight = (range: [number, number],  median: number) => (v: number) => {
   if (v > median) {
-    return `rgba(255,211,99, ${(v - median) / (range[1]-median)})`;
-  } else if (v <median) {
-    return `rgba(95,182,199, ${(v - median) / (range[0]-median)})`;
+    return `rgba(255,211,99, ${(v - median) / (range[1] - median)})`;
+  } else if (v < median) {
+    return `rgba(95,182,199, ${(v - median) / (range[0] - median)})`;
   }
 }
-const generateColRender = (m: Metric, getBgColor: Function) : Function =>
+// 根据metric取得背景色
+const generateColRender = (m: Metric, getBgColor: (v: number) => string): ((v: number) => any) =>
   (value: number) => ({
     children: value,
     props: { style: {backgroundColor: getBgColor(value)}}
   });
-const checkDate = (m: Metric) => (m.id === 'tm' ? GrTable.formatDate : undefined);
+const checkDate = (m: Metric) => (m.id === "tm" ? GrTable.formatDate : undefined);
 
 class GrTable extends React.Component <ChartProps, any> {
-  static contextTypes: React.ValidationMap<any> = {
-    columns: React.PropTypes.array,
-    selected: React.PropTypes.any,
-    selectHandler: React.PropTypes.func,
-    source: React.PropTypes.array
-  };
-  static formatDate(v: number) {
-    return moment.unix(v/1000).format('YYYY-MM-DD');
+  public static formatDate(v: number) {
+    return moment.unix(v / 1000).format("YYYY-MM-DD");
+  }
+  private static getRowKey(r: any, i: number) {
+    return `${i}`;
   }
 
-  private generateChartParams(columns: Metric[]) {
-    if (!columns) {
-      return;
-    }
-    return {
-      chartType: 'table',
-      columns: columns,
-      granularities: this.props.granularities
-    };
-  }
-
-  render() {
-    let source = this.props.source || this.context.source;
-    let chartParams = this.props.chartParams || this.generateChartParams(this.context.columns);
+  public render() {
+    const { chartParams, source } = this.props;
     if (!source || !chartParams) {
       return null;
     }
-    let frame = new G2.Frame(source);
+    const frame = new G2.Frame(source);
     let cols = chartParams.columns.map((m: Metric) => ({
-      title: m.name,
       dataIndex: m.id,
       key: m.id,
-      sorter: sorterDecorator(m.id),
       render: (m.isDim ?
         checkDate(m) :
         generateColRender(m, calculateWeight(G2.Frame.range(frame, m.id), G2.Frame.median(frame, m.id)))
-      )
+      ),
+      sorter: sorterDecorator(m.id),
+      title: m.name,
     }));
     if (this.props.hasOwnProperty("extraColumns")) {
       cols = cols.concat(this.props.extraColumns);
@@ -76,8 +62,15 @@ class GrTable extends React.Component <ChartProps, any> {
       ));
     }*/
 
-    //需要计算色值
-    return <Table dataSource={source} columns={cols} pagination={ source.length > 20 ? undefined: false } />
+    // TODO: 增加selected处理
+    return (
+      <Table
+        dataSource={source}
+        columns={cols}
+        pagination={source.length > 20 ? undefined : false}
+        rowKey={GrTable.getRowKey}
+      />
+    );
   }
 }
 

@@ -1,12 +1,12 @@
 import { filter, fromPairs, isEmpty, isEqual, isMatch, map, merge, pick, some, zip, zipObject } from "lodash";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import {ChartProps, DrawParamsProps, Metric, Source, Granulariy} from "./ChartProps";
 import G2 = require("g2");
+import {ChartProps, DrawParamsProps, Granulariy, Metric, Source} from "./ChartProps";
 
-interface G2Scale{
+interface G2Scale {
   type: string;
-  formatter?: (n: any) => string;
+  formatter?: (n: number) => string;
   range?: [number, number];
   alias?: string;
   tickCount?: number;
@@ -26,21 +26,18 @@ const getChartConfig: any = (chartType: string) => {
   };
   // 将图表类型变成不同步骤的组合
   const chartTypeMap: any[string] = {
-    bar:  { geom: "interval" },
-    line: { geom: "line", size: 2 }
+    bar:    { geom: "interval", transpose: true },
+    bubble: { geom: "point" },
+    funnel: { axis: false, geom: "intervalSymmetric", transpose: true, scale: true, shape: "funnel" },
+    line:   { geom: "line", size: 2 },
+    vbar:   { geom: "interval" }
   };
   return merge({}, defaultMetric, chartTypeMap[chartType]);
 };
 
 class Chart extends React.Component <ChartProps, any> {
-  private static contextTypes: React.ValidationMap<any> = {
-    columns: React.PropTypes.array,
-    selected: React.PropTypes.any,
-    source: React.PropTypes.any,
-    selectHandler: React.PropTypes.func
-  };
   private chart: any;
-  private selectMode: string = "multiple";
+  // private selectMode: string = "multiple";
   private lastSelectedShape: any = null;
   private constructor(props: ChartProps) {
     super();
@@ -67,74 +64,53 @@ class Chart extends React.Component <ChartProps, any> {
       shape: {
         area: { fill: "#fc5f3a" },
         interval: { fill: "#d5375f" },
-        line: {stroke: '#fc5f3a'}
+        line: { stroke: "#fc5f3a" }
       }
     });
 
     G2.Global.setTheme(theme);
   }
-
-  private componentWillReceiveProps(nextProps: ChartProps, nextContext: any) {
-    if (nextContext.source) {
-      const source: Source = nextContext.source;
-      if (!isEmpty(nextContext.selected)) {
+  public render() {
+    return <div style={{ height: "100%" }} />;
+  }
+  // 这个函数是用来区分changeData还是draw, 通常尽量不要用componentWillReceiveProps
+  private componentWillReceiveProps(nextProps: ChartProps) {
+    if (nextProps.source) {
+      const source: Source = nextProps.source;
+      if (!isEmpty(nextProps.selected)) { // 需要筛选数据
         const dimCols = map(filter(nextProps.chartParams.columns, { isDim: true }), "id");
-        const selected = filter(nextContext.selected, (item) => {
-          return isEmpty(pick(item, dimCols));
-        });
-
-        if (isEmpty(selected)) {
+        const filteredSelected = filter(nextProps.selected, (item) =>  isEmpty(pick(item, dimCols)));
+        if (isEmpty(filteredSelected)) {
           return;
         }
-        const filterSource = filter(source, (sourceItem) => {
-          return some(selected, (selectedItem) => {
-            return isMatch(sourceItem, selectedItem);
-          });
-        });
-
-        if (isEmpty(filterSource)) {
-          this.chart.changeData(source);
-        } else {
-          this.chart.changeData(filterSource);
-        }
-
-      } else {
-        // TODO: 如果只是context修改
-        if (!isEqual(this.context.source, nextContext.source) ||
-          !isEqual(this.props.chartParams, nextProps.chartParams)) {
+        const filterSource = filter(source, (sourceItem) =>
+          some(filteredSelected, (selectedItem) =>
+            isMatch(sourceItem, selectedItem)
+          )
+        );
+        this.changeData(filterSource || source);
+      } else { // 不需要筛选数据，或者取消筛选
+        if (!isEqual(this.props.chartParams, nextProps.chartParams)) { // 配置修改了，重新绘制
           if (this.chart) {
             this.chart.destroy();
           }
-          const chartParams = nextProps.chartParams || this.generateChartParams(nextContext.columns);
-          chartParams && this.drawChart(chartParams, source);
-        }
-        if (this.chart) {
-          this.chart.changeData(source);
+          this.drawChart(nextProps.chartParams, source);
         } else {
-          const chartParams = nextProps.chartParams || this.generateChartParams(nextContext.columns);
-          chartParams && this.drawChart(chartParams, source);
+          this.changeData(source);
         }
       }
     }
   }
-  private generateChartParams(columns: Metric[]) {
-    if (!columns) {
-      return;
+  private changeData(source: Source) {
+    if (this.chart) {
+      this.chart.changeData(source);
+    } else {
+      this.drawChart(this.props.chartParams, source);
     }
-    return {
-      chartType: this.props.chartType,
-      columns: columns,
-      granularities: this.props.granularities
-    };
   }
-
-  public render() {
-    return <div style={{ height: "100%" }} />;
-  }
-
   private componentDidMount() {
     const { chartParams, source } = this.props;
-    if (this.props.hasOwnProperty("source")) {
+    if (this.props.source) {
       if (this.chart) {
         this.chart.destroy();
       }
@@ -155,7 +131,7 @@ class Chart extends React.Component <ChartProps, any> {
 
     const canvasRect = dom.getBoundingClientRect();
     if (!chartParams.chartType) {
-      //TODO invariant
+      // TODO invariant
       console.error("Error 101: 图表没有指定类型或类型不合法，请访问ChartParams.md获取类型定义的方案");
       return;
     /*
@@ -189,10 +165,15 @@ class Chart extends React.Component <ChartProps, any> {
     chart.source(frame, sourceDef);
 
     // geom
-    // TODO funnel
+    if (chartCfg.axis) {
+      chart.axis(chartCfg.axis);
+    }
+    if (chartCfg.transpose) {
+      chart.coord("rect").transpose();
+    }
     const geom = chart[chartCfg.geom](chartParams.adjust);
     // position
-    //我靠，维度不同的时间也不一样?
+    // 我靠，维度不同的时间也不一样?
     const pos = chartCfg.pos ?
       (metricCols[0] + "*" + metricCols[1]) :
       G2.Stat.summary.sum(dimCols[0] + "*" + metricCols[0]);
@@ -202,8 +183,16 @@ class Chart extends React.Component <ChartProps, any> {
     if (dimCols.length > 1) {
       geom.color(dimCols[1]);
     }
-    //size
-    chartCfg.size && geom.size(chartCfg.size);
+    // size
+    if (chartCfg.size) {
+      geom.size(chartCfg.size);
+    }
+    if (chartCfg.scale) {
+      geom.scale(1, 1);
+    }
+    if (chartCfg.shape) {
+      geom.shape(chartCfg.shape);
+    }
 
     // others
     if (this.props.hasOwnProperty("select")) {
@@ -251,14 +240,10 @@ class Chart extends React.Component <ChartProps, any> {
         alias: m.name,
         type: (m.id !== "tm" && m.isDim) ? "cat" : "linear"
       };
-      if (m.rate) {
-        sourceDef[m.id].formatter = (n: number): string => `${(100*n).toPrecision(3)}%`;
+      if (m.isRate) {
+        sourceDef[m.id].formatter = (n: number): string => `${(100 * n).toPrecision(3)}%`;
       }
     });
-    // TODO
-    if (sourceDef["tm"] ) {
-      sourceDef["tm"].formatter = (n: number): string => (n > 0 ? `第${n}天` : `当天`);
-    }
     // 设置
     if (chartParams.granularities) {
       chartParams.granularities.forEach((glt: Granulariy) => {
@@ -268,9 +253,10 @@ class Chart extends React.Component <ChartProps, any> {
             nice: true,
             type: ( chartConfig.geom === "line" ? "time" : "timeCat" ) // TODO 可能有其他case
           };
-        } else if (glt.counter == 'day') {
+        } else if (glt.counter === "day") {
           sourceDef[glt.id] = {
-            formatter: (n: number): string => (n > 0 ? `第${n}天` : `当天`)
+            formatter: (n: number): string => (n > 0 ? `第${n}天` : `当天`),
+            type: "linear", // TODO 可能有其他case
           };
         }
       });

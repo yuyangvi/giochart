@@ -7,9 +7,9 @@
     "build": "webpack --config webpack.prod.config.js",
     "start": "webpack-dev-server --config webpack.config.js --hot --inline --display-modules --progress --colors --port=9090",
     "test": "jest",
-    "lint": "tslint \"src/Chart.tsx\""
+    "lint": "tslint \"src/index.tsx\""
   },
-  "author": "",
+  "author": "yuyangvi",
   "license": "ISC",
   "jest": {
     "transform": {
@@ -24,18 +24,20 @@
     ]
   },
   "dependencies": {
-    "antd": "^0.12.0",
+  },
+  "devDependencies": {
+    "antd": "^0.12.17",
     "china-geojson": "^1.0.0",
-    "g2": "2.2.2",
+    "g2": "^2.2.2",
     "less": "^2.7.2",
     "less-loader": "^2.2.3",
     "lodash": "^4.17.4",
     "moment": "^2.17.1",
     "react": "^15.4.2",
     "react-addons-update": "^15.4.2",
-    "react-dom": "^15.4.2"
-  },
-  "devDependencies": {
+    "react-dom": "^15.4.2",
+
+    "@types/antd": "^0.12.31",
     "@types/lodash": "^4.14.45",
     "@types/react": "^0.14.55",
     "@types/react-addons-update": "^0.14.15",

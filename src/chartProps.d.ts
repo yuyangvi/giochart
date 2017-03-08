@@ -10,7 +10,7 @@ export interface DataRequestProps {
   limit?: number; // 数据行限制 10
   orders?: Order[]; // 排序
   aggregateType?: string; // 聚合类型: sum, avg
-  attrs?: Object; // 属性
+  attrs?: any; // 属性
   interval?: number; // 时间粒度 deperated
 }
 interface Filter {
@@ -53,10 +53,10 @@ export interface Metric {
   name?: string;
   action?: string;
   isDim?: boolean;
-  rate?: boolean;
+  isRate?: boolean;
 }
 
-//ResponseParams
+// ResponseParams
 export interface ResponseParams {
   meta: {
     columns: Metric[];
@@ -76,11 +76,18 @@ export interface DataLoaderProps {
   onLoad?: (state: any) => void
 }
 
+// 标准Chart
 export interface ChartProps {
-  chartParams?: DrawParamsProps;//为空则从上层context里去算
-  chartType?: string; //chartParams若存在，可以为空,
-  granularities?: Granulariy[];
+  chartParams: DrawParamsProps;
   source?: Source;
-  select?: (evt: any, unselect:any) => any;
-  extraColumns?: any[];
+  select?: (evt: any, unselect: any) => any;
+  selected?: any;
+  extraColumns?: any;
+}
+// 字段是从数据源取得的Chart的格式
+export interface SingleChartProps {
+  chartType?: string;
+  chartParams?: DrawParamsProps;
+  granularities?: Granulariy[];
+  select?: (evt: any, unselect: any) => any;
 }

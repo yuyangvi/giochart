@@ -3,10 +3,9 @@ import * as update from 'react/lib/update';
 import DataSource from '../src/DataSource';
 import { DataRequestProps, DrawParamsProps, Metric } from '../src/ChartProps';
 import SyntheticEvent = React.SyntheticEvent;
-import Chart from '../src/Chart';
 import DimensionPanel from "../src/DimensionPanel";
 import {isEqual, isMatch, filter, map, isEmpty} from 'lodash';
-import GrTable from "../src/GrTable";
+import ContextListener from "../src/ContextListener";
 
 interface EventSeletorTarget extends EventTarget {
     value: string
@@ -93,9 +92,8 @@ class Demo extends React.Component<any, any> {
       <div className='container'>
         <div className='mainPanel'>
           <DataSource params={this.params} ref={ (DataSource) => { this.dataSource = DataSource; }}>
-            <Chart chartParams={lineParams}/>
-            <GrTable />
-            { barParams ? <Chart chartParams={barParams} select={this.select.bind(this)} /> : null }
+            <ContextListener chartParams={lineParams} />
+            { barParams ? <ContextListener chartParams={barParams} select={this.select.bind(this)} /> : null }
             <DimensionPanel addDimension={this.addDimension.bind(this)} />
           </DataSource>
         </div>
