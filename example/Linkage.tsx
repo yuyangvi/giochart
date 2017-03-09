@@ -15,7 +15,7 @@ interface SyntheticSeletorEvent extends SyntheticEvent<HTMLSelectElement> {
 }
 
 const originParams: DataRequestProps = {
-  "metrics": [{"id": "woV73y92", "level": "simple", "action": "page"}],
+  "metrics": [{"id": "woV73y92", "action": "page"}],
   "dimensions": ["tm"],
   "granularities": [],
   "timeRange": "day:8,1"

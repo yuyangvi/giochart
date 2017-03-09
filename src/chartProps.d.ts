@@ -28,23 +28,15 @@ interface Granulariy {
   id: string;
   interval?: number;
   period?: number;
+  top?: number;
   values?: string[];
-  counter?: string;
 }
-/*
-export interface DrawParamsProps {
-  adjust?: string;
-  chartType: string;
-  dimensions: string[];
-  metrics: Metric[];
-  granularity: any;
-}
-*/
+
 // 绘制接口
 export interface DrawParamsProps {
   adjust?: string;
   chartType: string;
-  columns: Metric[],
+  columns: Metric[];
   granularities?: Granulariy[];
 }
 export interface Metric {

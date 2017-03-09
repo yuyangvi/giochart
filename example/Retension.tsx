@@ -13,7 +13,7 @@ const retensionRequestParams: DataRequestProps = {
   attrs: {userType: "nuv"},
   dimensions: ["rt"],
   granularities: [{id: "rt", values: ["外部链接"]}],
-  metrics: [{id: "woV73y92", level: "simple", action: "page"}, {id: "9yGbpp8x", level: "complex"}],
+  metrics: [{id: "woV73y92", action: "page"}, {id: "9yGbpp8x"}],
   timeRange: "day:8,1",
   type: "retention"
 }

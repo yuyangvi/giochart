@@ -5,12 +5,12 @@
 import { assign, map, zip } from "lodash";
 import * as React from "react";
 import Chart from "./Chart";
-import { DataRequestProps } from "./ChartProps";
+import {DataRequestProps, Granulariy} from "./ChartProps";
 import ContextListener from "./ContextListener";
 import DataSource from "./DataSource";
 import GrTable from "./GrTable";
 interface GioProps {
-  adjust: string;
+  adjust?: string;
   chartType: string;
   params: DataRequestProps;
   style?: any;
@@ -27,19 +27,21 @@ const convertChartParams = (v3Params: any): DataRequestProps => {
     // const functor = (n: any[]) => assign(n[0], {name: n[1]});
     // const metrics = map(zip(v3Params.metrics, v3Params.metricNames), functor);
     const metrics = v3Params.metrics;
-    let dimensions = v3Params.dimensions || [];
+    const dimensions = v3Params.dimensions || [];
     // const dimensions = map(zip(v3Params.metrics, v3Params.dimensionsName), functor);
+    const granularities: Granulariy[] = [];
     if (v3Params.chartType.includes("dimension")) {
+        granularities.push({id: dimensions[0], top: v3Params.top});
         dimensions.unshift("tm");
     }
     if (dimensions.length === 0) {
         dimensions.unshift(v3Params.chartType === "bar" ? "v" : "tm");
     }
     // convert granularities
-    let granularities;
     if (dimensions.includes("tm")) {
-        granularities = [{ id: "tm", interval: v3Params.interval }];
+        granularities.unshift({ id: "tm", interval: v3Params.interval });
     }
+
     return {
         // aggregateType: v3Params.aggregateType, // 聚合类型: sum, avg
         // attrs: {}, // 属性

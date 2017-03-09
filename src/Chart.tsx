@@ -20,14 +20,15 @@ interface SourceConfig {
 
 const getChartConfig: any = (chartType: string) => {
   const defaultMetric = {
-    combinMetrics: false,
+    combinMetrics: true,
     geom: "line",
 
   };
   // 将图表类型变成不同步骤的组合
   const chartTypeMap: any[string] = {
     bar:    { geom: "interval", reflect: "y", transpose: true },
-    bubble: { geom: "point" },
+    bubble: { geom: "point", pos: "MM", combinMetrics: false },
+    doubley: { geom: "interval", pos: "DMM", combinMetrics: false },
     funnel: { axis: false, geom: "intervalSymmetric", transpose: true, scale: true, shape: "funnel" },
     line:   { geom: "line", size: 2 },
     retension: {geom: "line", size: 2, counter: "day"},
@@ -175,12 +176,6 @@ class Chart extends React.Component <ChartProps, any> {
     });
 
     const sourceDef = this.buildSourceConfig(chartParams);
-    // Fuck!
-    if () {
-
-    }
-
-
     // 建立Frame
     const metricCols = map(filter(chartParams.columns, { isDim: false }), "id");
     const dimCols    = map(filter(chartParams.columns, { isDim: true }), "id");
@@ -202,21 +197,26 @@ class Chart extends React.Component <ChartProps, any> {
       chart.axis(chartCfg.axis);
     }
     if (chartCfg.transpose) {
-      const coord = chart.coord("rect").transpose()
+      const coord = chart.coord("rect").transpose();
       if (chartCfg.reflect) {
         coord.reflect(chartCfg.reflect);
       }
     }
-    const geom = chart[chartCfg.geom](chartParams.adjust);
+    const adjust = chartCfg.geom === "line" ? "" : chartParams.adjust;
+    const geom = chart[chartCfg.geom](adjust);
     // position
     // 我靠，维度不同的时间也不一样?
-    let pos = chartCfg.pos ?
+    const pos = chartCfg.pos === "MM" ?
       (metricCols[0] + "*" + metricCols[1]) :
       (dimCols[0] + "*" + metricCols[0]);
     if (dimCols.length <= 1) {
       geom.position(G2.Stat.summary.sum(pos));
     } else {
       geom.position(pos).color(dimCols[1]);
+    }
+
+    if (chartCfg.pos === "MMD") { //双y
+      chart.line().position(dimCols[0] + "*" + metricCols[1]);
     }
 
     // size

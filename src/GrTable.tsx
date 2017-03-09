@@ -1,10 +1,11 @@
 /***
  * 文档
  */
+import { Table } from "antd";
 import {ChartProps, Metric} from './ChartProps';
 import * as React from "react";
 import * as moment from 'moment';
-import Table from 'antd/lib/table';
+// import Table from 'antd/lib/table';
 import G2 = require("g2");
 const sorterDecorator = (column: string) => (a: any, b: any) => (a[column] > b[column] ? 1 : -1);
 

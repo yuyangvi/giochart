@@ -65,8 +65,8 @@ module.exports = {
       'root': 'ReactDOM'
     },
     "antd": "antd",
-    "antd/lib/table": "antd/lib/table",
-    "moment": "moment"
+    "moment": "moment",
+    "antd\/lib\/table": "table",
   },
 
   plugins: [

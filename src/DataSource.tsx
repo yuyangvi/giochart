@@ -92,10 +92,10 @@ class DataSource extends React.Component <DataLoaderProps, any> {
       fetchObj = fetch(this.props.sourceUrl);
     } else {
       fetchObj = fetch(`/v4/projects/${project.id}/chartdata`, {
+        body: JSON.stringify(chartParams),
         credentials: "same-origin",
-        contentType: "application/json",
+        /*contentType: "application/json",*/
         method: "post",
-        body: JSON.stringify(chartParams)
       });
     }
     fetchObj.then((response: any) => {
