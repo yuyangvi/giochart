@@ -1,4 +1,5 @@
 #DataSource
+这块不应该用`context`处理，应该用provider，以后会把它改掉
 ##usage
 ```
 import { DataSource,ContextListener } from 'giochart';
