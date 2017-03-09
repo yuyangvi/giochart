@@ -29,16 +29,19 @@ const convertChartParams = (v3Params: any): DataRequestProps => {
     const metrics = v3Params.metrics;
     let dimensions = v3Params.dimensions || [];
     // const dimensions = map(zip(v3Params.metrics, v3Params.dimensionsName), functor);
-    if (dimensions.length === 0 || v3Params.chartType.includes("dimension")) {
+    if (v3Params.chartType.includes("dimension")) {
         dimensions.unshift("tm");
+    }
+    if (dimensions.length === 0) {
+        dimensions.unshift(v3Params.chartType === "bar" ? "v" : "tm");
     }
     // convert granularities
     let granularities;
     if (dimensions.includes("tm")) {
-        granularities = [{ id: "tm", interval: v3Params.interval, period: v3Params.period }];
+        granularities = [{ id: "tm", interval: v3Params.interval }];
     }
     return {
-        aggregateType: v3Params.aggregateType, // 聚合类型: sum, avg
+        // aggregateType: v3Params.aggregateType, // 聚合类型: sum, avg
         // attrs: {}, // 属性
         dimensions,
         filter: v3Params.filter, // 过滤

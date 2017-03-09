@@ -26,10 +26,11 @@ const getChartConfig: any = (chartType: string) => {
   };
   // 将图表类型变成不同步骤的组合
   const chartTypeMap: any[string] = {
-    bar:    { geom: "interval", transpose: true },
+    bar:    { geom: "interval", reflect: "y", transpose: true },
     bubble: { geom: "point" },
     funnel: { axis: false, geom: "intervalSymmetric", transpose: true, scale: true, shape: "funnel" },
     line:   { geom: "line", size: 2 },
+    retension: {geom: "line", size: 2, counter: "day"},
     vbar:   { geom: "interval" }
   };
   return merge({}, defaultMetric, chartTypeMap[chartType]);
@@ -56,6 +57,32 @@ class Chart extends React.Component <ChartProps, any> {
     ];
     const theme = G2.Util.mix(true, {}, G2.Theme, {
       animate: false,
+      axis: {
+        bottom: {
+          labels: {
+            autoRotate: false
+          },
+          title: null,
+        },
+        left: {
+          labels: {
+            autoRotate: false
+          },
+          title: null
+        },
+        right: {
+          labels: {
+            autoRotate: false
+          },
+          title: null
+        },
+        top: {
+          labels: {
+            autoRotate: false
+          },
+          title: null
+        }
+      },
       colors: {
         default: colors,
         intervalStack: colors
@@ -148,6 +175,12 @@ class Chart extends React.Component <ChartProps, any> {
     });
 
     const sourceDef = this.buildSourceConfig(chartParams);
+    // Fuck!
+    if () {
+
+    }
+
+
     // 建立Frame
     const metricCols = map(filter(chartParams.columns, { isDim: false }), "id");
     const dimCols    = map(filter(chartParams.columns, { isDim: true }), "id");
@@ -169,7 +202,10 @@ class Chart extends React.Component <ChartProps, any> {
       chart.axis(chartCfg.axis);
     }
     if (chartCfg.transpose) {
-      chart.coord("rect").transpose();
+      const coord = chart.coord("rect").transpose()
+      if (chartCfg.reflect) {
+        coord.reflect(chartCfg.reflect);
+      }
     }
     const geom = chart[chartCfg.geom](chartParams.adjust);
     // position
@@ -193,6 +229,11 @@ class Chart extends React.Component <ChartProps, any> {
     if (chartCfg.shape) {
       geom.shape(chartCfg.shape);
     }
+    // legend
+    chart.legend({
+      itemWrap: false,
+      position: "bottom"
+    });
 
     // others
     if (this.props.hasOwnProperty("select") && this.props.select) {
@@ -252,13 +293,16 @@ class Chart extends React.Component <ChartProps, any> {
             nice: true,
             type: ( chartConfig.geom === "line" ? "time" : "timeCat" ) // TODO 可能有其他case
           };
-        } else if (glt.counter === "day") {
-          sourceDef[glt.id] = {
-            formatter: (n: number): string => (n > 0 ? `第${n}天` : `当天`),
-            type: "linear", // TODO 可能有其他case
-          };
         }
       });
+    }
+
+    // 针对留存的补丁， Fuck！
+    if (chartConfig.counter === "day") {
+      sourceDef.tm = {
+        formatter: (n: number): string => (n > 0 ? `第${n}天` : `当天`),
+        type: "linear", // TODO 可能有其他case
+      };
     }
     return sourceDef;
   }
