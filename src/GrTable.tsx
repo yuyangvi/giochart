@@ -4,10 +4,8 @@
 import {ChartProps, Metric} from './ChartProps';
 import * as React from "react";
 import * as moment from 'moment';
-import { Table } from 'antd';
+import Table from 'antd/lib/table';
 import G2 = require("g2");
-
-// import 'antd/lib/table/style/index.js';
 const sorterDecorator = (column: string) => (a: any, b: any) => (a[column] > b[column] ? 1 : -1);
 
 // 根据中位数计算颜色,这段难理解，自己斟酌

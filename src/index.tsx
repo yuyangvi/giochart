@@ -16,7 +16,7 @@ interface GioProps {
 }
 
 const GioChart = (props: GioProps) => (
-  <DataSource params={props.params} style={props.style} sourceUrl="/assets/demo.json">
+  <DataSource params={props.params} style={props.style}>
     <ContextListener chartType={props.chartType} />
   </DataSource>
 );

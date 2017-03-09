@@ -195,7 +195,7 @@ class Chart extends React.Component <ChartProps, any> {
     }
 
     // others
-    if (this.props.hasOwnProperty("select")) {
+    if (this.props.hasOwnProperty("select") && this.props.select) {
       geom.selected(true, {
         selectedMode: "single", // "multiple" || "single"
         style: { fill: "#fe9929" }
@@ -207,7 +207,6 @@ class Chart extends React.Component <ChartProps, any> {
         // chart.on("itemunselected", (evt: any) => { this.unselectHandler(evt, selectCols) });
       }
     }
-
     chart.render();
     this.chart = chart;
   }
