@@ -85,6 +85,7 @@ export interface ChartProps {
 }
 // 字段是从数据源取得的Chart的格式
 export interface SingleChartProps {
+  adjust?: string;
   chartType?: string;
   chartParams?: DrawParamsProps;
   granularities?: Granulariy[];

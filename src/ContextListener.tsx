@@ -24,6 +24,7 @@ class ContextListener extends React.Component <SingleChartProps, any> {
       return this.props.chartParams;
     }
     return {
+      adjust: this.props.adjust,
       chartType: this.props.chartType,
       columns: this.context.columns,
       granularities: this.props.granularities

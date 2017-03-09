@@ -174,15 +174,15 @@ class Chart extends React.Component <ChartProps, any> {
     const geom = chart[chartCfg.geom](chartParams.adjust);
     // position
     // 我靠，维度不同的时间也不一样?
-    const pos = chartCfg.pos ?
+    let pos = chartCfg.pos ?
       (metricCols[0] + "*" + metricCols[1]) :
-      G2.Stat.summary.sum(dimCols[0] + "*" + metricCols[0]);
-
-    geom.position(pos);
-    // color
-    if (dimCols.length > 1) {
-      geom.color(dimCols[1]);
+      (dimCols[0] + "*" + metricCols[0]);
+    if (dimCols.length <= 1) {
+      geom.position(G2.Stat.summary.sum(pos));
+    } else {
+      geom.position(pos).color(dimCols[1]);
     }
+
     // size
     if (chartCfg.size) {
       geom.size(chartCfg.size);

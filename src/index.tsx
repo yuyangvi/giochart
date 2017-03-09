@@ -10,6 +10,7 @@ import ContextListener from "./ContextListener";
 import DataSource from "./DataSource";
 import GrTable from "./GrTable";
 interface GioProps {
+  adjust: string;
   chartType: string;
   params: DataRequestProps;
   style?: any;
@@ -17,18 +18,19 @@ interface GioProps {
 
 const GioChart = (props: GioProps) => (
   <DataSource params={props.params} style={props.style}>
-    <ContextListener chartType={props.chartType} />
+    <ContextListener chartType={props.chartType} granularities={props.params.granularities} adjust={props.adjust} />
   </DataSource>
 );
 // 根据v3的chartParams计算v4的Scheme转化
 const convertChartParams = (v3Params: any): DataRequestProps => {
     // convert metric & dimensions
-    const functor = (n: any[]) => assign(n[0], {name: n[1]});
-    const metrics = map(zip(v3Params.metrics, v3Params.metricNames), functor);
-    let dimensions = v3Params.dimensions;
-    // const dimensions = map(zip(v3Params.metrics, v3Params.dimenstionsName), functor);
-    if (dimensions.length === 0) {
-        dimensions = ["tm"];
+    // const functor = (n: any[]) => assign(n[0], {name: n[1]});
+    // const metrics = map(zip(v3Params.metrics, v3Params.metricNames), functor);
+    const metrics = v3Params.metrics;
+    let dimensions = v3Params.dimensions || [];
+    // const dimensions = map(zip(v3Params.metrics, v3Params.dimensionsName), functor);
+    if (dimensions.length === 0 || v3Params.chartType.includes("dimension")) {
+        dimensions.unshift("tm");
     }
     // convert granularities
     let granularities;
