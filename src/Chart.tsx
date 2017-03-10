@@ -29,7 +29,7 @@ const getChartConfig: any = (chartType: string) => {
     area: {geom: "area"},
     bar:    { geom: "interval", reflect: "y", transpose: true },
     bubble: { geom: "point", pos: "MM", combinMetrics: false },
-    comparison: {geom: "area", style: { lineWidth: 2 } },
+    comparison: {geom: "area"},
     doubley: { geom: "interval", pos: "DMM", combinMetrics: false },
     funnel: { axis: false, geom: "intervalSymmetric", transpose: true, scale: true, shape: "funnel" },
     line:   { geom: "line", size: 2 },

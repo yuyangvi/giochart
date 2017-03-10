@@ -70,7 +70,8 @@ class DataSource extends React.Component <DataLoaderProps, any> {
   }
   private componentWillReceiveProps(nextProps: DataLoaderProps) {
     // TODO status改变也会触发，所以多了一层判断
-    if (this.props.params !== nextProps.params) {
+    if (JSON.stringify(this.props.params) !== JSON.stringify(nextProps.params)) {
+      console.log('componentWillReceiveProps', nextProps.params);
       this.defaultRequest(nextProps.params, this.afterFetch.bind(this));
     }
   }
@@ -108,6 +109,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
 
   private componentDidMount() {
     const { params } = this.props;
+    console.log('componentDidMount', params);
     this.defaultRequest(params, this.afterFetch.bind(this));
   }
 
