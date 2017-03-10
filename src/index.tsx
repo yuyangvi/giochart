@@ -19,7 +19,12 @@ interface GioProps {
 
 const GioChart = (props: GioProps) => (
   <DataSource params={props.params} style={props.style}>
-    <ContextListener chartType={props.chartType} granularities={props.params.granularities} adjust={props.adjust} } extraColumns={this.props.extraColumns} />
+    <ContextListener
+      chartType={props.chartType}
+      granularities={props.params.granularities}
+      adjust={props.adjust}
+      extraColumns={props.extraColumns}
+    />
   </DataSource>
 );
 // 根据v3的chartParams计算v4的Scheme转化

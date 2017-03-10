@@ -81,6 +81,7 @@ export interface SingleChartProps {
   adjust?: string;
   chartType?: string;
   chartParams?: DrawParamsProps;
+  extraColumns?: any;
   granularities?: Granulariy[];
   select?: (evt: any, unselect: any) => any;
 }

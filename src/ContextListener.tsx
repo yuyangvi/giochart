@@ -9,14 +9,20 @@ import GrTable from "./GrTable";
 class ContextListener extends React.Component <SingleChartProps, any> {
   private static contextTypes: React.ValidationMap<any> = {
     columns: React.PropTypes.array,
+    extraColumns: React.PropTypes.any,
     selectHandler: React.PropTypes.func,
     selected: React.PropTypes.any,
-    source: React.PropTypes.any
+    source: React.PropTypes.any,
   };
   public render() {
     const chartParams = this.generateChartParams();
     return chartParams.chartType === "table" ?
-      <GrTable chartParams={chartParams} source={this.context.source} select={this.props.select} /> :
+      <GrTable
+        chartParams={chartParams}
+        source={this.context.source}
+        select={this.props.select}
+        extraColumns={this.props.extraColumns}
+      /> :
       <Chart chartParams={chartParams} source={this.context.source} select={this.props.select} />;
   }
   private generateChartParams() {
