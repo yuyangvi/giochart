@@ -60,24 +60,10 @@ class Chart extends React.Component <ChartProps, any> {
       animate: false,
       axis: {
         bottom: {
-          labels: {
-            autoRotate: false
-          },
+          labels: { autoRotate: false },
           title: null,
         },
         left: {
-          labels: {
-            autoRotate: false
-          },
-          title: null
-        },
-        right: {
-          labels: {
-            autoRotate: false
-          },
-          title: null
-        },
-        top: {
           labels: {
             autoRotate: false
           },
@@ -182,7 +168,7 @@ class Chart extends React.Component <ChartProps, any> {
     let frame      = new G2.Frame(source);
     // 需要多值域合并
     const chartCfg = getChartConfig(chartParams.chartType);
-    if (chartCfg.combinMetrics && metricCols.length) {
+    if (chartCfg.combinMetrics && metricCols.length > 1) {
       frame = G2.Frame.combinColumns(frame, metricCols, "val", "metric", dimCols);
       dimCols.push("metric");
       const metricDict = fromPairs(zip(metricCols, name));
