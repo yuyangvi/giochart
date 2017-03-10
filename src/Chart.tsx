@@ -278,13 +278,13 @@ class Chart extends React.Component <ChartProps, any> {
     chartParams.columns.forEach((m: Metric) => {
       sourceDef[m.id] = {
         alias: m.name,
-        type: (m.id !== "tm" && m.isDim) ? "cat" : "linear"
+        type: (m.isDim) ? "cat" : "linear"
       };
       if (m.isRate) {
         sourceDef[m.id].formatter = (n: number): string => `${(100 * n).toPrecision(3)}%`;
       }
     });
-    // 设置
+
     if (chartParams.granularities) {
       chartParams.granularities.forEach((glt: Granulariy) => {
         if (glt.interval) {
