@@ -23,12 +23,9 @@ const GioChart = (props: GioProps) => (
 );
 // 根据v3的chartParams计算v4的Scheme转化
 const convertChartParams = (v3Params: any): DataRequestProps => {
-    // convert metric & dimensions
-    // const functor = (n: any[]) => assign(n[0], {name: n[1]});
-    // const metrics = map(zip(v3Params.metrics, v3Params.metricNames), functor);
     const metrics = v3Params.metrics;
     const dimensions = v3Params.dimensions || [];
-    // const dimensions = map(zip(v3Params.metrics, v3Params.dimensionsName), functor);
+
     const granularities: Granulariy[] = [];
     if (v3Params.chartType.includes("dimension")) {
         granularities.push({id: dimensions[0], top: v3Params.top});
@@ -39,11 +36,15 @@ const convertChartParams = (v3Params: any): DataRequestProps => {
     }
     // convert granularities
     if (dimensions.includes("tm")) {
-        granularities.unshift({ id: "tm", interval: v3Params.interval });
+        granularities.unshift({
+          id: "tm",
+          interval: v3Params.interval,
+          period: (v3Params.chartType === "comparison" ? v3Params.period : undefined)
+        });
     }
 
     return {
-        // aggregateType: v3Params.aggregateType, // 聚合类型: sum, avg
+        aggregateType: (v3Params.chartType === "comparison" ? v3Params.aggregateType : undefined), // 聚合类型: sum, avg
         // attrs: {}, // 属性
         dimensions,
         filter: v3Params.filter, // 过滤

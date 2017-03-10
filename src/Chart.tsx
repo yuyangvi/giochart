@@ -26,8 +26,10 @@ const getChartConfig: any = (chartType: string) => {
   };
   // 将图表类型变成不同步骤的组合
   const chartTypeMap: any[string] = {
+    area: {geom: "area"},
     bar:    { geom: "interval", reflect: "y", transpose: true },
     bubble: { geom: "point", pos: "MM", combinMetrics: false },
+    comparison: {geom: "area", style: { lineWidth: 2 } },
     doubley: { geom: "interval", pos: "DMM", combinMetrics: false },
     funnel: { axis: false, geom: "intervalSymmetric", transpose: true, scale: true, shape: "funnel" },
     line:   { geom: "line", size: 2 },
@@ -191,17 +193,15 @@ class Chart extends React.Component <ChartProps, any> {
     const adjust = chartCfg.geom === "line" ? "" : chartParams.adjust;
     const geom = chart[chartCfg.geom](adjust);
     // position
-    // 我靠，维度不同的时间也不一样?
     const pos = chartCfg.pos === "MM" ?
       (metricCols[0] + "*" + metricCols[1]) :
       (dimCols[0] + "*" + metricCols[0]);
-    if (dimCols.length <= 1) {
+    if (dimCols.length < 2) {
       geom.position(G2.Stat.summary.sum(pos));
     } else {
       geom.position(pos).color(dimCols[1]);
     }
-
-    if (chartCfg.pos === "MMD") { //双y
+    if (chartCfg.pos === "MMD") { // 双y
       chart.line().position(dimCols[0] + "*" + metricCols[1]);
     }
 
@@ -215,6 +215,16 @@ class Chart extends React.Component <ChartProps, any> {
     if (chartCfg.shape) {
       geom.shape(chartCfg.shape);
     }
+    if (chartCfg.geom === "area") { // 为了area 好看点
+      const styleGeom = chart.line().position(pos).size(2);
+      if (dimCols.length < 2) {
+        styleGeom.color(dimCols[1]);
+      }
+    }
+    chart.tooltip({
+      crosshairs: true
+    });
+
     // legend
     chart.legend({
       itemWrap: false,
@@ -275,9 +285,9 @@ class Chart extends React.Component <ChartProps, any> {
       chartParams.granularities.forEach((glt: Granulariy) => {
         if (glt.interval) {
           sourceDef[glt.id] = {
-            mask: (glt.interval >= 86400) ? "mm-dd" : "HH:mm",
+            mask: (glt.interval >= 864e5) ? "mm-dd" : "HH:mm",
             nice: true,
-            type: ( chartConfig.geom === "line" ? "time" : "timeCat" ) // TODO 可能有其他case
+            type: ( chartConfig.geom !== "interval" ? "time" : "timeCat" ) // TODO 可能有其他case
           };
         }
       });

@@ -44,6 +44,7 @@ export interface Metric {
   name?: string;
   action?: string;
   isDim?: boolean;
+  interval?: number;
   isRate?: boolean;
 }
 
