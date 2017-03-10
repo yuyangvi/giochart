@@ -49,7 +49,7 @@ class GrTable extends React.Component <ChartProps, any> {
       sorter: sorterDecorator(m.id),
       title: m.name,
     }));
-    if (this.props.hasOwnProperty("extraColumns")) {
+    if (this.props.hasOwnProperty("extraColumns") && this.props.extraColumns) {
       cols = cols.concat(this.props.extraColumns);
     }
     /*
