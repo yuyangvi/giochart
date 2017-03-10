@@ -1,12 +1,12 @@
 /***
  * 文档
  */
-import {DataRequestProps, ResponseParams, DataLoaderProps} from './ChartProps';
+import { flatten, isEqual, map, zipObject } from "lodash";
 import * as React from "react";
-import { map, zipObject, flatten, isEqual } from 'lodash';
-declare function fetch(a: any, b?: any): any;
+import {DataLoaderProps, DataRequestProps, ResponseParams} from "./ChartProps";
+// declare function fetch(a: any, b?: any): any;
 declare const project: any;
-//数据统计必备字段，中端需要以下字段提供数据
+// 数据统计必备字段，中端需要以下字段提供数据
 export const HttpStatus = {
   Ok                  : 200,
   Created             : 201,
@@ -29,21 +29,21 @@ export const HttpStatus = {
 };
 
 class DataSource extends React.Component <DataLoaderProps, any> {
-  static childContextTypes: React.ValidationMap<any> = {
-    source: React.PropTypes.any,
+  private static childContextTypes: React.ValidationMap<any> = {
     columns: React.PropTypes.array,
+    selectHandler: React.PropTypes.func,
     selected: React.PropTypes.any,
-    selectHandler: React.PropTypes.func
+    source: React.PropTypes.any
   };
 
-  constructor(props: DataLoaderProps) {
+  private constructor(props: DataLoaderProps) {
     super(props);
     // 加载状态
     this.state = {
-      isLoaded: false,
       columns: null,
-      source: null,
-      selected: null
+      isLoaded: false,
+      selected: null,
+      source: null
     };
   }
   /*
@@ -53,28 +53,28 @@ class DataSource extends React.Component <DataLoaderProps, any> {
    });
   }
   */
-  //TODO: 用来给子孙节点中的GrChart自定义 Demo props state改变触发 DataSource取数据返回触发
-  getChildContext() {
+  public render() {
+    // TODO div高度
+    return React.Children.only(this.props.children);
+  }
+  // TODO: 用来给子孙节点中的GrChart自定义 Demo props state改变触发 DataSource取数据返回触发
+  private getChildContext() {
     return {
       columns: this.state.columns,
-      source: this.state.source,
-      selected: this.state.selected
+      selected: this.state.selected,
+      source: this.state.source
       /*,
        selectHandler: this.selectHandler.bind(this)
        */
     };
   }
-  componentWillReceiveProps(nextProps: DataLoaderProps) {
+  private componentWillReceiveProps(nextProps: DataLoaderProps) {
     // TODO status改变也会触发，所以多了一层判断
-    if(this.props.params !== nextProps.params){
+    if (this.props.params !== nextProps.params) {
       this.defaultRequest(nextProps.params, this.afterFetch.bind(this));
     }
   }
 
-  render() {
-    // TODO div高度
-    return <div style={this.props.style}>{this.props.children}</div>;
-  }
   // 动态变化Dimension
   /* defaultRetryRequest() {
    let {chartParams} = this.props;
@@ -85,38 +85,33 @@ class DataSource extends React.Component <DataLoaderProps, any> {
    return result;
   } */
 
-  defaultRequest(chartParams: DataRequestProps, callback: Function) {
-    let url = `/v4/projects/${project.id}/chartdata`;
-    /*if (chartParams.hasOwnProperty('sourceUrl')) {
-
-    }*/
-    /*
-     let url = `http://gta.growingio.dev:18443/v4/projects/${project.id}/chartdata`;
-    let headers = new Headers();
-    headers.append('authorization', 'Token 5ac75d524422179e2123f1da5d8c2622e5330dff8173edf90e52fc4f49d63efe');
-    let request = new Request(url, {headers: headers});
-    */
-    return fetch(url, {
-      credentials: 'same-origin',
-      contentType: 'application/json',
-      method: 'post',
-      body: JSON.stringify(chartParams)
-    })
-      .then((response: any) => {
-        let status = response.status;
-        if(status === HttpStatus.Ok) {
-          return response.json();
-        }
-      })
-      .then((data: ResponseParams) => callback(data));
+  private defaultRequest(chartParams: DataRequestProps, callback: any) {
+    let fetchObj;
+    // Todo 检查是否是DEV环境
+    if (this.props.hasOwnProperty("sourceUrl")) {
+      fetchObj = fetch(this.props.sourceUrl);
+    } else {
+      fetchObj = fetch(`/v4/projects/${project.id}/chartdata`, {
+        body: JSON.stringify(chartParams),
+        credentials: "same-origin",
+        /*contentType: "application/json",*/
+        method: "post",
+      });
+    }
+    fetchObj.then((response: any) => {
+      const status = response.status;
+      if (status === HttpStatus.Ok) {
+        return response.json();
+      }
+    }).then((data: ResponseParams) => callback(data));
   }
 
-  componentDidMount() {
-    let { params } = this.props;
+  private componentDidMount() {
+    const { params } = this.props;
     this.defaultRequest(params, this.afterFetch.bind(this));
   }
 
-  afterFetch(chartData: ResponseParams) {
+  private afterFetch(chartData: ResponseParams) {
     const columns = chartData.meta.columns;
     const colIds = map(chartData.meta.columns, "id");
     const source = map(chartData.data, (n: number[]) => zipObject(colIds, n));
@@ -125,7 +120,9 @@ class DataSource extends React.Component <DataLoaderProps, any> {
       columns,
       source
     });
-    this.props.onLoad && this.props.onLoad(this.state);
+    if (this.props.onLoad) {
+      this.props.onLoad(this.state);
+    }
   }
 }
 

@@ -3,10 +3,9 @@ import * as update from 'react/lib/update';
 import DataSource from '../src/DataSource';
 import { DataRequestProps, DrawParamsProps, Metric } from '../src/ChartProps';
 import SyntheticEvent = React.SyntheticEvent;
-import Chart from '../src/Chart';
 import DimensionPanel from "../src/DimensionPanel";
 import {isEqual, isMatch, filter, map, isEmpty} from 'lodash';
-import GrTable from "../src/GrTable";
+import ContextListener from "../src/ContextListener";
 
 interface EventSeletorTarget extends EventTarget {
     value: string
@@ -16,7 +15,7 @@ interface SyntheticSeletorEvent extends SyntheticEvent<HTMLSelectElement> {
 }
 
 const originParams: DataRequestProps = {
-  "metrics": [{"id": "woV73y92", "level": "simple", "action": "page"}],
+  "metrics": [{"id": "woV73y92", "action": "page"}],
   "dimensions": ["tm"],
   "granularities": [],
   "timeRange": "day:8,1"
@@ -68,7 +67,7 @@ class Demo extends React.Component<any, any> {
     let dim: string[] = this.state.dim;
     let barParams = null;
 
-    //modeValue true=替换 false=追加
+    // modeValue true=替换 false=追加
     if (dim) {
       if(this.state.modeValue){
         this.params = update(originParams, {dimensions: {$push: dim}});
@@ -93,9 +92,8 @@ class Demo extends React.Component<any, any> {
       <div className='container'>
         <div className='mainPanel'>
           <DataSource params={this.params} ref={ (DataSource) => { this.dataSource = DataSource; }}>
-            <Chart chartParams={lineParams}/>
-            <GrTable />
-            { barParams ? <Chart chartParams={barParams} select={this.select.bind(this)} /> : null }
+            <ContextListener chartParams={lineParams} />
+            { barParams ? <ContextListener chartParams={barParams} select={this.select.bind(this)} /> : null }
             <DimensionPanel addDimension={this.addDimension.bind(this)} />
           </DataSource>
         </div>

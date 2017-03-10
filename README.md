@@ -1,17 +1,4 @@
-GrowingIO Chart component
-## Resources
-* API Reference
-   * [chartParams](API.md#chartParams)
-   * [chartData](API.md#chartData)
-* Examples
-  * [x] Simple Chart
-  * [x] Async DataSource Charts
-  * [x] Interactive Data Filter
-  * [ ] Realtime Chart
-  * [ ] Aggregate Chart
-  * [ ] Output Image
-  * [X] Analysic Panel
-* License
+#GrowingIO Chart component
 
 ## Install
 在package.json中的dependencies里添加
@@ -29,15 +16,13 @@ npm start
 ```
 
 ## Example
-http://localhost:8000/examples/
-
-online example: http://yuyangvi.github.io/giochart/examples/
+http://localhost:9090
 
 ## Usage
 
 ```js
 import React from 'react';
-import GioChart, { Chart, DataSource, GrTable } from 'giochart';
+import GioChart, { Chart, ContextListener, DataSource, GrTable } from 'giochart';
 
 const dataParams = {...};
 const chartData = {...};
@@ -55,9 +40,9 @@ const Section3 = (props) => (
     <h1>simple Demo</h1>
     <DataSource params={dataParams}>
     {/*inside GrLoader it could be any JSX node*/}
-        <Chart chartParams={drawParams} />
+        <ContextListener chartParams={drawParams} />
         <div>
-            <GrTable chartParams={drawParams} />
+            <ContextListener chartParams={otherParams} />
         </div>
     </DataSource>
   </div>);
@@ -67,35 +52,9 @@ React.render(<div>
   <Section3 />
 </div>, document.getElementById('__react-content'));
 ```
-
-## API
-DataSource
-params输入
-数据统计必备字段，中端需要以下字段提供数据
-```
-export interface DataRequestProps {
-  type?: string; // Enum: funnel, retention
-  metrics: Metric[]; // 指标
-  dimensions: string[]; // 维度
-  granularities: Granulariy[]; // 粒度
-  filter?: Filter[]; // 过滤
-  timeRange: string; // 时间区域 day:8,1
-  userTag?: string; // 用户分群ID
-  limit?: number; // 数据行限制 10
-  orders?: Order[]; // 排序
-  aggregateType?: string; // 聚合类型: sum, avg
-  attrs?: Object; // 属性
-  interval?: number; // 时间粒度 deperated
-}
-```
-
-Chart
-chartParams输入格式
-```
-export interface DrawParamsProps {
-  adjust?: string;
-  chartType: string;
-  columns: Metric[];// 指标和维度的数组，为了保证绘图的准确，请将xy轴的字段分别放在维度序列和指标序列最前面
-  granularities?: Granulariy[];
-}
-```
+## API Reference
+   * [Server Request & Response](docs/GQL.md) 服务器请求数据格式文档
+   * [Chart](docs/Chart.md) 基本图形文档
+   * [GrTable](docs/GrTable.md) 表格文档
+   * [DataSource](docs/DataSource.md) 通用数据源加载
+   * [Interactive](docs/Interactive.md) 关于可视化交互
