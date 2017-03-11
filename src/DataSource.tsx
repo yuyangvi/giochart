@@ -1,9 +1,9 @@
 /***
  * 文档
  */
-import { flatten, isEqual, map, zipObject } from "lodash";
+import { assign, flatten, isEqual, map, zipObject, zipWith } from "lodash";
 import * as React from "react";
-import {DataLoaderProps, DataRequestProps, ResponseParams} from "./ChartProps";
+import {DataLoaderProps, DataRequestProps, Metric, ResponseParams} from "./ChartProps";
 // declare function fetch(a: any, b?: any): any;
 declare const project: any;
 // 数据统计必备字段，中端需要以下字段提供数据
@@ -30,6 +30,7 @@ export const HttpStatus = {
 
 class DataSource extends React.Component <DataLoaderProps, any> {
   private static childContextTypes: React.ValidationMap<any> = {
+    aggregates: React.PropTypes.array,
     columns: React.PropTypes.array,
     selectHandler: React.PropTypes.func,
     selected: React.PropTypes.any,
@@ -40,6 +41,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
     super(props);
     // 加载状态
     this.state = {
+      aggregates: null,
       columns: null,
       isLoaded: false,
       selected: null,
@@ -60,6 +62,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
   // TODO: 用来给子孙节点中的GrChart自定义 Demo props state改变触发 DataSource取数据返回触发
   private getChildContext() {
     return {
+      aggregates: this.state.aggregates,
       columns: this.state.columns,
       selected: this.state.selected,
       source: this.state.source
@@ -71,7 +74,6 @@ class DataSource extends React.Component <DataLoaderProps, any> {
   private componentWillReceiveProps(nextProps: DataLoaderProps) {
     // TODO status改变也会触发，所以多了一层判断
     if (JSON.stringify(this.props.params) !== JSON.stringify(nextProps.params)) {
-      console.log('componentWillReceiveProps', nextProps.params);
       this.defaultRequest(nextProps.params, this.afterFetch.bind(this));
     }
   }
@@ -109,15 +111,36 @@ class DataSource extends React.Component <DataLoaderProps, any> {
 
   private componentDidMount() {
     const { params } = this.props;
-    console.log('componentDidMount', params);
     this.defaultRequest(params, this.afterFetch.bind(this));
   }
 
   private afterFetch(chartData: ResponseParams) {
-    const columns = chartData.meta.columns;
-    const colIds = map(chartData.meta.columns, "id");
-    const source = map(chartData.data, (n: number[]) => zipObject(colIds, n));
+    let columns = chartData.meta.columns;
+    let colIds = map(chartData.meta.columns, "id");
+    const offset = chartData.meta.offset;
+    let sourceData: number[][] = chartData.data;
+
+    // 为了支持周期对比图，这里需要meta的offset 转化
+    if (chartData.meta.offset) {
+      // 寻找粒度
+      const period = this.props.params.granularities[0].period;
+      const offsetPeriod = (period * 86400000);
+      // 强行配对，没验证...
+      sourceData = zipWith(sourceData.slice(0, offset), sourceData.slice(offset), (thisTurn: number[], lastTurn: number[]) => (thisTurn || [lastTurn[0] + offsetPeriod, null]).concat(lastTurn));
+      colIds = colIds.concat(map(colIds, (n: string) => (n + "_")));
+      // 取得Metric ID
+      columns[1].name = "当前周期";
+      columns = columns.concat(map(columns,
+        (n: Metric) => assign({}, n, {
+          id: n.id + "_",
+          name: n.isDim ? undefined : "上一周期"
+        })
+      ));
+    }
+
+    const source = map(sourceData, (n: number[]) => zipObject(colIds, n));
     this.setState({
+      aggregates: chartData.meta.aggregates,
       isLoaded: true,
       columns,
       source

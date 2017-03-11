@@ -12,6 +12,7 @@ import GrTable from "./GrTable";
 interface GioProps {
   adjust?: string;
   chartType: string;
+  colorTheme?: string;
   params: DataRequestProps;
   style?: any;
   extraColumns?: any;
@@ -21,6 +22,7 @@ const GioChart = (props: GioProps) => (
   <DataSource params={props.params} style={props.style}>
     <ContextListener
       chartType={props.chartType}
+      colorTheme={props.colorTheme}
       granularities={props.params.granularities}
       adjust={props.adjust}
       extraColumns={props.extraColumns}
@@ -50,7 +52,7 @@ const convertChartParams = (v3Params: any): DataRequestProps => {
     }
 
     return {
-        aggregateType: (v3Params.chartType === "comparison" ? v3Params.aggregateType : undefined), // 聚合类型: sum, avg
+        aggregateType: (v3Params.chartType === "singleNumber" ? v3Params.aggregateType : undefined), // 聚合类型: sum, avg
         // attrs: {}, // 属性
         dimensions,
         filter: v3Params.filter, // 过滤

@@ -1,4 +1,4 @@
-import { filter, fromPairs, isEmpty, isEqual, isMatch, map, merge, pick, some, zip, zipObject } from "lodash";
+import { filter, find, fromPairs, isEmpty, isEqual, isMatch, map, merge, pick, some, zip, zipObject } from "lodash";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import G2 = require("g2");
@@ -29,8 +29,8 @@ const getChartConfig: any = (chartType: string) => {
     area: {geom: "area"},
     bar:    { geom: "interval", reflect: "y", transpose: true },
     bubble: { geom: "point", pos: "MM", combinMetrics: false },
-    comparison: {geom: "area"},
-    doubley: { geom: "interval", pos: "DMM", combinMetrics: false },
+    comparison: {geom: "area", pos: "MMD", combinMetrics: false, hideAxis:true },
+    doubley: { geom: "interval", pos: "MMD", combinMetrics: false },
     funnel: { axis: false, geom: "intervalSymmetric", transpose: true, scale: true, shape: "funnel" },
     line:   { geom: "line", size: 2 },
     retension: {geom: "line", size: 2, counter: "day"},
@@ -78,7 +78,7 @@ class Chart extends React.Component <ChartProps, any> {
       },
       defaultColor: "#fc5f3a",
       shape: {
-        area: { fill: "#fc5f3a" },
+        area: { fill: "#fc5f3a", fillOpacity: 0.3 },
         interval: { fill: "#d5375f" },
         line: { stroke: "#fc5f3a" }
       }
@@ -190,8 +190,9 @@ class Chart extends React.Component <ChartProps, any> {
         coord.reflect(chartCfg.reflect);
       }
     }
-    const adjust = chartCfg.geom === "line" ? "" : chartParams.adjust;
+    const adjust = ["line", "area"].includes(chartCfg.geom) ? "" : chartParams.adjust;
     const geom = chart[chartCfg.geom](adjust);
+
     // position
     const pos = chartCfg.pos === "MM" ?
       (metricCols[0] + "*" + metricCols[1]) :
@@ -199,10 +200,17 @@ class Chart extends React.Component <ChartProps, any> {
     if (dimCols.length < 2) {
       geom.position(G2.Stat.summary.sum(pos));
     } else {
-      geom.position(pos).color(dimCols[1]);
+      geom.position(pos);
+
+      if (chartCfg.pos !== "MMD") {
+        geom.color(dimCols[1]);
+      }
     }
     if (chartCfg.pos === "MMD") { // 双y
-      chart.line().position(dimCols[0] + "*" + metricCols[1]);
+      chart.line().size(2).position(dimCols[0] + "*" + metricCols[1]).color('#e1dac8');
+      if (chartCfg.hideAxis) {
+        chart.axis(metricCols[1], false);
+      }
     }
 
     // size
@@ -217,9 +225,12 @@ class Chart extends React.Component <ChartProps, any> {
     }
     if (chartCfg.geom === "area") { // 为了area 好看点
       const styleGeom = chart.line().position(pos).size(2);
-      if (dimCols.length < 2) {
+      if (dimCols.length > 1 && chartCfg.pos !== "MMD") {
         styleGeom.color(dimCols[1]);
       }
+    }
+    if (this.props.colorTheme) {
+      geom.color(`rgb(${this.props.colorTheme}`);
     }
     chart.tooltip({
       crosshairs: true
@@ -247,6 +258,7 @@ class Chart extends React.Component <ChartProps, any> {
     chart.render();
     this.chart = chart;
   }
+
   private selectHandler(ev: any, selectCols: string[]) {
     const shape = ev.shape;
     if (shape) {
@@ -285,7 +297,7 @@ class Chart extends React.Component <ChartProps, any> {
       chartParams.granularities.forEach((glt: Granulariy) => {
         if (glt.interval) {
           sourceDef[glt.id] = {
-            mask: (glt.interval >= 864e5) ? "mm-dd" : "HH:mm",
+            mask: (glt.interval >= 864e5) ? "mm-dd" : "HH:MM",
             nice: true,
             type: ( chartConfig.geom !== "interval" ? "time" : "timeCat" ) // TODO 可能有其他case
           };
