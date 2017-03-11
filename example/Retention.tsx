@@ -9,7 +9,7 @@ interface EventSeletorTarget extends EventTarget {
     value: string
 }
 
-const retensionRequestParams: DataRequestProps = {
+const retentionRequestParams: DataRequestProps = {
   attrs: {userType: "nuv"},
   dimensions: ["rt"],
   granularities: [{id: "rt", values: ["外部链接"]}],
@@ -18,7 +18,7 @@ const retensionRequestParams: DataRequestProps = {
   type: "retention"
 }
 
-const retensionDrawParams: DrawParamsProps = {
+const retentionDrawParams: DrawParamsProps = {
   chartType: "table",
   columns: [
       {id: "tm", name: "时间", isDim: true},
@@ -27,11 +27,11 @@ const retensionDrawParams: DrawParamsProps = {
   granularities: [{id: "tm", interval: 86400 }]
 };
 /*
-<DataSource params={retensionRequestParams} sourceUrl="/assets/demo.json">
-  <ContextListener chartParams={retensionDrawParams} />
+<DataSource params={retentionRequestParams} sourceUrl="/assets/demo.json">
+  <ContextListener chartParams={retentionDrawParams} />
 </DataSource>
 */
-const Retension = (props: any) => (
-  <GioChart chartType="table" params={retensionRequestParams} />
+const Retention = (props: any) => (
+  <GioChart chartType="table" params={retentionRequestParams} />
 );
-export default Retension;
+export default Retention;

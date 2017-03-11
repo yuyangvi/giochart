@@ -33,7 +33,7 @@ const getChartConfig: any = (chartType: string) => {
     doubley: { geom: "interval", pos: "MMD", combinMetrics: false },
     funnel: { axis: false, geom: "intervalSymmetric", transpose: true, scale: true, shape: "funnel" },
     line:   { geom: "line", size: 2 },
-    retension: {geom: "line", size: 2, counter: "day"},
+    retention: {geom: "line", size: 2, counter: "day"},
     vbar:   { geom: "interval" }
   };
   return merge({}, defaultMetric, chartTypeMap[chartType]);
