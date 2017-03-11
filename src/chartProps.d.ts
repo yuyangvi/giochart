@@ -51,11 +51,11 @@ export interface Metric {
 // ResponseParams
 export interface ResponseParams {
   meta: {
+    aggregates?: any;
+    offset?: number;
     columns: Metric[];
-  },
-  data: {
-    [k: number]: number[];
-  }
+  };
+  data: number[][];
 }
 
 export type Source = Array<{[column: string]: number}>;
@@ -71,6 +71,7 @@ export interface DataLoaderProps {
 // 标准Chart
 export interface ChartProps {
   chartParams: DrawParamsProps;
+  colorTheme?: string;
   source: Source;
   select?: (evt: any, unselect: any) => any;
   selected?: any;
@@ -80,6 +81,7 @@ export interface ChartProps {
 export interface SingleChartProps {
   adjust?: string;
   chartType?: string;
+  colorTheme?: string;
   chartParams?: DrawParamsProps;
   extraColumns?: any;
   granularities?: Granulariy[];

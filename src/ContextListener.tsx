@@ -30,10 +30,10 @@ class ContextListener extends React.Component <SingleChartProps, any> {
       return (
         <div className="gr-chart-wrapper">
           <Aggregate data={this.context.aggregates} period={this.props.granularities[0].period >= 7} />
-          <Chart chartParams={chartParams} source={this.context.source} select={this.props.select} />
+          <Chart chartParams={chartParams} source={this.context.source} select={this.props.select} colorTheme={this.props.colorTheme}/>
         </div>);
     }
-    return <Chart chartParams={chartParams} source={this.context.source} select={this.props.select} />;
+    return <Chart chartParams={chartParams} source={this.context.source} select={this.props.select} colorTheme={this.props.colorTheme} />;
   }
   private generateChartParams() {
     if (this.props.hasOwnProperty("chartParams")) {
