@@ -30,7 +30,7 @@ const getChartConfig: any = (chartType: string) => {
     bar:    { geom: "interval", reflect: "y", transpose: true },
     bubble: { geom: "point", pos: "MM", combinMetrics: false },
     comparison: {geom: "area", pos: "MMD", combinMetrics: false, hideAxis:true },
-    doubley: { geom: "interval", pos: "MMD", combinMetrics: false },
+    daulaxis: { geom: "interval", pos: "MMD", combinMetrics: false },
     funnel: { axis: false, geom: "intervalSymmetric", transpose: true, scale: true, shape: "funnel" },
     line:   { geom: "line", size: 2 },
     retention: {geom: "line", size: 2, counter: "day"},
