@@ -21,8 +21,7 @@ interface SourceConfig {
 const getChartConfig: any = (chartType: string) => {
   const defaultMetric = {
     combinMetrics: true,
-    geom: "line",
-
+    geom: "line"
   };
   // 将图表类型变成不同步骤的组合
   const chartTypeMap: any[string] = {
@@ -207,7 +206,7 @@ class Chart extends React.Component <ChartProps, any> {
       }
     }
     if (chartCfg.pos === "MMD") { // 双y
-      chart.line().size(2).position(dimCols[0] + "*" + metricCols[1]).color('#e1dac8');
+      chart.line().size(2).position(dimCols[0] + "*" + metricCols[1]).color("#e1dac8");
       if (chartCfg.hideAxis) {
         chart.axis(metricCols[1], false);
       }

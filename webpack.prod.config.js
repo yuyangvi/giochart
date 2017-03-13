@@ -48,7 +48,7 @@ module.exports = {
 
 
   externals: {
-    "g2": "G2",
+    "g2": "g2",
     "lodash": "lodash",
     'react': {
       'commonjs': 'react',
