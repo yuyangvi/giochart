@@ -229,7 +229,7 @@ class Chart extends React.Component <ChartProps, any> {
       }
     }
     if (this.props.colorTheme) {
-      geom.color(`rgb(${this.props.colorTheme}`);
+      geom.color(`rgb(${this.props.colorTheme})`);
     }
     chart.tooltip({
       crosshairs: true

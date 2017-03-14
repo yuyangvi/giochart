@@ -2,9 +2,9 @@ import * as React from 'react';
 import {DataRequestProps, DrawParamsProps} from '../src/ChartProps';
 import SyntheticEvent = React.SyntheticEvent;
 // import Chart from '../src/Chart';
-// import DataSource from "../src/DataSource";
+import DataSource from "../src/DataSource";
 import GioChart from '../src/index';
-// import ContextListener from "../src/ContextListener";
+import ContextListener from "../src/ContextListener";
 interface EventSeletorTarget extends EventTarget {
     value: string
 }
@@ -19,19 +19,20 @@ const retentionRequestParams: DataRequestProps = {
 }
 
 const retentionDrawParams: DrawParamsProps = {
-  chartType: "table",
+  chartType: "line",
   columns: [
       {id: "tm", name: "时间", isDim: true},
       {id: "0gw432", name: "访问用户量", isDim: false}
   ],
   granularities: [{id: "tm", interval: 86400 }]
 };
-/*
-<DataSource params={retentionRequestParams} sourceUrl="/assets/demo.json">
-  <ContextListener chartParams={retentionDrawParams} />
-</DataSource>
-*/
-const Retention = (props: any) => (
-  <GioChart chartType="table" params={retentionRequestParams} />
+
+const Retention = (props) => (
+    <DataSource params={retentionRequestParams} sourceUrl="/assets/demo.json">
+      <ContextListener chartParams={retentionDrawParams} colorTheme="244, 21, 41" />
+    </DataSource>
 );
+/*const Retention = (props: any) => (
+  <GioChart chartType="table" params={retentionRequestParams} />
+);*/
 export default Retention;

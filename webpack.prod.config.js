@@ -7,11 +7,11 @@ module.exports = {
     "./src/Aggregate.tsx",
     "./src/DimensionPanel.tsx",
     "./src/GrTable.tsx",
-     "./src/DataSource.tsx",
-     "./src/Chart.tsx"
-
+    "./src/DataSource.tsx",
+    "./src/Chart.tsx"
     "./src/GrTable.tsx",
-    "./src/DimensionPanel.tsx",*/
+    "./src/DimensionPanel.tsx",
+    */
     './src/index.tsx',
   ],
   output: {
@@ -61,7 +61,6 @@ module.exports = {
       'commonjs': 'react-dom',
       'commonjs2': 'react-dom',
       'amd': 'react-dom',
-
       'root': 'ReactDOM'
     },
     "antd": "antd",
