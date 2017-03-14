@@ -5,7 +5,7 @@
 import { assign, map, zip } from "lodash";
 import * as React from "react";
 import Chart from "./Chart";
-import {DataRequestProps, Granulariy} from "./ChartProps";
+import {DataRequestProps, Granulariy, SingleChartProps} from "./ChartProps";
 import ContextListener from "./ContextListener";
 import DataSource from "./DataSource";
 import GrTable from "./GrTable";
@@ -30,7 +30,7 @@ const GioChart = (props: GioProps) => (
   </DataSource>
 );
 // 根据v3的chartParams计算v4的Scheme转化
-const convertChartParams = (v3Params: any): DataRequestProps => {
+const convertChartParams = (v3Params: any): GioProps => {
     const metrics = v3Params.metrics;
     const dimensions = v3Params.dimensions || [];
 
@@ -51,7 +51,7 @@ const convertChartParams = (v3Params: any): DataRequestProps => {
         });
     }
 
-    return {
+    const params: DataRequestProps =  {
         aggregateType: (v3Params.chartType === "singleNumber" ? v3Params.aggregateType : undefined), // 聚合类型: sum, avg
         // attrs: {}, // 属性
         dimensions,
@@ -63,6 +63,11 @@ const convertChartParams = (v3Params: any): DataRequestProps => {
         timeRange: v3Params.timeRange, // 时间区域 day:8,1
         userTag: v3Params.userTag // 用户分群ID
     };
+
+    const chartType: string = v3Params.chartType.replace("dimension", "").toLowerCase();
+    const adjust: string = (v3Params.attrs.subChartType === "total") ? "stack" : "dodge";
+    return { adjust, chartType, params };
 }
+
 export { Chart, ContextListener, DataSource, GrTable, convertChartParams};
 export default GioChart;
