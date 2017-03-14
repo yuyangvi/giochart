@@ -18,7 +18,7 @@ interface GioProps {
   extraColumns?: any;
 }
 
-const GioChart = (props: GioProps) => (
+const ChartV4 = (props: GioProps) => (
   <DataSource params={props.params} style={props.style}>
     <ContextListener
       chartType={props.chartType}
@@ -68,6 +68,10 @@ const convertChartParams = (v3Params: any): GioProps => {
     const adjust: string = (v3Params.attrs.subChartType === "total") ? "stack" : "dodge";
     return { adjust, chartType, params };
 }
+
+const GioChart = (props: GioProps) => (
+  props.chartType ? <ChartV4 {...props}/> : <ChartV4 {...convertChartParams(props.params)} />
+);
 
 export { Chart, ContextListener, DataSource, GrTable, convertChartParams};
 export default GioChart;
