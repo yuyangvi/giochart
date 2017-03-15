@@ -161,7 +161,7 @@ class Chart extends React.Component <ChartProps, any> {
       forceFit: true,
       height: canvasRect.height || 350,
       plotCfg: {
-        margin: (chartParams.chartType === "singleNumber" ? [0, 0, 0, 0] : [60, 30, 80, 50])
+        margin: (chartParams.chartType === "singleNumber" ? [0, 0, 0, 0] : [0, 30, 80, 50])
       }
     });
 

@@ -27,7 +27,7 @@ interface Order {
 interface Granulariy {
   id: string;
   interval?: number;
-  period?: number;
+  period?: string;
   top?: number;
   values?: string[];
 }
