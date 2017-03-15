@@ -166,7 +166,7 @@ class Chart extends React.Component <ChartProps, any> {
     });
 
     const sourceDef = this.buildSourceConfig(chartParams);
-    console.log(sourceDef);
+
     // 建立Frame
     const metricCols = map(filter(chartParams.columns, { isDim: false }), "id");
     const dimCols    = map(filter(chartParams.columns, { isDim: true }), "id");
