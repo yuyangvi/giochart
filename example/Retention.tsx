@@ -19,17 +19,18 @@ const retentionRequestParams: DataRequestProps = {
 }
 
 const retentionDrawParams: DrawParamsProps = {
-  chartType: "line",
+  chartType: "dualaxis",
   columns: [
       {id: "tm", name: "时间", isDim: true},
-      {id: "0gw432", name: "访问用户量", isDim: false}
+      {id: "0gw432", name: "访问用户量", isDim: false},
+      {id: "rate", name: "访量", isDim: false}
   ],
-  granularities: [{id: "tm", interval: 86400 }]
+  granularities: [{id: "tm", interval: 86400000 }]
 };
 
 const Retention = (props) => (
     <DataSource params={retentionRequestParams} sourceUrl="/assets/demo.json">
-      <ContextListener chartParams={retentionDrawParams} colorTheme="244, 21, 41" />
+      <ContextListener chartParams={retentionDrawParams} />
     </DataSource>
 );
 /*const Retention = (props: any) => (

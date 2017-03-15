@@ -47,7 +47,7 @@ const convertChartParams = (v3Params: any): GioProps => {
         granularities.unshift({
           id: "tm",
           interval: v3Params.interval,
-          period: (v3Params.chartType === "comparison" ? v3Params.period : undefined)
+          period: (v3Params.chartType === "comparison" ? "auto" : undefined)
         });
     }
 

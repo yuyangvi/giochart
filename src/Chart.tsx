@@ -161,11 +161,12 @@ class Chart extends React.Component <ChartProps, any> {
       forceFit: true,
       height: canvasRect.height || 350,
       plotCfg: {
-        margin: (chartParams.chartType === "singleNumber" ? [0, 0, 0, 0] : [60, 10, 80, 50])
+        margin: (chartParams.chartType === "singleNumber" ? [0, 0, 0, 0] : [60, 30, 80, 50])
       }
     });
 
     const sourceDef = this.buildSourceConfig(chartParams);
+    console.log(sourceDef);
     // 建立Frame
     const metricCols = map(filter(chartParams.columns, { isDim: false }), "id");
     const dimCols    = map(filter(chartParams.columns, { isDim: true }), "id");

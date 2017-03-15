@@ -1,9 +1,9 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
-import Linkage from "./Linkage";
+import Retention from "./Retention";
 
 ReactDOM.render(
-  <Linkage />,
+  <Retention />,
   document.getElementById("example")
 );
