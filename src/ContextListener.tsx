@@ -17,6 +17,8 @@ class ContextListener extends React.Component <SingleChartProps, any> {
   };
   public render() {
     const chartParams = this.generateChartParams();
+    const withAggregate: boolean = ["comparison", "singleNumber"].includes(chartParams.chartType);
+
     if (chartParams.chartType === "table") {
       return (
         <GrTable
@@ -26,14 +28,38 @@ class ContextListener extends React.Component <SingleChartProps, any> {
           extraColumns={this.props.extraColumns}
         />
       );
-    } else if (chartParams.chartType === "comparison") {
+    } else if (withAggregate) {
+      return (
+        <div className={`gr-chart-wrapper ${chartParams.chartType}`}>
+          <Aggregate data={this.context.aggregates} period={this.props.granularities[0].period >= 7} />
+          <Chart
+            chartParams={chartParams}
+            colorTheme={this.props.colorTheme}
+            source={this.context.source}
+            select={this.props.select}
+          />
+        </div>);
+    }else if (chartParams.chartType === "singleNumber") {
       return (
         <div className="gr-chart-wrapper">
           <Aggregate data={this.context.aggregates} period={this.props.granularities[0].period >= 7} />
-          <Chart chartParams={chartParams} source={this.context.source} select={this.props.select} colorTheme={this.props.colorTheme}/>
+          <Chart
+            chartParams={chartParams}
+            colorTheme={this.props.colorTheme}
+            source={this.context.source}
+            select={this.props.select}
+            style={{height: "calc(100% - 40px)"}}
+          />
         </div>);
     }
-    return <Chart chartParams={chartParams} source={this.context.source} select={this.props.select} colorTheme={this.props.colorTheme} />;
+    return (
+      <Chart
+        chartParams={chartParams}
+        source={this.context.source}
+        select={this.props.select}
+        colorTheme={this.props.colorTheme}
+      />
+    );
   }
   private generateChartParams() {
     if (this.props.hasOwnProperty("chartParams")) {

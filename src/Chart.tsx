@@ -1,7 +1,7 @@
-import { filter, find, fromPairs, isEmpty, isEqual, isMatch, map, merge, pick, some, zip, zipObject } from "lodash";
+import G2 = require("g2");
+import { assign, filter, find, fromPairs, isEmpty, isEqual, isMatch, map, merge, pick, some, zip, zipObject } from "lodash";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import G2 = require("g2");
 import {ChartProps, DrawParamsProps, Granulariy, Metric, Source} from "./ChartProps";
 
 interface G2Scale {
@@ -28,13 +28,14 @@ const getChartConfig: any = (chartType: string) => {
     area: {geom: "area"},
     bar:    { geom: "interval", reflect: "y", transpose: true },
     bubble: { geom: "point", pos: "MM", combinMetrics: false },
-    comparison: {geom: "area", pos: "MMD", combinMetrics: false, hideAxis:true },
-    daulaxis: { geom: "interval", pos: "MMD", combinMetrics: false },
+    comparison: {geom: "area", pos: "MMD", combinMetrics: false, hideAxis: true },
+    dualaxis: { geom: "interval", pos: "MMD", combinMetrics: false },
     funnel: { axis: false, geom: "intervalSymmetric", transpose: true, scale: true, shape: "funnel" },
     line:   { geom: "line", size: 2 },
     retention: {geom: "line", size: 2, counter: "day"},
+    singleNumber: {geom: "area", shape: "smooth", combineMetrics: false, axis: false, tooltip: false},
     vbar:   { geom: "interval" }
-  };
+};
   return merge({}, defaultMetric, chartTypeMap[chartType]);
 };
 
@@ -86,7 +87,7 @@ class Chart extends React.Component <ChartProps, any> {
     G2.Global.setTheme(theme);
   }
   public render() {
-    return <div style={{ height: "100%" }} />;
+    return <div className="giochart" style={this.props.style} />;
   }
   // 这个函数是用来区分changeData还是draw, 通常尽量不要用componentWillReceiveProps
   private componentWillReceiveProps(nextProps: ChartProps) {
@@ -159,7 +160,9 @@ class Chart extends React.Component <ChartProps, any> {
       container: dom,
       forceFit: true,
       height: canvasRect.height || 350,
-      plotCfg: {}
+      plotCfg: {
+        margin: (chartParams.chartType === "singleNumber" ? [0, 0, 0, 0] : [60, 10, 80, 50])
+      }
     });
 
     const sourceDef = this.buildSourceConfig(chartParams);
@@ -180,8 +183,11 @@ class Chart extends React.Component <ChartProps, any> {
     chart.source(frame, sourceDef);
 
     // geom
-    if (chartCfg.axis) {
+    if (chartCfg.axis !== undefined) {
       chart.axis(chartCfg.axis);
+    }
+    if (chartCfg.tooltip !== undefined) {
+      chart.tooltip(chartCfg.tooltip);
     }
     if (chartCfg.transpose) {
       const coord = chart.coord("rect").transpose();
@@ -189,7 +195,7 @@ class Chart extends React.Component <ChartProps, any> {
         coord.reflect(chartCfg.reflect);
       }
     }
-    const adjust = ["line", "area"].includes(chartCfg.geom) ? "" : chartParams.adjust;
+    const adjust = "line" === chartCfg.geom ? "" : chartParams.adjust;
     const geom = chart[chartCfg.geom](adjust);
 
     // position
@@ -222,8 +228,12 @@ class Chart extends React.Component <ChartProps, any> {
     if (chartCfg.shape) {
       geom.shape(chartCfg.shape);
     }
-    if (chartCfg.geom === "area") { // 为了area 好看点
-      const styleGeom = chart.line().position(pos).size(2);
+    if (chartCfg.geom === "area" && adjust !== "stack") { // 为了area 好看点,画线
+      const styleGeom = chart.line();
+      if (chartCfg.shape) {
+        styleGeom.shape(chartCfg.shape);
+      }
+      styleGeom.position(pos).size(2);
       if (dimCols.length > 1 && chartCfg.pos !== "MMD") {
         styleGeom.color(dimCols[1]);
       }

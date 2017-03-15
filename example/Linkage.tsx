@@ -8,10 +8,10 @@ import {isEqual, isMatch, filter, map, isEmpty} from 'lodash';
 import ContextListener from "../src/ContextListener";
 
 interface EventSeletorTarget extends EventTarget {
-    value: string
+    value: string;
 }
 interface SyntheticSeletorEvent extends SyntheticEvent<HTMLSelectElement> {
-    target: EventSeletorTarget
+    target: EventSeletorTarget;
 }
 
 const originParams: DataRequestProps = {
@@ -92,9 +92,11 @@ class Demo extends React.Component<any, any> {
       <div className='container'>
         <div className='mainPanel'>
           <DataSource params={this.params} ref={ (DataSource) => { this.dataSource = DataSource; }}>
+            <div>
             <ContextListener chartParams={lineParams} />
             { barParams ? <ContextListener chartParams={barParams} select={this.select.bind(this)} /> : null }
             <DimensionPanel addDimension={this.addDimension.bind(this)} />
+            </div>
           </DataSource>
         </div>
       </div>

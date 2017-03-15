@@ -22,7 +22,7 @@ interface Filter {
 interface Order {
   id: string;
   isDim: boolean;
-  orderType: string;//Enum
+  orderType: string; // Enum
 }
 interface Granulariy {
   id: string;
@@ -65,7 +65,7 @@ export interface DataLoaderProps {
   params: DataRequestProps;
   sourceUrl?: string;
   source?: Source;
-  onLoad?: (state: any) => void
+  onLoad?: (state: any) => void;
 }
 
 // 标准Chart
@@ -76,6 +76,7 @@ export interface ChartProps {
   select?: (evt: any, unselect: any) => any;
   selected?: any;
   extraColumns?: any;
+  style?: any;
 }
 // 字段是从数据源取得的Chart的格式
 export interface SingleChartProps {

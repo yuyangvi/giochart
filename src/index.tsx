@@ -36,8 +36,8 @@ const convertChartParams = (v3Params: any): GioProps => {
 
     const granularities: Granulariy[] = [];
     if (v3Params.chartType.includes("dimension")) {
-        granularities.push({id: dimensions[0], top: v3Params.top});
-        dimensions.unshift("tm");
+      granularities.push({id: dimensions[0], top: v3Params.top});
+      dimensions.unshift("tm");
     }
     if (dimensions.length === 0) {
         dimensions.unshift(v3Params.chartType === "bar" ? "v" : "tm");
@@ -64,7 +64,13 @@ const convertChartParams = (v3Params: any): GioProps => {
         userTag: v3Params.userTag // 用户分群ID
     };
 
-    const chartType: string = v3Params.chartType.replace("dimension", "").toLowerCase();
+    let chartType: string = v3Params.chartType;
+    if (chartType.includes("dimension")) {
+      chartType = chartType.replace("dimension", "").toLowerCase();
+      if (chartType === "line" && v3Params.attrs.subChartType === "total") {
+        chartType = "area";
+      }
+    }
     const adjust: string = (v3Params.attrs.subChartType === "total") ? "stack" : "dodge";
     return { adjust, chartType, params };
 }
