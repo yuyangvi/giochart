@@ -196,7 +196,12 @@ class Chart extends React.Component <ChartProps, any> {
         coord.reflect(chartCfg.reflect);
       }
     }
-    const adjust = "line" === chartCfg.geom ? "" : chartParams.adjust;
+    let adjust = chartParams.adjust;
+    if ("line" === chartCfg.geom) {
+      adjust = "";
+    } else if ("area" === chartCfg.geom && chartParams.adjust === "dodge") {
+      adjust = "";
+    }
     const geom = chart[chartCfg.geom](adjust);
 
     // position
@@ -212,12 +217,12 @@ class Chart extends React.Component <ChartProps, any> {
         geom.color(dimCols[1]);
       }
     }
-    if (chartCfg.pos === "MMD") { // 双y
+    /*if (chartCfg.pos === "MMD") { // 双y
       chart.line().size(2).position(dimCols[0] + "*" + metricCols[1]).color("#e1dac8");
       if (chartCfg.hideAxis) {
         chart.axis(metricCols[1], false);
       }
-    }
+    }*/
 
     // size
     if (chartCfg.size) {
@@ -229,6 +234,7 @@ class Chart extends React.Component <ChartProps, any> {
     if (chartCfg.shape) {
       geom.shape(chartCfg.shape);
     }
+    /*
     if (chartCfg.geom === "area" && adjust !== "stack") { // 为了area 好看点,画线
       const styleGeom = chart.line();
       if (chartCfg.shape) {
@@ -238,7 +244,7 @@ class Chart extends React.Component <ChartProps, any> {
       if (dimCols.length > 1 && chartCfg.pos !== "MMD") {
         styleGeom.color(dimCols[1]);
       }
-    }
+    }*/
     if (this.props.colorTheme) {
       geom.color(`rgb(${this.props.colorTheme})`);
     }
