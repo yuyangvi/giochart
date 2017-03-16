@@ -9,7 +9,7 @@ const siPrefix = (n: number): string => {
   if (suffixIndex === 0) {
       return n.toPrecision(3);
   }
-  return Math.pow(10, 4 * suffixIndex).toPrecision(3) + suffixArray[suffixIndex];
+  return (n * Math.pow(0.1, 4 * suffixIndex)).toPrecision(3) + suffixArray[suffixIndex];
 }
 const Aggregate = (props: any) => {
   const { data, period }  = props;

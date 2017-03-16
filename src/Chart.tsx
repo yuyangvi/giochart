@@ -161,7 +161,7 @@ class Chart extends React.Component <ChartProps, any> {
       forceFit: true,
       height: canvasRect.height || 350,
       plotCfg: {
-        margin: (chartParams.chartType === "singleNumber" ? [0, 0, 0, 0] : [0, 30, 80, 50])
+        margin: (chartParams.chartType === "singleNumber" ? [0, 0, 0, 0] : [10, 30, 80, 50])
       }
     });
 
@@ -198,16 +198,19 @@ class Chart extends React.Component <ChartProps, any> {
     }
     let adjust = chartParams.adjust;
     if ("line" === chartCfg.geom) {
-      adjust = "";
-    } else if ("area" === chartCfg.geom && chartParams.adjust === "dodge") {
-      adjust = "";
+      adjust = undefined;
+    } else if ("interval" !== chartCfg.geom && chartParams.adjust === "dodge") {
+      adjust = undefined;
     }
+    //
+    // console.log(chartCfg.geom, adjust);
     const geom = chart[chartCfg.geom](adjust);
 
     // position
     const pos = chartCfg.pos === "MM" ?
       (metricCols[0] + "*" + metricCols[1]) :
       (dimCols[0] + "*" + metricCols[0]);
+
     if (dimCols.length < 2) {
       geom.position(G2.Stat.summary.sum(pos));
     } else {
@@ -217,12 +220,12 @@ class Chart extends React.Component <ChartProps, any> {
         geom.color(dimCols[1]);
       }
     }
-    /*if (chartCfg.pos === "MMD") { // 双y
+    if (chartCfg.pos === "MMD") { // 双y
       chart.line().size(2).position(dimCols[0] + "*" + metricCols[1]).color("#e1dac8");
       if (chartCfg.hideAxis) {
         chart.axis(metricCols[1], false);
       }
-    }*/
+    }
 
     // size
     if (chartCfg.size) {
