@@ -4,10 +4,10 @@
 import * as React from "react";
 const siPrefix = (n: number): string => {
   // Math.对数相除
-  const suffixArray = [null, "万", "亿", "万亿"];
+  const suffixArray = ["", "万", "亿", "万亿"];
   const suffixIndex = Math.max(0, Math.min(3, Math.floor(Math.log10(Math.abs(n)) / 4)));
-  if (suffixIndex === 0) {
-      return n.toPrecision(3);
+  if (suffixIndex === 0 && Number.isInteger(n)) {
+      return n.toString();
   }
   return (n * Math.pow(0.1, 4 * suffixIndex)).toPrecision(3) + suffixArray[suffixIndex];
 }

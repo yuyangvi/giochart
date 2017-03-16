@@ -123,10 +123,15 @@ class DataSource extends React.Component <DataLoaderProps, any> {
     // 为了支持周期对比图，这里需要meta的offset 转化
     if (chartData.meta.offset) {
       // 寻找粒度
-      const period = this.props.params.granularities[0].period;
-      const offsetPeriod = (period * 86400000);
+      // const period = this.props.params.granularities[0].period;
+      // 现在period 只能等于7
+      const offsetPeriod = (7 * 86400000);
       // 强行配对，没验证...
-      sourceData = zipWith(sourceData.slice(0, offset), sourceData.slice(offset), (thisTurn: number[], lastTurn: number[]) => (thisTurn || [lastTurn[0] + offsetPeriod, null]).concat(lastTurn));
+      sourceData = zipWith(
+        sourceData.slice(0, offset),
+        sourceData.slice(offset),
+        (thisTurn: number[], lastTurn: number[]) => (thisTurn || [lastTurn[0] + offsetPeriod, null]).concat(lastTurn));
+      // 加上下划线表示上一周期的字段
       colIds = colIds.concat(map(colIds, (n: string) => (n + "_")));
       // 取得Metric ID
       columns[1].name = "当前周期";
