@@ -15,17 +15,18 @@ interface SyntheticSeletorEvent extends SyntheticEvent<HTMLSelectElement> {
 }
 
 const originParams: DataRequestProps = {
-  "metrics": [{"id": "woV73y92", "action": "page"}],
+  "filter":{"op":"=","key":"b","value":"Web","name":"网站/手机应用"},
+  "granularities":[{"id":"tm","interval":3600000}],
+  "metrics":[{"id":"9yGbpp8x"}],
   "dimensions": ["tm"],
-  "granularities": [],
-  "timeRange": "day:8,1"
+  "timeRange": "day:1,0"
 };
 const lineParams: DrawParamsProps = {
     chartType: 'line',
     "granularities": [{"id": "tm", "interval": 86400}],
     columns: [
       {"id": "tm", "name": "时间", isDim: true},
-      {"id": "woV73y92", "name": "看板细节页面浏览数量——主要功能", isDim: false}
+      {"id": "9yGbpp8x", "name": "访问用户量", isDim: false}
     ],
 };
 class Demo extends React.Component<any, any> {
@@ -49,17 +50,16 @@ class Demo extends React.Component<any, any> {
     }
   }
 
-  select(metaSelected: any, metaUnselected:any) {
+  select(metaSelected: any, metaUnselected: any) {
     // 不是自己select这样只有一个 应该是多个 数组 或 object
-    if(metaSelected){
+    if(metaSelected) {
       this.selected.push(metaSelected);
-    }
-    if(metaUnselected){
+    } else if(metaUnselected) {
       this.selected=filter(this.selected, (item)=>{
         return !isMatch(item,metaUnselected);
       });
     }
-
+    console.log(this.selected);
     this.dataSource.setState({selected:this.selected});
   }
 
@@ -81,7 +81,7 @@ class Demo extends React.Component<any, any> {
       const dimCols: Metric[] = map(dim, (n: string) =>({ id: n,isDim: true}));
       const cols = filter(lineParams.columns, { isDim: false }).concat(dimCols);
       barParams = update(lineParams, {
-        chartType: {$set: 'bar'},
+        chartType: {$set: 'vbar'},
         columns: {$set: cols}
       });
     } else {
@@ -89,13 +89,13 @@ class Demo extends React.Component<any, any> {
     }
 
     return (
-      <div className='container'>
-        <div className='mainPanel'>
-          <DataSource params={this.params} ref={ (DataSource) => { this.dataSource = DataSource; }}>
+      <div className="container">
+        <div className="mainPanel">
+          <DataSource params={this.params} ref={ (DataSource) => { this.dataSource = DataSource; }} sourceUrl="auto">
             <div>
-            <ContextListener chartParams={lineParams} />
-            { barParams ? <ContextListener chartParams={barParams} select={this.select.bind(this)} /> : null }
-            <DimensionPanel addDimension={this.addDimension.bind(this)} />
+              <ContextListener chartParams={lineParams} />
+              <DimensionPanel addDimension={this.addDimension.bind(this)} />
+              {barParams ? <ContextListener chartParams={barParams} select={this.select.bind(this)} /> : null}
             </div>
           </DataSource>
         </div>

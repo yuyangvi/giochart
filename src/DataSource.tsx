@@ -92,7 +92,19 @@ class DataSource extends React.Component <DataLoaderProps, any> {
     let fetchObj;
     // Todo 检查是否是DEV环境
     if (this.props.hasOwnProperty("sourceUrl")) {
-      fetchObj = fetch(this.props.sourceUrl);
+      if (this.props.sourceUrl === "auto") {
+        const headers = new Headers();
+        headers.append("authorization", "Token 836bd4152bbb69b979a7b2c3299d1af75a99faa883f69e07182165c61ae52c39");
+        let request = new Request(`http://gat.growingio.dev:18443/v4/projects/${project.id}/chartdata`, {headers: headers});
+        fetchObj = fetch(request, {
+          body: JSON.stringify(chartParams),
+          credentials: "same-origin",
+          contentType: "application/json",
+          method: "post"
+        });
+      } else {
+        fetchObj = fetch(this.props.sourceUrl);
+      }
     } else {
       fetchObj = fetch(`/v4/projects/${project.id}/chartdata`, {
         body: JSON.stringify(chartParams),

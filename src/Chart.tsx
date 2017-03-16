@@ -21,19 +21,20 @@ interface SourceConfig {
 const getChartConfig: any = (chartType: string) => {
   const defaultMetric = {
     combinMetrics: true,
-    geom: "line"
+    geom: "line",
+    margin: [10, 30, 50, 50]
   };
   // 将图表类型变成不同步骤的组合
   const chartTypeMap: any[string] = {
     area: {geom: "area"},
-    bar:    { geom: "interval", reflect: "y", transpose: true },
+    bar:    { geom: "interval", reflect: "y", transpose: true, margin: [50, 20, 10, 60] },
     bubble: { geom: "point", pos: "MM", combinMetrics: false },
     comparison: {geom: "area", pos: "MMD", combinMetrics: false, hideAxis: true },
     dualaxis: { geom: "interval", pos: "MMD", combinMetrics: false },
     funnel: { axis: false, geom: "intervalSymmetric", transpose: true, scale: true, shape: "funnel" },
     line:   { geom: "line", size: 2 },
     retention: {geom: "line", size: 2, counter: "day"},
-    singleNumber: {geom: "area", shape: "smooth", combineMetrics: false, axis: false, tooltip: false},
+    singleNumber: {geom: "area", shape: "smooth", combineMetrics: false, axis: false, tooltip: false, margin: [0, 0, 0, 0]},
     vbar:   { geom: "interval" }
 };
   return merge({}, defaultMetric, chartTypeMap[chartType]);
@@ -83,7 +84,7 @@ class Chart extends React.Component <ChartProps, any> {
         line: { stroke: "#fc5f3a" }
       }
     });
-
+    G2.track(false);
     G2.Global.setTheme(theme);
   }
   public render() {
@@ -156,12 +157,14 @@ class Chart extends React.Component <ChartProps, any> {
       return;
     */
     }
+    const chartCfg = getChartConfig(chartParams.chartType);
+
     const chart = new G2.Chart({
       container: dom,
       forceFit: true,
       height: canvasRect.height || 350,
       plotCfg: {
-        margin: (chartParams.chartType === "singleNumber" ? [0, 0, 0, 0] : [10, 30, 80, 50])
+        margin: chartCfg.margin
       }
     });
 
@@ -172,7 +175,6 @@ class Chart extends React.Component <ChartProps, any> {
     const dimCols    = map(filter(chartParams.columns, { isDim: true }), "id");
     let frame      = new G2.Frame(source);
     // 需要多值域合并
-    const chartCfg = getChartConfig(chartParams.chartType);
     if (chartCfg.combinMetrics && metricCols.length > 1) {
       frame = G2.Frame.combinColumns(frame, metricCols, "val", "metric", dimCols);
       dimCols.push("metric");
@@ -237,7 +239,7 @@ class Chart extends React.Component <ChartProps, any> {
     if (chartCfg.shape) {
       geom.shape(chartCfg.shape);
     }
-    /*
+
     if (chartCfg.geom === "area" && adjust !== "stack") { // 为了area 好看点,画线
       const styleGeom = chart.line();
       if (chartCfg.shape) {
@@ -247,7 +249,7 @@ class Chart extends React.Component <ChartProps, any> {
       if (dimCols.length > 1 && chartCfg.pos !== "MMD") {
         styleGeom.color(dimCols[1]);
       }
-    }*/
+    }
     if (this.props.colorTheme) {
       geom.color(`rgb(${this.props.colorTheme})`);
     }
@@ -271,7 +273,7 @@ class Chart extends React.Component <ChartProps, any> {
         // plotclick=图表坐标系内的事件  itemselected=图形元素上的事件
         const selectCols = (chartCfg.pos ? metricCols.slice(0, 2) : [dimCols[0]]) as string[] ;
         chart.on("plotclick", (evt: any) => this.selectHandler(evt, selectCols));
-        // chart.on("itemunselected", (evt: any) => { this.unselectHandler(evt, selectCols) });
+        chart.on("itemunselected", (evt: any) => { this.unselectHandler(evt, selectCols) });
       }
     }
     chart.render();

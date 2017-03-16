@@ -25,6 +25,7 @@ class ContextListener extends React.Component <SingleChartProps, any> {
           chartParams={chartParams}
           source={this.context.source}
           select={this.props.select}
+          selected={this.context.selected}
           extraColumns={this.props.extraColumns}
         />
       );
@@ -37,6 +38,7 @@ class ContextListener extends React.Component <SingleChartProps, any> {
             colorTheme={this.props.colorTheme}
             source={this.context.source}
             select={this.props.select}
+            selected={this.context.selected}
           />
         </div>);
     }else if (chartParams.chartType === "singleNumber") {
@@ -49,6 +51,7 @@ class ContextListener extends React.Component <SingleChartProps, any> {
             source={this.context.source}
             select={this.props.select}
             style={{height: "calc(100% - 40px)"}}
+            selected={this.context.selected}
           />
         </div>);
     }
@@ -58,6 +61,7 @@ class ContextListener extends React.Component <SingleChartProps, any> {
         source={this.context.source}
         select={this.props.select}
         colorTheme={this.props.colorTheme}
+        selected={this.context.selected}
       />
     );
   }
