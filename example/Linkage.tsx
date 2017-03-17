@@ -22,7 +22,7 @@ const originParams: DataRequestProps = {
   "timeRange": "day:1,0"
 };
 const lineParams: DrawParamsProps = {
-    chartType: 'line',
+    chartType: 'table',
     "granularities": [{"id": "tm", "interval": 86400}],
     columns: [
       {"id": "tm", "name": "时间", isDim: true},

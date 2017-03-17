@@ -27,7 +27,7 @@ const AggregatePercent = (props: any) => (
   <div className="gr-chart-aggregate-percent">
     <div className={`gr-chart-trend-${props.percent > 0 ? "up" : "down"}`}>
       <t>{Math.abs(props.percent * 100).toPrecision(3)}</t>
-      <t style={{fontSize: 12}}>%</t>
+      <t style={{ fontSize: 12 }}>%</t>
     </div>
     <span>{props.period ? "在最近7天" : "相比7天前"}</span>
   </div>

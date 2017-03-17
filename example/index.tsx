@@ -1,9 +1,9 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
-import Linkage from "./Linkage";
+import ComplexTable from "./ComplexTable";
 
 ReactDOM.render(
-  <Linkage />,
+  <ComplexTable />,
   document.getElementById("example")
 );

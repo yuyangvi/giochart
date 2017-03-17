@@ -56,10 +56,12 @@ class DimensionPanel extends React.Component <any, any> {
     return (
       <Menu onClick={this.addDimension.bind(this)} mode="horizontal" defaultSelectedKeys={["raw"]}>
         <MenuItem key="raw">数据源</MenuItem>
+        <MenuItem key="rt,rd,kw">趋势</MenuItem>
         <MenuItem key="rt,rd,kw">来源</MenuItem>
         <MenuItem key="region">地区</MenuItem>
         <MenuItem key="db">设备</MenuItem>
         <MenuItem key="utm_source">广告</MenuItem>
+        <MenuItem key="utm_source">用户</MenuItem>
         <MenuItem key="analysic" disabled>统计</MenuItem>
       </Menu>
     );

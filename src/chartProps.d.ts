@@ -38,6 +38,7 @@ export interface DrawParamsProps {
   chartType: string;
   columns: Metric[];
   granularities?: Granulariy[];
+  groupCol?: string;
 }
 export interface Metric {
   id: string;

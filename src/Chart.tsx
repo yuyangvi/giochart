@@ -84,7 +84,7 @@ class Chart extends React.Component <ChartProps, any> {
         line: { stroke: "#fc5f3a" }
       }
     });
-    G2.track(false);
+    // G2.track(false);
     G2.Global.setTheme(theme);
   }
   public render() {

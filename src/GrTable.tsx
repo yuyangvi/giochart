@@ -2,9 +2,10 @@
  * 文档
  */
 import { Table } from "antd";
-import {ChartProps, Metric} from './ChartProps';
+import { difference, fill, filter, find, flatMap, forIn, groupBy, map, unionBy, values } from "lodash";
+import * as moment from "moment";
 import * as React from "react";
-import * as moment from 'moment';
+import {ChartProps, Metric, Source} from "./ChartProps";
 // import Table from 'antd/lib/table';
 import G2 = require("g2");
 const sorterDecorator = (column: string) => (a: any, b: any) => (a[column] > b[column] ? 1 : -1);
@@ -18,9 +19,9 @@ const calculateWeight = (range: [number, number],  median: number) => (v: number
   }
 }
 // 根据metric取得背景色
-const generateColRender = (m: Metric, getBgColor: (v: number) => string): ((v: number) => any) =>
+const generateColRender = (getBgColor: (v: number) => string): ((v: number) => any) =>
   (value: number) => ({
-    children: value,
+    children: (value && !Number.isInteger(value) ? value.toPrecision(3) : value),
     props: { style: {backgroundColor: getBgColor(value)}}
   });
 const checkDate = (m: Metric) => (m.id === "tm" ? GrTable.formatDate : undefined);
@@ -32,23 +33,72 @@ class GrTable extends React.Component <ChartProps, any> {
   private static getRowKey(r: any, i: number) {
     return `${i}`;
   }
-
+  // 将多指标扁平成一条
+  private static groupFlatter(n: any, groupCol: string, groupCols: string[], otherDims: string[]) {
+    return n.reduce((result: any, value: any) => {
+      const i: number = groupCols.indexOf(value[groupCol]);
+      forIn(value, (v, k) => {
+        if (k === groupCol) {
+          return;
+        } else if (otherDims.includes(k)) {
+          result[k] = value[k];
+        } else {
+          result[`${groupCol}_${i}_${k}`] = value[k];
+        }
+      });
+      return result;
+    }, {});
+  }
   public render() {
-    const { chartParams, source } = this.props;
+    const chartParams = this.props.chartParams;
+    let source = this.props.source;
+    let cols: any[] = [];
     if (!source || !chartParams) {
       return null;
     }
-    const frame = new G2.Frame(source);
-    let cols = chartParams.columns.map((m: Metric) => ({
-      dataIndex: m.id,
-      key: m.id,
-      render: (m.isDim ?
-        checkDate(m) :
-        generateColRender(m, calculateWeight(G2.Frame.range(frame, m.id), G2.Frame.median(frame, m.id)))
-      ),
-      sorter: sorterDecorator(m.id),
-      title: m.name,
-    }));
+    if (chartParams.groupCol) {
+      const dimNames: string[] = difference(map(filter(chartParams.columns, "isDim"), "id"), [chartParams.groupCol]);
+      const metrics: Metric[] = filter(chartParams.columns, { isDim: false});
+
+      const groupColValues: string[] = flatMap(unionBy(source, chartParams.groupCol), chartParams.groupCol);
+      // 按时间分组 TODO
+      const groupSource = values(groupBy(source, dimNames[0]));
+      source = map(groupSource, (n: any) => GrTable.groupFlatter(n, chartParams.groupCol, groupColValues, dimNames));
+      const frame = new G2.Frame(source);
+      // 分三段
+      cols = map(dimNames, (id: string) => ({
+        dataIndex: id,
+        key: id,
+        sorter: sorterDecorator(id),
+        title: find(chartParams.columns, { id }).name
+      }));
+      const metricCols = groupColValues.map((name: string, i: number) => ({
+        title: name,
+        children: map(metrics, (m: Metric) => {
+          const id = `${chartParams.groupCol}_${i}_${m.id}`;
+          return {
+            dataIndex: id,
+            key: id,
+            render: generateColRender(calculateWeight(G2.Frame.range(frame, id), G2.Frame.median(frame, id))),
+            sorter: sorterDecorator(id),
+            title: m.name,
+          };
+        })
+      }));
+      cols = cols.concat(metricCols);
+    } else {
+      const frame = new G2.Frame(source);
+      cols = chartParams.columns.map((m: Metric) => ({
+        dataIndex: m.id,
+        key: m.id,
+        render: (m.isDim ?
+            checkDate(m) :
+            generateColRender(calculateWeight(G2.Frame.range(frame, m.id), G2.Frame.median(frame, m.id)))
+        ),
+        sorter: sorterDecorator(m.id),
+        title: m.name,
+      }));
+    }
     if (this.props.hasOwnProperty("extraColumns") && this.props.extraColumns) {
       cols = cols.concat(this.props.extraColumns);
     }
@@ -64,6 +114,7 @@ class GrTable extends React.Component <ChartProps, any> {
     // TODO: 增加selected处理
     return (
       <Table
+        bordered
         dataSource={source}
         columns={cols}
         pagination={source.length > 20 ? undefined : false}
