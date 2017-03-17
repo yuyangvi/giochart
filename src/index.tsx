@@ -16,6 +16,7 @@ interface GioProps {
   params: DataRequestProps;
   style?: any;
   extraColumns?: any;
+  groupCol?: string;
 }
 
 const ChartV4 = (props: GioProps) => (
@@ -26,6 +27,7 @@ const ChartV4 = (props: GioProps) => (
       granularities={props.params.granularities}
       adjust={props.adjust}
       extraColumns={props.extraColumns}
+      groupCol={props.groupCol}
     />
   </DataSource>
 );
