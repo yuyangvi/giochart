@@ -78,8 +78,7 @@ const convertChartParams = (v3Params: any): GioProps => {
 }
 
 const GioChart = (props: GioProps) => (
-  props.chartType ? <ChartV4 {...props}/> : <ChartV4 {...convertChartParams(props.params)} />
-);
+  props.chartType ? <ChartV4 {...props}/> : <ChartV4 groupCol={props.groupCol} {...convertChartParams(props.params)}/>
 
 export { Chart, ContextListener, DataSource, GrTable, convertChartParams};
 export default GioChart;
