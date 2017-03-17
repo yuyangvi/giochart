@@ -1,9 +1,9 @@
 import * as React from "react";
 import {DataRequestProps, DrawParamsProps} from "../src/ChartProps";
-import ContextListener from "../src/ContextListener";
+// import ContextListener from "../src/ContextListener";
 import SyntheticEvent = React.SyntheticEvent;
-import DataSource from "../src/DataSource";
-
+// import DataSource from "../src/DataSource";
+import GioChart from "../src/index";
 const requestParams: DataRequestProps = {
   dimensions: ["p", "rt"],
   granularities: [],
@@ -24,13 +24,11 @@ const retentionDrawParams: DrawParamsProps = {
 };
 
 const ComplexTable = (props: any) => (
-  <div>
-    <DataSource params={requestParams} sourceUrl="auto">
-      <ContextListener chartParams={retentionDrawParams} />
-    </DataSource>
-  </div>
+    <GioChart params={requestParams} chartType="table" groupCol="rt" sourceUrl="auto" />
 );
-/*const Retention = (props: any) => (
+/*
+const Retention = (props: any) => (
   <GioChart chartType="table" params={retentionRequestParams} />
-);*/
+);
+*/
 export default ComplexTable;
