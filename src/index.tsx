@@ -20,7 +20,7 @@ interface GioProps {
 }
 
 const ChartV4 = (props: GioProps) => (
-  <DataSource params={props.params} style={props.style} sourceUrl={props.sourceUrl}>
+  <DataSource params={props.params} style={props.style}>
     <ContextListener
       chartType={props.chartType}
       colorTheme={props.colorTheme}
