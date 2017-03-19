@@ -22,7 +22,7 @@ const getChartConfig: any = (chartType: string) => {
   const defaultMetric = {
     combinMetrics: true,
     geom: "line",
-    margin: [10, 30, 50, 50]
+    margin: [10, 30, 60, 50]
   };
   // 将图表类型变成不同步骤的组合
   const chartTypeMap: any[string] = {
@@ -168,20 +168,20 @@ class Chart extends React.Component <ChartProps, any> {
       }
     });
 
-    const sourceDef = this.buildSourceConfig(chartParams);
+    let sourceDef = this.buildSourceConfig(chartParams);
 
     // 建立Frame
-    const metricCols = map(filter(chartParams.columns, { isDim: false }), "id");
+    let metricCols = map(filter(chartParams.columns, { isDim: false }), "id");
     const dimCols    = map(filter(chartParams.columns, { isDim: true }), "id");
     let frame      = new G2.Frame(source);
     // 需要多值域合并
     if (chartCfg.combinMetrics && metricCols.length > 1) {
       frame = G2.Frame.combinColumns(frame, metricCols, "val", "metric", dimCols);
       dimCols.push("metric");
-      const metricDict = fromPairs(zip(metricCols, name));
-      const mColVals = frame.colArray("metric");
-      const mColNames = mColVals.map((n: string) => metricDict[n]);
-      frame.colReplace("metric", mColNames);
+      const metricNames = map(filter(chartParams.columns, { isDim: false }), "name");
+      const metricDict = fromPairs(zip(metricCols, metricNames));
+      sourceDef.metric = { formatter: (n: string) => metricDict[n] };
+      metricCols = ["val"];
     }
     chart.source(frame, sourceDef);
 
@@ -204,7 +204,7 @@ class Chart extends React.Component <ChartProps, any> {
     } else if ("interval" !== chartCfg.geom && chartParams.adjust === "dodge") {
       adjust = undefined;
     }
-    //
+
     // console.log(chartCfg.geom, adjust);
     const geom = chart[chartCfg.geom](adjust);
 
@@ -217,7 +217,6 @@ class Chart extends React.Component <ChartProps, any> {
       geom.position(G2.Stat.summary.sum(pos));
     } else {
       geom.position(pos);
-
       if (chartCfg.pos !== "MMD") {
         geom.color(dimCols[1]);
       }
@@ -247,7 +246,7 @@ class Chart extends React.Component <ChartProps, any> {
       }
       styleGeom.position(pos).size(2);
       if (dimCols.length > 1 && chartCfg.pos !== "MMD") {
-        styleGeom.color(dimCols[1]);
+        //styleGeom.color(dimCols[1]);
       }
     }
     if (this.props.colorTheme) {
@@ -333,6 +332,9 @@ class Chart extends React.Component <ChartProps, any> {
         type: "linear", // TODO 可能有其他case
       };
     }
+    /*sourceDef.metric = {
+      type: "cat"
+    };*/
     return sourceDef;
   }
 }
