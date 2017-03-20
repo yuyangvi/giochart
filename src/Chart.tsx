@@ -27,7 +27,7 @@ const getChartConfig: any = (chartType: string) => {
   // 将图表类型变成不同步骤的组合
   const chartTypeMap: any[string] = {
     area: {geom: "area"},
-    bar:    { geom: "interval", reflect: "y", transpose: true, margin: [50, 20, 10, 60] },
+    bar:    { geom: "interval", reflect: "y", transpose: true, margin: [50, 20, 10, 80] },
     bubble: { geom: "point", pos: "MM", combinMetrics: false },
     comparison: {geom: "area", pos: "MMD", combinMetrics: false, hideAxis: true },
     dualaxis: { geom: "interval", pos: "MMD", combinMetrics: false },
