@@ -34,19 +34,18 @@ const ChartV4 = (props: GioProps) => (
 // 根据v3的chartParams计算v4的Scheme转化
 const convertChartParams = (v3Params: any): GioProps => {
     const metrics = v3Params.metrics;
-    const dimensions = v3Params.dimensions || [];
-
-    const granularities: Granulariy[] = [];
+    let dimensions = v3Params.dimensions || [];
+    let granularities: Granulariy[] = [];
     if (v3Params.chartType.includes("dimension")) {
-      granularities.push({id: dimensions[0], top: v3Params.top});
-      dimensions.unshift("tm");
+      granularities = granularities.concat({id: dimensions[0], top: v3Params.top});
+      dimensions = dimensions.concat("tm");
     }
     if (dimensions.length === 0) {
-        dimensions.unshift(v3Params.chartType === "bar" ? "v" : "tm");
+        dimensions = dimensions.concat(v3Params.chartType === "bar" ? "v" : "tm");
     }
     // convert granularities
     if (dimensions.includes("tm")) {
-        granularities.unshift({
+        granularities = granularities.concat({
           id: "tm",
           interval: v3Params.interval,
           period: (v3Params.chartType === "comparison" ? "auto" : undefined)
@@ -78,7 +77,7 @@ const convertChartParams = (v3Params: any): GioProps => {
 }
 
 const GioChart = (props: GioProps) => (
-  props.chartType ? <ChartV4 {...props}/> : <ChartV4 groupCol={props.groupCol} {...convertChartParams(props.params)}/>
+  props.chartType ? <ChartV4 {...props}/> : <ChartV4 extraColumns={props.extraColumns} groupCol={props.groupCol} {...convertChartParams(props.params)}/>
 
 export { Chart, ContextListener, DataSource, GrTable, convertChartParams};
 export default GioChart;
