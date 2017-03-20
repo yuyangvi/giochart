@@ -38,13 +38,12 @@ const convertChartParams = (v3Params: any): GioProps => {
     let granularities: Granulariy[] = [];
     if (v3Params.chartType.includes("dimension")) {
       granularities = granularities.concat({id: dimensions[0], top: v3Params.top});
-      dimensions = dimensions.concat("tm");
+      dimensions = ["tm"].concat(dimensions);
     }
 
     if (dimensions.length === 0) {
-        dimensions = dimensions.concat(v3Params.chartType === "bar" ? "v" : "tm");
+        dimensions = [v3Params.chartType === "bar" ? "v" : "tm"].concat(dimensions);
     }
-    // convert granularities
     if (dimensions.includes("tm")) {
         granularities = granularities.concat({
           id: "tm",
@@ -54,7 +53,7 @@ const convertChartParams = (v3Params: any): GioProps => {
     }
 
     const params: DataRequestProps =  {
-        aggregateType: (v3Params.chartType === "singleNumber" ? v3Params.aggregateType : undefined), // 聚合类型: sum, avg
+        aggregateType: (v3Params.chartType === "singleNumber" ? (v3Params.aggregateType || "sum") : undefined), // 聚合类型: sum, avg
         // attrs: {}, // 属性
         dimensions,
         filter: v3Params.filter, // 过滤

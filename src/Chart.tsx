@@ -131,8 +131,7 @@ class Chart extends React.Component <ChartProps, any> {
       if (chartCfg.combinMetrics && metricCols.length > 1) {
         frame = G2.Frame.combinColumns(frame, metricCols, "val", "metric", dimCols);
         const metricNames = map(filter(chartParams.columns, { isDim: false }), "name");
-        const metricDict = fromPairs(zip(metricCols, metricNames));
-        // sourceDef.metric = { formatter: (n: string) => metricDict[n] };
+        // const metricDict = fromPairs(zip(metricCols, metricNames));
       }
       this.chart.changeData(frame);
     } else {
