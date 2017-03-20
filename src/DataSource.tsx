@@ -36,7 +36,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
     selected: React.PropTypes.any,
     source: React.PropTypes.any
   };
-
+  private tryTimes = 0;
   private constructor(props: DataLoaderProps) {
     super(props);
     // 加载状态
@@ -48,6 +48,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
       source: null
     };
   }
+
   /*
   selectHandler(evt: any) {
    this.setState({
@@ -95,7 +96,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
       if (this.props.sourceUrl === "auto") {
         const headers = new Headers();
         headers.append("authorization", "Token 836bd4152bbb69b979a7b2c3299d1af75a99faa883f69e07182165c61ae52c39");
-        let request = new Request(`http://gat.growingio.dev:18443/v4/projects/${project.id}/chartdata`, {headers: headers});
+        const request = new Request(`http://gat.growingio.dev:18443/v4/projects/${project.id}/chartdata`, {headers: headers});
         fetchObj = fetch(request, {
           body: JSON.stringify(chartParams),
           credentials: "same-origin",
@@ -117,6 +118,9 @@ class DataSource extends React.Component <DataLoaderProps, any> {
       const status = response.status;
       if (status === HttpStatus.Ok) {
         return response.json();
+      } else if (status === HttpStatus.RequestTimeout && this.tryTimes < 2) {
+        this.tryTimes++;
+        setTimeout(this.defaultRequest.bind(this, chartParams, callback));
       }
     }).then((data: ResponseParams) => callback(data));
   }
