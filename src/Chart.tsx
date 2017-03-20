@@ -120,7 +120,21 @@ class Chart extends React.Component <ChartProps, any> {
   }
   private changeData(source: Source) {
     if (this.chart) {
-      this.chart.changeData(source);
+      const chartParams = this.props.chartParams;
+      const chartCfg = getChartConfig(chartParams.chartType);
+      // 检验是否需要合并对做处理
+      let frame      = new G2.Frame(source);
+      // 需要多值域合并
+      const metricCols = map(filter(chartParams.columns, { isDim: false }), "id");
+      const dimCols    = map(filter(chartParams.columns, { isDim: true }), "id");
+
+      if (chartCfg.combinMetrics && metricCols.length > 1) {
+        frame = G2.Frame.combinColumns(frame, metricCols, "val", "metric", dimCols);
+        const metricNames = map(filter(chartParams.columns, { isDim: false }), "name");
+        const metricDict = fromPairs(zip(metricCols, metricNames));
+        // sourceDef.metric = { formatter: (n: string) => metricDict[n] };
+      }
+      this.chart.changeData(frame);
     } else {
       this.drawChart(this.props.chartParams, source);
     }
