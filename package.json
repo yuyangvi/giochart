@@ -7,8 +7,7 @@
     "build": "webpack --config webpack.prod.config.js",
     "start": "webpack-dev-server --config webpack.config.js --hot --inline --display-modules --progress --colors --port=9090",
     "test": "jest",
-    "lint": "tslint \"src/index.tsx\"",
-    "postinstall": "npm run build"
+    "lint": "tslint \"src/index.tsx\""
   },
   "author": "yuyangvi",
   "license": "ISC",
