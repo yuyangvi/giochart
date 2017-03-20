@@ -1,5 +1,5 @@
-#GrTable
-##usage
+# GrTable
+## usage
 ```
 import { GrTable } from 'giochart';
 
@@ -19,16 +19,16 @@ const source = [
 ];
 React.render(<GrTable chartParams={chartParams} source={source} />, mountNode);
 ```
-##Props
+## Props
 * chartParams: 显示字段
 * extraCols在右侧添加的字段，格式参考rc-table的columns里的设置
 * source: 数据源，一个固定的JSON数组
 
-####Property
+#### Property
 
 | Property              | Type                | Default |    Description    |
 | :-------------------- | :------------------ | :------ | :---------------- |
 | chartParams           | `DrawParams`        | `null`  |      绘图必需配置   |
 | source                | `JSON[]`            | `null`  |       数据源       |
 | extraCols             | `Column` `Column[]` | `null`  |  表格的扩展         |
-
+| groupCol              | `string`            | `null`  | 分组的维度id        |
