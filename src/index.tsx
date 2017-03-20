@@ -40,6 +40,7 @@ const convertChartParams = (v3Params: any): GioProps => {
       granularities = granularities.concat({id: dimensions[0], top: v3Params.top});
       dimensions = dimensions.concat("tm");
     }
+
     if (dimensions.length === 0) {
         dimensions = dimensions.concat(v3Params.chartType === "bar" ? "v" : "tm");
     }

@@ -120,7 +120,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
         return response.json();
       } else if (status === HttpStatus.RequestTimeout && this.tryTimes < 2) {
         this.tryTimes++;
-        setTimeout(this.defaultRequest.bind(this, chartParams, callback));
+        setTimeout(this.defaultRequest.bind(this, chartParams, callback), 200);
       }
     }).then((data: ResponseParams) => callback(data));
   }
