@@ -18,6 +18,15 @@ interface GioProps {
   extraColumns?: any;
   groupCol?: string;
 }
+const timeWeekRange = (timeRange = "day:8,1") => {
+  let [cate, v] = timeRange.split(":");
+  let [start, end] = v.split(",");
+  if (cate === "day") {
+    return start > 7;
+  } else if (cate === "abs"){
+    return (end - start) > (86400000 * 7);
+  }
+}
 
 const ChartV4 = (props: GioProps) => (
   <DataSource params={props.params} style={props.style}>
@@ -28,6 +37,7 @@ const ChartV4 = (props: GioProps) => (
       adjust={props.adjust}
       extraColumns={props.extraColumns}
       groupCol={props.groupCol}
+      range={timeWeekRange(props.params.timeRange)}
     />
   </DataSource>
 );

@@ -89,4 +89,5 @@ export interface SingleChartProps {
   granularities?: Granulariy[];
   select?: (evt: any, unselect: any) => any;
   groupCol?: string;
+  range?: boolean;
 }

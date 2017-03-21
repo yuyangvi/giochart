@@ -3,7 +3,7 @@ import { assign, filter, find, fromPairs, isEmpty, isEqual, isMatch, map, merge,
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import {ChartProps, DrawParamsProps, Granulariy, Metric, Source} from "./ChartProps";
-
+import * as moment from "moment";
 interface G2Scale {
   type: string;
   formatter?: (n: number) => string;
@@ -27,9 +27,9 @@ const getChartConfig: any = (chartType: string) => {
   // 将图表类型变成不同步骤的组合
   const chartTypeMap: any[string] = {
     area: {geom: "area"},
-    bar:    { geom: "interval", reflect: "y", transpose: true, margin: [50, 20, 10, 80] },
+    bar:    { geom: "interval", reflect: "y", transpose: true, margin: [20, 20, 10, 100] },
     bubble: { geom: "point", pos: "MM", combinMetrics: false },
-    comparison: {geom: "area", pos: "MMD", combinMetrics: false, hideAxis: true },
+    comparison: {geom: "area", pos: "MMD", combinMetrics: false, hideAxis: true, tooltipchange: "custom" },
     dualaxis: { geom: "interval", pos: "MMD", combinMetrics: false },
     funnel: { axis: false, geom: "intervalSymmetric", transpose: true, scale: true, shape: "funnel" },
     line:   { geom: "line", size: 2 },
@@ -187,6 +187,18 @@ class Chart extends React.Component <ChartProps, any> {
     let metricCols = map(filter(chartParams.columns, { isDim: false }), "id");
     const dimCols    = map(filter(chartParams.columns, { isDim: true }), "id");
     let frame      = new G2.Frame(source);
+
+    // 周期对比图 的 hook
+    if (chartParams.chartType === "comparison") {
+      // 获取metricid, 计算最大值
+      const mids = map(filter(chartParams.columns, { isDim: true }), "id");
+      const maxScale: number = Math.max.apply(null, map(mids, (col: string) => G2.Frame.max(frame, col)));
+      mids.forEach((id: string) => {
+        sourceDef[id].min = 0;
+        sourceDef[id].max = maxScale;
+      });
+    }
+
     // 需要多值域合并
     if (chartCfg.combinMetrics && metricCols.length > 1) {
       frame = G2.Frame.combinColumns(frame, metricCols, "val", "metric", dimCols);
@@ -196,6 +208,9 @@ class Chart extends React.Component <ChartProps, any> {
       sourceDef.metric = { formatter: (n: string) => metricDict[n] };
       metricCols = ["val"];
     }
+
+    // 计算legend的留空，tick的留空
+    // 存在legend的
     chart.source(frame, sourceDef);
 
     // geom
@@ -275,6 +290,22 @@ class Chart extends React.Component <ChartProps, any> {
       position: "bottom"
     });
 
+    if (chartCfg.tooltipchange) {
+      // chart.tooltip(true, {title: null});
+      chart.on("tooltipchange", (ev: any) => {
+        const item: any = ev.items[0]; // 获取tooltip要显示的内容
+        const originPoint = item.point._origin;
+        const tm = item.name === "上一周期" ? originPoint.tm_ : originPoint.tm;
+        moment.locale("zh-cn");
+        item.name = moment(tm).format("YYYY-MM-DD dddd hh:mm");
+        if (ev.items.length > 1) {
+          item.title = (item.value / ev.items[1].value * 100 - 100).toPrecision(3) + "%";
+          ev.items[1].title = item.title;
+          ev.items[1].name = moment(originPoint.tm_).format("YYYY-MM-DD dddd hh:mm");
+        }
+      });
+    }
+
     // others
     if (this.props.hasOwnProperty("select") && this.props.select) {
       geom.selected(true, {
@@ -316,6 +347,7 @@ class Chart extends React.Component <ChartProps, any> {
   private buildSourceConfig(chartParams: DrawParamsProps): SourceConfig {
     const sourceDef: SourceConfig = {};
     const chartConfig = getChartConfig(chartParams.chartType);
+    // 检查是不是周期对比图
     chartParams.columns.forEach((m: Metric) => {
       sourceDef[m.id] = {
         alias: m.name,

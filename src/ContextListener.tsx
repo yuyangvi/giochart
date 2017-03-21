@@ -15,6 +15,7 @@ class ContextListener extends React.Component <SingleChartProps, any> {
     selected: React.PropTypes.any,
     source: React.PropTypes.any,
   };
+
   public render() {
     const chartParams = this.generateChartParams();
     const withAggregate: boolean = ["comparison", "singleNumber"].includes(chartParams.chartType);
@@ -31,7 +32,7 @@ class ContextListener extends React.Component <SingleChartProps, any> {
     } else if (withAggregate) {
       return (
         <div className={`gr-chart-wrapper ${chartParams.chartType}`}>
-          <Aggregate data={this.context.aggregates} period={this.props.granularities[0].period >= 7} />
+          <Aggregate data={this.context.aggregates} period={this.props.range} />
           <Chart
             chartParams={chartParams}
             colorTheme={this.props.colorTheme}
@@ -43,7 +44,7 @@ class ContextListener extends React.Component <SingleChartProps, any> {
     }else if (chartParams.chartType === "singleNumber") {
       return (
         <div className="gr-chart-wrapper">
-          <Aggregate data={this.context.aggregates} period={this.props.granularities[0].period >= 7} />
+          <Aggregate data={this.context.aggregates} period={this.props.range} />
           <Chart
             chartParams={chartParams}
             colorTheme={this.props.colorTheme}
