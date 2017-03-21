@@ -55,10 +55,10 @@ const convertChartParams = (v3Params: any): GioProps => {
         dimensions = [v3Params.chartType === "bar" ? "v" : "tm"].concat(dimensions);
     }
     if (dimensions.includes("tm")) {
-      const interval = v3Params.chartType === "singleNumber" ? (v3Params.interval * 1000) : v3Params.interval
+      //const interval = v3Params.chartType === "singleNumber" ? (v3Params.interval * 1000) : v3Params.interval
       granularities = granularities.concat({
         id: "tm",
-        interval,
+        interval: v3Params.interval,
         period: (v3Params.chartType === "comparison" ? "auto" : undefined)
       });
     }
@@ -87,7 +87,8 @@ const convertChartParams = (v3Params: any): GioProps => {
       }
     }
     const adjust: string = (v3Params.attrs.subChartType === "total") ? "stack" : "dodge";
-    return { adjust, chartType, params };
+    const colorTheme: string = v3Params.attrs.colorTheme;
+    return { adjust, chartType, params, colorTheme };
 }
 
 const GioChart = (props: GioProps) => (

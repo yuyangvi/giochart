@@ -219,6 +219,8 @@ class Chart extends React.Component <ChartProps, any> {
     }
     if (chartCfg.tooltip !== undefined) {
       chart.tooltip(chartCfg.tooltip);
+    } else {
+      chart.tooltip({ crosshairs: true });
     }
     if (chartCfg.transpose) {
       const coord = chart.coord("rect").transpose();
@@ -247,6 +249,8 @@ class Chart extends React.Component <ChartProps, any> {
       geom.position(pos);
       if (chartCfg.pos !== "MMD") {
         geom.color(dimCols[1]);
+      } else if (this.props.colorTheme) {
+        geom.color(`rgb(${this.props.colorTheme})`);
       }
     }
     if (chartCfg.pos === "MMD") { // 双y
@@ -269,6 +273,10 @@ class Chart extends React.Component <ChartProps, any> {
 
     if (chartCfg.geom === "area" && adjust !== "stack") { // 为了area 好看点,画线
       const styleGeom = chart.line();
+      if (this.props.colorTheme) {
+        styleGeom.color(`rgb(${this.props.colorTheme})`);
+      }
+
       if (chartCfg.shape) {
         styleGeom.shape(chartCfg.shape);
       }
@@ -277,13 +285,6 @@ class Chart extends React.Component <ChartProps, any> {
         //styleGeom.color(dimCols[1]);
       }
     }
-    if (this.props.colorTheme) {
-      geom.color(`rgb(${this.props.colorTheme})`);
-    }
-    chart.tooltip({
-      crosshairs: true
-    });
-
     // legend
     chart.legend({
       itemWrap: false,
