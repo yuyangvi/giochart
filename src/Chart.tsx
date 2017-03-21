@@ -250,6 +250,7 @@ class Chart extends React.Component <ChartProps, any> {
       if (chartCfg.pos !== "MMD") {
         geom.color(dimCols[1]);
       } else if (this.props.colorTheme) {
+        console.log('dhasod');
         geom.color(`rgb(${this.props.colorTheme})`);
       }
     }
@@ -274,6 +275,7 @@ class Chart extends React.Component <ChartProps, any> {
     if (chartCfg.geom === "area" && adjust !== "stack") { // 为了area 好看点,画线
       const styleGeom = chart.line();
       if (this.props.colorTheme) {
+        console.log('rgb');
         styleGeom.color(`rgb(${this.props.colorTheme})`);
       }
 
