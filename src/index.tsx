@@ -55,11 +55,12 @@ const convertChartParams = (v3Params: any): GioProps => {
         dimensions = [v3Params.chartType === "bar" ? "v" : "tm"].concat(dimensions);
     }
     if (dimensions.includes("tm")) {
-        granularities = granularities.concat({
-          id: "tm",
-          interval: v3Params.interval,
-          period: (v3Params.chartType === "comparison" ? "auto" : undefined)
-        });
+      const interval = v3Params.chartType === "singleNumber" ? (v3Params.interval * 1000) : v3Params.interval
+      granularities = granularities.concat({
+        id: "tm",
+        interval,
+        period: (v3Params.chartType === "comparison" ? "auto" : undefined)
+      });
     }
 
     const params: DataRequestProps =  {
@@ -76,6 +77,9 @@ const convertChartParams = (v3Params: any): GioProps => {
     };
 
     let chartType: string = v3Params.chartType;
+    if (chartType === "line" && v3Params.metrics.length) {
+      chartType = "area";
+    }
     if (chartType.includes("dimension")) {
       chartType = chartType.replace("dimension", "").toLowerCase();
       if (chartType === "line" && v3Params.attrs.subChartType === "total") {

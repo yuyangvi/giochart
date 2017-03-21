@@ -28,7 +28,6 @@
   },
   "devDependencies": {
     "antd": "^0.12.17",
-    "china-geojson": "^1.0.0",
     "g2": "^2.2.2",
     "less": "^2.7.2",
     "less-loader": "^2.2.3",
