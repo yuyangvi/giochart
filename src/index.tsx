@@ -77,7 +77,7 @@ const convertChartParams = (v3Params: any): GioProps => {
     };
 
     let chartType: string = v3Params.chartType;
-    if (chartType === "line" && v3Params.metrics.length) {
+    if (chartType === "line" && v3Params.metrics.length < 2) {
       chartType = "area";
     }
     if (chartType.includes("dimension")) {
