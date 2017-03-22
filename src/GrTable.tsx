@@ -26,9 +26,9 @@ const descValue = (value: number, isRate: boolean): string => {
     }
     return value.toPrecision(3);
   }
-  return value.toString(10);
+  return value;
 }
-const generateColRender = (getBgColor: (v: number) => string, m: any): ((v: number) => any) =>
+const generateColRender = (getBgColor: (v: number) => string, m: Metric): ((v: number) => any) =>
   (value: number) => ({
     children: descValue(value, m.isRate), // (value && !Number.isInteger(value) ? value.toPrecision(3) : value),
     props: { style: {backgroundColor: getBgColor(value)}}

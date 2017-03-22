@@ -28,7 +28,7 @@ const getChartConfig: any = (chartType: string) => {
   const chartTypeMap: any[string] = {
     area: {geom: "area"},
     bar:    { geom: "interval", reflect: "y", transpose: true, margin: [20, 20, 10, 100] },
-    bubble: { geom: "point", pos: "MM", combinMetrics: false },
+    bubble: { geom: "point", pos: "MM", combinMetrics: false, shape: "circle" },
     comparison: {geom: "area", pos: "MMD", combinMetrics: false, hideAxis: true, tooltipchange: "custom" },
     dualaxis: { geom: "interval", pos: "MMD", combinMetrics: false },
     funnel: { axis: false, geom: "intervalSymmetric", transpose: true, scale: true, shape: "funnel" },
@@ -79,7 +79,7 @@ class Chart extends React.Component <ChartProps, any> {
       },
       defaultColor: "#fc5f3a",
       shape: {
-        area: { fill: "#fc5f3a", fillOpacity: 0.3 },
+        area: { fill: "#fc5f3a", fillOpacity: 0.6 },
         interval: { fill: "#d5375f" },
         line: { stroke: "#fc5f3a" }
       }
@@ -260,8 +260,13 @@ class Chart extends React.Component <ChartProps, any> {
       }
     } else {
       geom.position(pos);
+      if (this.props.colorTheme) {
+        geom.color(`rgb(${this.props.colorTheme})`);
+      }
       if (chartCfg.pos !== "MMD") {
         geom.color(dimCols[1]);
+      } else if (this.props.colorTheme) {
+        geom.color(`rgb(${this.props.colorTheme})`);
       }
     }
     if (chartCfg.pos === "MMD") { // 双y
