@@ -65,7 +65,7 @@ const convertChartParams = (v3Params: any): GioProps => {
 
     const params: DataRequestProps =  {
         aggregateType: (v3Params.chartType === "singleNumber" ? (v3Params.aggregateType || "sum") : undefined), // 聚合类型: sum, avg
-        // attrs: {}, // 属性
+        attrs: v3Params.attrs, // 属性
         dimensions,
         filter: v3Params.filter, // 过滤
         granularities, // 粒度
@@ -85,6 +85,10 @@ const convertChartParams = (v3Params: any): GioProps => {
       if (chartType === "line" && v3Params.attrs.subChartType === "total") {
         chartType = "area";
       }
+    }
+
+    if (chartType === "abar") {
+      chartType = "bar";
     }
     const adjust: string = (v3Params.attrs.subChartType === "total") ? "stack" : "dodge";
     const colorTheme: string = v3Params.attrs.colorTheme;

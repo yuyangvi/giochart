@@ -22,7 +22,7 @@ const getChartConfig: any = (chartType: string) => {
   const defaultMetric = {
     combinMetrics: true,
     geom: "line",
-    margin: [10, 30, 60, 50]
+    margin: [10, 30, 30, 50]
   };
   // 将图表类型变成不同步骤的组合
   const chartTypeMap: any[string] = {
@@ -171,21 +171,11 @@ class Chart extends React.Component <ChartProps, any> {
     */
     }
     const chartCfg = getChartConfig(chartParams.chartType);
-
-    const chart = new G2.Chart({
-      container: dom,
-      forceFit: true,
-      height: canvasRect.height || 350,
-      plotCfg: {
-        margin: chartCfg.margin
-      }
-    });
-
     let sourceDef = this.buildSourceConfig(chartParams);
 
     // 建立Frame
     let metricCols = map(filter(chartParams.columns, { isDim: false }), "id");
-    const dimCols    = map(filter(chartParams.columns, { isDim: true }), "id");
+    let dimCols    = map(filter(chartParams.columns, { isDim: true }), "id");
     let frame      = new G2.Frame(source);
 
     // 周期对比图 的 hook
@@ -202,7 +192,11 @@ class Chart extends React.Component <ChartProps, any> {
     // 需要多值域合并
     if (chartCfg.combinMetrics && metricCols.length > 1) {
       frame = G2.Frame.combinColumns(frame, metricCols, "val", "metric", dimCols);
-      dimCols.push("metric");
+      if (chartCfg.shape === "funnel") {
+        dimCols = ["metric"];
+      } else {
+        dimCols.push("metric");
+      }
       const metricNames = map(filter(chartParams.columns, { isDim: false }), "name");
       const metricDict = fromPairs(zip(metricCols, metricNames));
       sourceDef.metric = { formatter: (n: string) => metricDict[n] };
@@ -210,7 +204,19 @@ class Chart extends React.Component <ChartProps, any> {
     }
 
     // 计算legend的留空，tick的留空
-    // 存在legend的
+    // 存在legend的可能有
+    if (dimCols.length > 1) {
+      chartCfg.margin[2] = 70;
+    }
+    const chart = new G2.Chart({
+      container: dom,
+      forceFit: true,
+      height: canvasRect.height || 300,
+      plotCfg: {
+        margin: chartCfg.margin
+      }
+    });
+
     chart.source(frame, sourceDef);
 
     // geom
@@ -227,6 +233,10 @@ class Chart extends React.Component <ChartProps, any> {
       if (chartCfg.reflect) {
         coord.reflect(chartCfg.reflect);
       }
+      if (chartCfg.scale) {
+        coord.scale(1, 1);
+      }
+
     }
     let adjust = chartParams.adjust;
     if ("line" === chartCfg.geom) {
@@ -245,13 +255,13 @@ class Chart extends React.Component <ChartProps, any> {
 
     if (dimCols.length < 2) {
       geom.position(G2.Stat.summary.sum(pos));
+      if (this.props.colorTheme) {
+        geom.color(`rgb(${this.props.colorTheme})`);
+      }
     } else {
       geom.position(pos);
       if (chartCfg.pos !== "MMD") {
         geom.color(dimCols[1]);
-      } else if (this.props.colorTheme) {
-        console.log('dhasod');
-        geom.color(`rgb(${this.props.colorTheme})`);
       }
     }
     if (chartCfg.pos === "MMD") { // 双y
@@ -264,9 +274,6 @@ class Chart extends React.Component <ChartProps, any> {
     // size
     if (chartCfg.size) {
       geom.size(chartCfg.size);
-    }
-    if (chartCfg.scale) {
-      geom.scale(1, 1);
     }
     if (chartCfg.shape) {
       geom.shape(chartCfg.shape);

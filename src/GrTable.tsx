@@ -19,9 +19,18 @@ const calculateWeight = (range: [number, number],  median: number) => (v: number
   }
 }
 // 根据metric取得背景色
-const generateColRender = (getBgColor: (v: number) => string): ((v: number) => any) =>
+const descValue = (value: number, isRate: boolean): string => {
+  if (value && !Number.isInteger(value)) {
+    if (isRate) {
+      return (100 * value).toPrecision(3) + "%";
+    }
+    return value.toPrecision(3);
+  }
+  return value.toString(10);
+}
+const generateColRender = (getBgColor: (v: number) => string, m: any): ((v: number) => any) =>
   (value: number) => ({
-    children: (value && !Number.isInteger(value) ? value.toPrecision(3) : value),
+    children: descValue(value, m.isRate), // (value && !Number.isInteger(value) ? value.toPrecision(3) : value),
     props: { style: {backgroundColor: getBgColor(value)}}
   });
 const checkDate = (m: Metric) => (m.id === "tm" ? GrTable.formatDate : undefined);
@@ -79,7 +88,7 @@ class GrTable extends React.Component <ChartProps, any> {
           return {
             dataIndex: id,
             key: id,
-            render: generateColRender(calculateWeight(G2.Frame.range(frame, id), G2.Frame.median(frame, id))),
+            render: generateColRender(calculateWeight(G2.Frame.range(frame, id), G2.Frame.median(frame, id)), m),
             sorter: sorterDecorator(id),
             title: m.name,
           };
@@ -93,7 +102,7 @@ class GrTable extends React.Component <ChartProps, any> {
         key: m.id,
         render: (m.isDim ?
             checkDate(m) :
-            generateColRender(calculateWeight(G2.Frame.range(frame, m.id), G2.Frame.median(frame, m.id)))
+            generateColRender(calculateWeight(G2.Frame.range(frame, m.id), G2.Frame.median(frame, m.id)), m)
         ),
         sorter: sorterDecorator(m.id),
         title: m.name,
