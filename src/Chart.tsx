@@ -22,7 +22,7 @@ const getChartConfig: any = (chartType: string) => {
   const defaultMetric = {
     combinMetrics: true,
     geom: "line",
-    margin: [10, 30, 30, 50]
+    margin: [10, 10, 30, 50]
   };
   // 将图表类型变成不同步骤的组合
   const chartTypeMap: any[string] = {
@@ -30,7 +30,7 @@ const getChartConfig: any = (chartType: string) => {
     bar:    { geom: "interval", reflect: "y", transpose: true, margin: [20, 20, 10, 100] },
     bubble: { geom: "point", pos: "MM", combinMetrics: false, shape: "circle" },
     comparison: {geom: "area", pos: "MMD", combinMetrics: false, hideAxis: true, tooltipchange: "custom" },
-    dualaxis: { geom: "interval", pos: "MMD", combinMetrics: false },
+    dualaxis: { geom: "interval", pos: "MMD", combinMetrics: false, margin: [10, 30, 30, 50] },
     funnel: { axis: false, geom: "intervalSymmetric", transpose: true, scale: true, shape: "funnel" },
     line:   { geom: "line", size: 2 },
     retention: {geom: "line", size: 2, counter: "day"},

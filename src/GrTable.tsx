@@ -109,7 +109,11 @@ class GrTable extends React.Component <ChartProps, any> {
       }));
     }
     if (this.props.hasOwnProperty("extraColumns") && this.props.extraColumns) {
-      cols = cols.concat(this.props.extraColumns);
+      let extraColumns = this.props.extraColumns;
+      if (!extraColumns.render) {
+        extraColumns.render = (v => v);
+      }
+      cols = cols.concat(extraColumns);
     }
     /*
     if (this.context.selected) {
