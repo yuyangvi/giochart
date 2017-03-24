@@ -9,6 +9,7 @@
     "interface-name": [true, "never-prefix"],
     "linebreak-style": [true, "LF"],
     "no-invalid-this": [true, "check-function-in-method"],
+    "ordered-imports": [false],
     "variable-name": [
       "ban-keywords",
       "check-format"

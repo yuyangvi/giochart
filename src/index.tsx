@@ -82,9 +82,9 @@ const convertChartParams = (v3Params: any): GioProps => {
     }
     if (chartType.includes("dimension")) {
       chartType = chartType.replace("dimension", "").toLowerCase();
-      if (chartType === "line" && v3Params.attrs.subChartType === "total") {
-        chartType = "area";
-      }
+    }
+    if (chartType === "line" && v3Params.attrs.subChartType === "total") {
+      chartType = "area";
     }
 
     if (chartType === "abar") {
