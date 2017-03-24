@@ -19,14 +19,14 @@ const calculateWeight = (range: [number, number],  median: number) => (v: number
   }
 }
 // 根据metric取得背景色
-const descValue = (value: number, isRate: boolean): string => {
+const descValue = (value: number|undefined, isRate: boolean): string|undefined => {
   if (value && !Number.isInteger(value)) {
     if (isRate) {
       return (100 * value).toPrecision(3) + "%";
     }
     return value.toPrecision(3);
   }
-  return value;
+  return value === undefined ? undefined : value.toString();
 }
 const generateColRender = (getBgColor: (v: number) => string, m: Metric): ((v: number) => any) =>
   (value: number) => ({
@@ -66,10 +66,10 @@ class GrTable extends React.Component <ChartProps, any> {
       return null;
     }
     if (chartParams.groupCol) {
-      const dimNames: string[] = difference(map(filter(chartParams.columns, "isDim"), "id"), [chartParams.groupCol]);
+      const dimNames: any[] = difference(map(filter(chartParams.columns, "isDim"), "id"), [chartParams.groupCol]);
       const metrics: Metric[] = filter(chartParams.columns, { isDim: false});
 
-      const groupColValues: string[] = flatMap(unionBy(source, chartParams.groupCol), chartParams.groupCol);
+      const groupColValues: any[] = flatMap(unionBy(source, chartParams.groupCol), chartParams.groupCol);
       // 按时间分组 TODO
       const groupSource = values(groupBy(source, dimNames[0]));
       source = map(groupSource, (n: any) => GrTable.groupFlatter(n, chartParams.groupCol, groupColValues, dimNames));
@@ -109,9 +109,9 @@ class GrTable extends React.Component <ChartProps, any> {
       }));
     }
     if (this.props.hasOwnProperty("extraColumns") && this.props.extraColumns) {
-      let extraColumns = this.props.extraColumns;
+      const extraColumns = this.props.extraColumns;
       if (!extraColumns.render) {
-        extraColumns.render = (v => v);
+        extraColumns.render = ((v: string) => v);
       }
       cols = cols.concat(extraColumns);
     }

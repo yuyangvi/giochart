@@ -65,7 +65,7 @@ module.exports = {
     },
     "antd": "antd",
     "moment": "moment",
-    "antd\/lib\/table": "table",
+    "object-hash": "object-hash"
   },
 
   plugins: [

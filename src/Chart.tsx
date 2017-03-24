@@ -6,13 +6,15 @@ import {ChartProps, DrawParamsProps, Granulariy, Metric, Source} from "./ChartPr
 import * as moment from "moment";
 interface G2Scale {
   type: string;
-  formatter?: (n: number) => string;
+  formatter?: (n: string|number) => string;
   range?: [number, number];
   alias?: string;
   tickCount?: number;
   ticks?: string[];
   mask?: string;
   nice?: boolean;
+  min?: number;
+  max?: number;
 }
 interface SourceConfig {
   [colName: string]: G2Scale;
@@ -30,7 +32,7 @@ const getChartConfig: any = (chartType: string) => {
     bar:    { geom: "interval", reflect: "y", transpose: true, margin: [20, 20, 10, 100] },
     bubble: { geom: "point", pos: "MM", combinMetrics: false, shape: "circle" },
     comparison: {geom: "area", pos: "MMD", combinMetrics: false, hideAxis: true, tooltipchange: "custom" },
-    dualaxis: { geom: "interval", pos: "MMD", combinMetrics: false, margin: [10, 30, 30, 50] },
+    dualaxis: { geom: "interval", pos: "MMD", combinMetrics: false, margin: [10, 30, 70, 50] },
     funnel: { axis: false, geom: "intervalSymmetric", transpose: true, scale: true, shape: "funnel" },
     line:   { geom: "line", size: 2 },
     retention: {geom: "line", size: 2, counter: "day"},
@@ -64,7 +66,8 @@ class Chart extends React.Component <ChartProps, any> {
       axis: {
         bottom: {
           labels: { autoRotate: false },
-          title: null,
+          tickLine: { value: 7 },
+          title: null
         },
         left: {
           labels: {
@@ -199,7 +202,10 @@ class Chart extends React.Component <ChartProps, any> {
       }
       const metricNames = map(filter(chartParams.columns, { isDim: false }), "name");
       const metricDict = fromPairs(zip(metricCols, metricNames));
-      sourceDef.metric = { formatter: (n: string) => metricDict[n] };
+      sourceDef.metric = {
+        type: "cat",
+        formatter: (n: string): string => metricDict[n]
+      };
       metricCols = ["val"];
     }
 
@@ -295,12 +301,11 @@ class Chart extends React.Component <ChartProps, any> {
       }
       styleGeom.position(pos).size(2);
       if (dimCols.length > 1 && chartCfg.pos !== "MMD") {
-        //styleGeom.color(dimCols[1]);
+        // styleGeom.color(dimCols[1]);
       }
     }
     // legend
     chart.legend({
-      itemWrap: false,
       position: "bottom"
     });
 
@@ -337,6 +342,10 @@ class Chart extends React.Component <ChartProps, any> {
     this.chart = chart;
   }
 
+  private unselectHandler(ev: any, selectCols: string[]) {
+    return;
+  }
+
   private selectHandler(ev: any, selectCols: string[]) {
     const shape = ev.shape;
     if (shape) {
@@ -356,6 +365,9 @@ class Chart extends React.Component <ChartProps, any> {
         this.props.select(null, pick(item._origin, selectCols));
       }
     }
+  }
+  private unSelectHandler(ev: any, selectCols: string[]) {
+    return;
   }
 
   private buildSourceConfig(chartParams: DrawParamsProps): SourceConfig {

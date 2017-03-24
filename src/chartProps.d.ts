@@ -17,6 +17,7 @@ interface Filter {
   op: string;
   key: string;
   value: string;
+  name?: string;
 }
 
 interface Order {
@@ -62,11 +63,15 @@ export interface ResponseParams {
 export type Source = Array<{[column: string]: number}>;
 
 export interface DataLoaderProps {
+  hashKeys?: string;
   style?: any;
   params: DataRequestProps;
   sourceUrl?: string;
   source?: Source;
   onLoad?: (state: any) => void;
+  cacheOptions?: {
+    ttl: number;
+  };
 }
 
 // 标准Chart

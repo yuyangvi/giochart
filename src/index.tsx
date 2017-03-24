@@ -17,19 +17,21 @@ interface GioProps {
   style?: any;
   extraColumns?: any;
   groupCol?: string;
+  sourceUrl?: string;
+  cacheOptions?: any;
 }
 const timeWeekRange = (timeRange = "day:8,1") => {
-  let [cate, v] = timeRange.split(":");
-  let [start, end] = v.split(",");
+  const [cate, v] = timeRange.split(":");
+  const [start, end] = v.split(",");
   if (cate === "day") {
-    return start > 7;
-  } else if (cate === "abs"){
-    return (end - start) > (86400000 * 7);
+    return parseInt(start, 10) > 7;
+  } else if (cate === "abs") {
+    return (parseInt(end, 10) - parseInt(start, 10)) > (86400000 * 7);
   }
 }
 
 const ChartV4 = (props: GioProps) => (
-  <DataSource params={props.params} style={props.style}>
+  <DataSource params={props.params} cacheOptions={props.cacheOptions}>
     <ContextListener
       chartType={props.chartType}
       colorTheme={props.colorTheme}
@@ -55,7 +57,7 @@ const convertChartParams = (v3Params: any): GioProps => {
         dimensions = [v3Params.chartType === "bar" ? "v" : "tm"].concat(dimensions);
     }
     if (dimensions.includes("tm")) {
-      //const interval = v3Params.chartType === "singleNumber" ? (v3Params.interval * 1000) : v3Params.interval
+      // const interval = v3Params.chartType === "singleNumber" ? (v3Params.interval * 1000) : v3Params.interval
       granularities = granularities.concat({
         id: "tm",
         interval: v3Params.interval,
@@ -63,8 +65,15 @@ const convertChartParams = (v3Params: any): GioProps => {
       });
     }
 
+    // 计算是否有总计: 线图、柱图、维度线图、维度柱图percent， 大数字
+    let aggregateType: string;
+    if (v3Params.chartType === "singleNumber") {
+      aggregateType = v3Params.aggregateType || "sum";
+    } else if (v3Params.attrs.subChartType === "percent") {
+      aggregateType = "sum";
+    }
     const params: DataRequestProps =  {
-        aggregateType: (v3Params.chartType === "singleNumber" ? (v3Params.aggregateType || "sum") : undefined), // 聚合类型: sum, avg
+        aggregateType, // 聚合类型: sum, avg
         attrs: v3Params.attrs, // 属性
         dimensions,
         filter: v3Params.filter, // 过滤
@@ -83,14 +92,14 @@ const convertChartParams = (v3Params: any): GioProps => {
     if (chartType.includes("dimension")) {
       chartType = chartType.replace("dimension", "").toLowerCase();
     }
-    if (chartType === "line" && v3Params.attrs.subChartType === "total") {
+    if (chartType === "line" && v3Params.attrs.subChartType !== "seperate") {
       chartType = "area";
     }
 
     if (chartType === "abar") {
       chartType = "bar";
     }
-    const adjust: string = (v3Params.attrs.subChartType === "total") ? "stack" : "dodge";
+    const adjust: string = (v3Params.attrs.subChartType !== "seperate") ? "stack" : "dodge";
     const colorTheme: string = v3Params.attrs.colorTheme;
     return { adjust, chartType, params, colorTheme };
 }
@@ -98,7 +107,7 @@ const convertChartParams = (v3Params: any): GioProps => {
 const GioChart = (props: GioProps) => (
   props.chartType ?
     <ChartV4 {...props}/> :
-    <ChartV4 extraColumns={props.extraColumns} groupCol={props.groupCol} {...convertChartParams(props.params)}/>
+    <ChartV4 extraColumns={props.extraColumns} groupCol={props.groupCol} {...convertChartParams(props.params)} cacheOptions={props.cacheOptions}/>
 );
 
 export { Chart, ContextListener, DataSource, GrTable, convertChartParams};

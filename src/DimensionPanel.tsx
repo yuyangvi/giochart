@@ -46,12 +46,12 @@ class DimensionPanel extends React.Component <any, any> {
     */
 
     // modeValue true=替换 false=追加
-    const modeValue = 1; //(mode === "replace");
+    const modeValue = 1; // (mode === "replace");
     if (e.key) {
       this.props.addDimension(e.key.split(","), modeValue);
     }
   }
-/**/
+/* */
   public render() {
     return (
       <Menu onClick={this.addDimension.bind(this)} mode="horizontal" defaultSelectedKeys={["raw"]}>

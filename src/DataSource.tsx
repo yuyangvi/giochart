@@ -3,6 +3,7 @@
  */
 import { assign, flatten, isEqual, map, zipObject, zipWith } from "lodash";
 import * as React from "react";
+import * as DataCache from "./DataCache";
 import {DataLoaderProps, DataRequestProps, Metric, ResponseParams} from "./ChartProps";
 // declare function fetch(a: any, b?: any): any;
 declare const project: any;
@@ -27,7 +28,7 @@ export const HttpStatus = {
   InternalServerError : 500,
   NotImplemented      : 501
 };
-
+type NumberArray = Array<number|null>;
 class DataSource extends React.Component <DataLoaderProps, any> {
   private static childContextTypes: React.ValidationMap<any> = {
     aggregates: React.PropTypes.array,
@@ -75,6 +76,13 @@ class DataSource extends React.Component <DataLoaderProps, any> {
   private componentWillReceiveProps(nextProps: DataLoaderProps) {
     // TODO status改变也会触发，所以多了一层判断
     if (JSON.stringify(this.props.params) !== JSON.stringify(nextProps.params)) {
+      if (nextProps.hasOwnProperty("cacheOptions")) {
+        const chartDataInCache = DataCache.getChartData(nextProps.params, nextProps.hashKeys);
+        if (chartDataInCache) {
+          this.setState(chartDataInCache);
+          return;
+        }
+      }
       this.defaultRequest(nextProps.params, this.afterFetch.bind(this));
     }
   }
@@ -88,7 +96,6 @@ class DataSource extends React.Component <DataLoaderProps, any> {
    }
    return result;
   } */
-
   private defaultRequest(chartParams: DataRequestProps, callback: any) {
     let fetchObj;
     // Todo 检查是否是DEV环境
@@ -96,11 +103,11 @@ class DataSource extends React.Component <DataLoaderProps, any> {
       if (this.props.sourceUrl === "auto") {
         const headers = new Headers();
         headers.append("authorization", "Token 836bd4152bbb69b979a7b2c3299d1af75a99faa883f69e07182165c61ae52c39");
-        const request = new Request(`http://gat.growingio.dev:18443/v4/projects/${project.id}/chartdata`, {headers: headers});
+        const request = new Request(`http://gat.growingio.dev:18443/v4/projects/${project.id}/chartdata`, { headers: headers });
         fetchObj = fetch(request, {
           body: JSON.stringify(chartParams),
           credentials: "same-origin",
-          contentType: "application/json",
+          /* contentType: "application/json", */
           method: "post"
         });
       } else {
@@ -117,6 +124,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
     fetchObj.then((response: any) => {
       const status = response.status;
       if (status === HttpStatus.Ok) {
+        this.tryTimes = 0;
         return response.json();
       } else if (status === HttpStatus.RequestTimeout && this.tryTimes < 2) {
         this.tryTimes++;
@@ -127,6 +135,13 @@ class DataSource extends React.Component <DataLoaderProps, any> {
 
   private componentDidMount() {
     const { params } = this.props;
+    if (this.props.hasOwnProperty("cacheOptions")) {
+      const chartDataInCache = DataCache.getChartData(params, this.props.hashKeys);
+      if (chartDataInCache) {
+        this.setState(chartDataInCache);
+        return;
+      }
+    }
     this.defaultRequest(params, this.afterFetch.bind(this));
   }
 
@@ -134,7 +149,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
     let columns = chartData.meta.columns;
     let colIds = map(chartData.meta.columns, "id");
     const offset = chartData.meta.offset;
-    let sourceData: number[][] = chartData.data;
+    let sourceData: NumberArray[] = chartData.data;
 
     // 为了支持周期对比图，这里需要meta的offset 转化
     if (chartData.meta.offset) {
@@ -146,7 +161,8 @@ class DataSource extends React.Component <DataLoaderProps, any> {
       sourceData = zipWith(
         sourceData.slice(0, offset),
         sourceData.slice(offset),
-        (thisTurn: number[], lastTurn: number[]) => (thisTurn || [lastTurn[0] + offsetPeriod, null]).concat(lastTurn));
+        (thisTurn: NumberArray, lastTurn: NumberArray): NumberArray =>
+          (thisTurn || [lastTurn[0] + offsetPeriod, null]).concat(lastTurn));
       // 加上下划线表示上一周期的字段
       colIds = colIds.concat(map(colIds, (n: string) => (n + "_")));
       // 取得Metric ID
@@ -158,14 +174,17 @@ class DataSource extends React.Component <DataLoaderProps, any> {
         })
       ));
     }
-
     const source = map(sourceData, (n: number[]) => zipObject(colIds, n));
-    this.setState({
+    const state = {
       aggregates: chartData.meta.aggregates,
-      isLoaded: true,
       columns,
       source
-    });
+    };
+    if (this.props.hasOwnProperty("cacheOptions")) {
+      DataCache.setChartData(this.props.params, state, this.props.hashKeys, this.props.cacheOptions);
+    }
+
+    this.setState(state);
     if (this.props.onLoad) {
       this.props.onLoad(this.state);
     }
