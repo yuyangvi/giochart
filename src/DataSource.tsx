@@ -149,13 +149,12 @@ class DataSource extends React.Component <DataLoaderProps, any> {
     let columns = chartData.meta.columns;
     let colIds = map(chartData.meta.columns, "id");
     const offset = chartData.meta.offset;
-    let sourceData: NumberArray[] = chartData.data;
+    // any是因为下面的zipWith返回的schema有bug
+    let sourceData: any = chartData.data;
 
     // 为了支持周期对比图，这里需要meta的offset 转化
     if (chartData.meta.offset) {
       // 寻找粒度
-      // const period = this.props.params.granularities[0].period;
-      // 现在period 只能等于7
       const offsetPeriod = (7 * 86400000);
       // 强行配对，没验证...
       sourceData = zipWith(

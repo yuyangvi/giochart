@@ -3,7 +3,6 @@
 * */
 import * as React from "react";
 import { Menu } from "antd";
-import SyntheticEvent = React.SyntheticEvent;
 const MenuItem = Menu.Item;
 
 const allDimensions = [
@@ -39,7 +38,7 @@ const allDimensions = [
 
 class DimensionPanel extends React.Component <any, any> {
   // staticDimension
-  public addDimension(e: SyntheticEvent<HTMLUListElement>) {
+  public addDimension(e: any) { // React只有KeyboardEvent 有key, 这里应该是antd的SelectParam
     /*
     const key = (e.target as Element).getAttribute("data-key");
     const mode = (e.target as Element).getAttribute("data-mode");
@@ -54,7 +53,7 @@ class DimensionPanel extends React.Component <any, any> {
 /* */
   public render() {
     return (
-      <Menu onClick={this.addDimension.bind(this)} mode="horizontal" defaultSelectedKeys={["raw"]}>
+      <Menu onSelect={this.addDimension.bind(this)} mode="horizontal" defaultSelectedKeys={["raw"]}>
         <MenuItem key="raw">数据源</MenuItem>
         <MenuItem key="rt,rd,kw">趋势</MenuItem>
         <MenuItem key="rt,rd,kw">来源</MenuItem>

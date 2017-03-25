@@ -10,6 +10,7 @@ interface G2Scale {
   range?: [number, number];
   alias?: string;
   tickCount?: number;
+  tickInterval?: number;
   ticks?: string[];
   mask?: string;
   nice?: boolean;
@@ -65,8 +66,8 @@ class Chart extends React.Component <ChartProps, any> {
       animate: false,
       axis: {
         bottom: {
-          labels: { autoRotate: false },
-          tickLine: { value: 7 },
+          labels: { },
+          tickLine: { value: 5 },
           title: null
         },
         left: {
@@ -82,7 +83,7 @@ class Chart extends React.Component <ChartProps, any> {
       },
       defaultColor: "#fc5f3a",
       shape: {
-        area: { fill: "#fc5f3a", fillOpacity: 0.6 },
+        area: { fill: "#fc5f3a" },
         interval: { fill: "#d5375f" },
         line: { stroke: "#fc5f3a" }
       }
@@ -95,29 +96,30 @@ class Chart extends React.Component <ChartProps, any> {
   }
   // 这个函数是用来区分changeData还是draw, 通常尽量不要用componentWillReceiveProps
   private componentWillReceiveProps(nextProps: ChartProps) {
-    if (nextProps.source) {
-      const source: Source = nextProps.source;
-      if (!isEmpty(nextProps.selected)) { // 需要筛选数据
-        const dimCols = map(filter(nextProps.chartParams.columns, { isDim: true }), "id");
-        const filteredSelected = filter(nextProps.selected, (item) =>  isEmpty(pick(item, dimCols)));
-        if (isEmpty(filteredSelected)) {
-          return;
+    if (isEmpty(nextProps.source)) {
+      return;
+    }
+    const source: Source = nextProps.source;
+    if (!isEmpty(nextProps.selected)) { // 需要筛选数据
+      const dimCols = map(filter(nextProps.chartParams.columns, { isDim: true }), "id");
+      const filteredSelected = filter(nextProps.selected, (item) =>  isEmpty(pick(item, dimCols)));
+      if (isEmpty(filteredSelected)) {
+        return;
+      }
+      const filterSource = filter(source, (sourceItem) =>
+        some(filteredSelected, (selectedItem) =>
+          isMatch(sourceItem, selectedItem)
+        )
+      );
+      this.changeData(filterSource || source);
+    } else { // 不需要筛选数据，或者取消筛选
+      if (!isEqual(this.props.chartParams, nextProps.chartParams)) { // 配置修改了，重新绘制
+        if (this.chart) {
+          this.chart.destroy();
         }
-        const filterSource = filter(source, (sourceItem) =>
-          some(filteredSelected, (selectedItem) =>
-            isMatch(sourceItem, selectedItem)
-          )
-        );
-        this.changeData(filterSource || source);
-      } else { // 不需要筛选数据，或者取消筛选
-        if (!isEqual(this.props.chartParams, nextProps.chartParams)) { // 配置修改了，重新绘制
-          if (this.chart) {
-            this.chart.destroy();
-          }
-          this.drawChart(nextProps.chartParams, source);
-        } else {
-          this.changeData(source);
-        }
+        this.drawChart(nextProps.chartParams, source);
+      } else {
+        this.changeData(source);
       }
     }
   }
@@ -222,7 +224,6 @@ class Chart extends React.Component <ChartProps, any> {
         margin: chartCfg.margin
       }
     });
-
     chart.source(frame, sourceDef);
 
     // geom
@@ -242,7 +243,6 @@ class Chart extends React.Component <ChartProps, any> {
       if (chartCfg.scale) {
         coord.scale(1, 1);
       }
-
     }
     let adjust = chartParams.adjust;
     if ("line" === chartCfg.geom) {
@@ -389,7 +389,7 @@ class Chart extends React.Component <ChartProps, any> {
         if (glt.interval) {
           sourceDef[glt.id] = {
             mask: (glt.interval >= 864e5) ? "mm-dd" : "HH:MM",
-            nice: true,
+            tickCount: 8,
             type: ( chartConfig.geom !== "interval" ? "time" : "timeCat" ) // TODO 可能有其他case
           };
         }

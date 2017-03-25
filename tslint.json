@@ -12,7 +12,8 @@
     "ordered-imports": [false],
     "variable-name": [
       "ban-keywords",
-      "check-format"
+      "check-format",
+      "allow-pascal-case"
     ],
     "trailing-comma": [
       false

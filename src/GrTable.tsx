@@ -110,10 +110,12 @@ class GrTable extends React.Component <ChartProps, any> {
     }
     if (this.props.hasOwnProperty("extraColumns") && this.props.extraColumns) {
       const extraColumns = this.props.extraColumns;
-      if (!extraColumns.render) {
-        extraColumns.render = ((v: string) => v);
+      if (!find(cols, { dataIndex: extraColumns.dataIndex })) { // 防止冲突
+        if (!extraColumns.render) {
+          extraColumns.render = ((v: string) => v);
+        }
+        cols = cols.concat(extraColumns);
       }
-      cols = cols.concat(extraColumns);
     }
     /*
     if (this.context.selected) {
