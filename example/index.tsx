@@ -1,9 +1,9 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
-import ComplexTable from "./ComplexTable";
+import Retention from "./Retention";
 
 ReactDOM.render(
-  <ComplexTable />,
+  <Retention />,
   document.getElementById("example")
 );

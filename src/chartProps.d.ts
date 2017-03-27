@@ -1,5 +1,6 @@
 // 拉取数据的请求配置
 export interface DataRequestProps {
+  id?: string;
   type?: string; // Enum: funnel, retention
   metrics: Metric[]; // 指标
   dimensions: string[]; // 维度

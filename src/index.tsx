@@ -84,6 +84,7 @@ const convertChartParams = (v3Params: any): GioProps => {
         dimensions,
         filter: v3Params.filter, // 过滤
         granularities, // 粒度
+        id: v3Params.id,
         limit: v3Params.top, // 数据行限制 10
         metrics,
         orders: v3Params.orders, // 排序
@@ -98,7 +99,7 @@ const convertChartParams = (v3Params: any): GioProps => {
     if (chartType.includes("dimension")) {
       chartType = chartType.replace("dimension", "").toLowerCase();
     }
-    if (chartType === "line" && v3Params.attrs.subChartType !== "seperate") {
+    if (chartType === "line" && v3Params.attrs.subChartType && v3Params.attrs.subChartType !== "seperate") {
       chartType = "area";
     }
 

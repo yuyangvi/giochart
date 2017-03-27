@@ -100,7 +100,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
     let fetchObj;
     // Todo 检查是否是DEV环境
     if (this.props.hasOwnProperty("sourceUrl")) {
-      if (this.props.sourceUrl === "auto") {
+      if (this.props.sourceUrl === "auto") { // TODO: 临时在线上用的，上线前务必删掉。
         const headers = new Headers();
         headers.append("authorization", "Token 836bd4152bbb69b979a7b2c3299d1af75a99faa883f69e07182165c61ae52c39");
         const request = new Request(`http://gat.growingio.dev:18443/v4/projects/${project.id}/chartdata`, { headers: headers });
@@ -130,7 +130,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
         this.tryTimes++;
         setTimeout(this.defaultRequest.bind(this, chartParams, callback), 200);
       }
-    }).then((data: ResponseParams) => callback(data));
+    }).then((data: ResponseParams) => callback(data)).catch((e: any) => void(0));
   }
 
   private componentDidMount() {

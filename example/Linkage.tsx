@@ -15,11 +15,11 @@ interface SyntheticSeletorEvent extends SyntheticEvent<HTMLSelectElement> {
 }
 
 const originParams: DataRequestProps = {
-  "filter":{"op":"=","key":"b","value":"Web","name":"网站/手机应用"},
-  "granularities":[{"id":"tm","interval":3600000}],
-  "metrics":[{"id":"9yGbpp8x"}],
-  "dimensions": ["tm"],
-  "timeRange": "day:1,0"
+  dimensions: ["tm"],
+  filter: [{ op: "=", key: "b", value: "Web", name: "网站/手机应用" }],
+  granularities: [{ id: "tm", interval: 3600000 }],
+  metrics: [{ id: "9yGbpp8x" }],
+  timeRange: "day:1,0"
 };
 const lineParams: DrawParamsProps = {
     chartType: 'table',
@@ -55,7 +55,7 @@ class Demo extends React.Component<any, any> {
     if(metaSelected) {
       this.selected.push(metaSelected);
     } else if(metaUnselected) {
-      this.selected=filter(this.selected, (item)=>{
+      this.selected = filter(this.selected, (item)=>{
         return !isMatch(item,metaUnselected);
       });
     }
