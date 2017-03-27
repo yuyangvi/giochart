@@ -9,7 +9,8 @@ export interface DataRequestProps {
   userTag?: string; // 用户分群ID
   limit?: number; // 数据行限制 10
   orders?: Order[]; // 排序
-  aggregateType?: string; // 聚合类型: sum, avg
+  aggregation?: boolean; // -- 是否需要返回聚合值
+  aggregator?: string; // sum | avg | NULL -- 按照那种聚合函数做聚合
   attrs?: any; // 属性
   interval?: number; // 时间粒度 deperated
 }

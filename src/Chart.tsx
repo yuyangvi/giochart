@@ -25,7 +25,7 @@ const getChartConfig: any = (chartType: string) => {
   const defaultMetric = {
     combinMetrics: true,
     geom: "line",
-    margin: [10, 10, 30, 50]
+    margin: [10, 30, 30, 70]
   };
   // 将图表类型变成不同步骤的组合
   const chartTypeMap: any[string] = {
@@ -37,7 +37,7 @@ const getChartConfig: any = (chartType: string) => {
     funnel: { axis: false, geom: "intervalSymmetric", transpose: true, scale: true, shape: "funnel" },
     line:   { geom: "line", size: 2 },
     retention: {geom: "line", size: 2, counter: "day"},
-    singleNumber: {geom: "area", shape: "smooth", combineMetrics: false, axis: false, tooltip: false, margin: [0, 0, 0, 0]},
+    singleNumber: { geom: "area", shape: "smooth", combineMetrics: false, axis: false, tooltip: false, margin: [0, 0, 0, 0] },
     vbar:   { geom: "interval" }
 };
   return merge({}, defaultMetric, chartTypeMap[chartType]);
@@ -62,12 +62,12 @@ class Chart extends React.Component <ChartProps, any> {
       "#8d49a4", "#da97f1",
       "#f5d360", "#ffbd9c"
     ];
-    const theme = G2.Util.mix(true, {}, G2.Theme, {
+    // G2 的主题有bug，legend读的是G2.Theme的颜色，因此直接覆盖Theme更合适
+    const theme = G2.Util.mix(true, G2.Theme, {
       animate: false,
       axis: {
         bottom: {
-          labels: { },
-          tickLine: { value: 5 },
+          labels: { autoRotate: false },
           title: null
         },
         left: {
@@ -84,8 +84,11 @@ class Chart extends React.Component <ChartProps, any> {
       defaultColor: "#fc5f3a",
       shape: {
         area: { fill: "#fc5f3a" },
-        interval: { fill: "#d5375f" },
+        interval: { fill: "#fc5f3a" },
         line: { stroke: "#fc5f3a" }
+      },
+      tooltipMarker: {
+        stroke: "#fc5f3a"
       }
     });
     // G2.track(false);
@@ -245,6 +248,9 @@ class Chart extends React.Component <ChartProps, any> {
       }
     }
     let adjust = chartParams.adjust;
+    if (adjust === "percent") {
+      adjust = "stack";
+    }
     if ("line" === chartCfg.geom) {
       adjust = undefined;
     } else if ("interval" !== chartCfg.geom && chartParams.adjust === "dodge") {
@@ -263,12 +269,11 @@ class Chart extends React.Component <ChartProps, any> {
       geom.position(G2.Stat.summary.sum(pos));
       if (this.props.colorTheme) {
         geom.color(`rgb(${this.props.colorTheme})`);
+      } else if (chartCfg.pos === "MMD") {
+        geom.color(G2.Theme.defaultColor);
       }
     } else {
-      geom.position(pos);
-      if (this.props.colorTheme) {
-        geom.color(`rgb(${this.props.colorTheme})`);
-      }
+      geom.position(chartParams.adjust === "percent" ? G2.Stat.summary.percent(pos): pos);
       if (chartCfg.pos !== "MMD") {
         geom.color(dimCols[1]);
       } else if (this.props.colorTheme) {
@@ -290,7 +295,7 @@ class Chart extends React.Component <ChartProps, any> {
       geom.shape(chartCfg.shape);
     }
 
-    if (chartCfg.geom === "area" && adjust !== "stack") { // 为了area 好看点,画线
+    if (chartCfg.geom === "area" && adjust === "dodge") { // 为了area 好看点,画线
       const styleGeom = chart.line();
       if (this.props.colorTheme) {
         styleGeom.color(`rgb(${this.props.colorTheme})`);
@@ -335,7 +340,7 @@ class Chart extends React.Component <ChartProps, any> {
         // plotclick=图表坐标系内的事件  itemselected=图形元素上的事件
         const selectCols = (chartCfg.pos ? metricCols.slice(0, 2) : [dimCols[0]]) as string[] ;
         chart.on("plotclick", (evt: any) => this.selectHandler(evt, selectCols));
-        chart.on("itemunselected", (evt: any) => { this.unselectHandler(evt, selectCols) });
+        chart.on("itemunselected", (evt: any) => this.unselectHandler(evt, selectCols));
       }
     }
     chart.render();
@@ -366,9 +371,6 @@ class Chart extends React.Component <ChartProps, any> {
       }
     }
   }
-  private unSelectHandler(ev: any, selectCols: string[]) {
-    return;
-  }
 
   private buildSourceConfig(chartParams: DrawParamsProps): SourceConfig {
     const sourceDef: SourceConfig = {};
@@ -389,7 +391,7 @@ class Chart extends React.Component <ChartProps, any> {
         if (glt.interval) {
           sourceDef[glt.id] = {
             mask: (glt.interval >= 864e5) ? "mm-dd" : "HH:MM",
-            tickCount: 8,
+            tickCount: 4,
             type: ( chartConfig.geom !== "interval" ? "time" : "timeCat" ) // TODO 可能有其他case
           };
         }

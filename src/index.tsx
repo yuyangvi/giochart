@@ -66,14 +66,20 @@ const convertChartParams = (v3Params: any): GioProps => {
     }
 
     // 计算是否有总计: 线图、柱图、维度线图、维度柱图percent， 大数字
-    let aggregateType: string;
+    // aggregation: true | false | NULL -- 是否需要返回聚合值
+    // aggregator: sum | avg | NULL -- 按照那种聚合函数做聚合
+    let aggregation: boolean;
+    let aggregator: string;
     if (v3Params.chartType === "singleNumber") {
-      aggregateType = v3Params.aggregateType || "sum";
-    } else if (v3Params.attrs.subChartType === "percent") {
-      aggregateType = "sum";
+      aggregation = true;
+      aggregator = v3Params.aggregateType || "sum";
+    } else if (v3Params.chartType === "bar") {
+      aggregator = "sum";
+      aggregation = false;
     }
     const params: DataRequestProps =  {
-        aggregateType, // 聚合类型: sum, avg
+        aggregation, // 只有大数字是true
+        aggregator, // 聚合类型: sum, avg
         attrs: v3Params.attrs, // 属性
         dimensions,
         filter: v3Params.filter, // 过滤
@@ -99,7 +105,11 @@ const convertChartParams = (v3Params: any): GioProps => {
     if (chartType === "abar") {
       chartType = "bar";
     }
-    const adjust: string = (v3Params.attrs.subChartType !== "seperate") ? "stack" : "dodge";
+    let adjust: string = v3Params.attrs.subChartType  || "dodge";
+    if (adjust === "seperate") {
+      adjust = "dodge";
+    }
+
     const colorTheme: string = v3Params.attrs.colorTheme;
     return { adjust, chartType, params, colorTheme };
 }
@@ -107,7 +117,12 @@ const convertChartParams = (v3Params: any): GioProps => {
 const GioChart = (props: GioProps) => (
   props.chartType ?
     <ChartV4 {...props}/> :
-    <ChartV4 extraColumns={props.extraColumns} groupCol={props.groupCol} {...convertChartParams(props.params)} cacheOptions={props.cacheOptions}/>
+    <ChartV4
+      extraColumns={props.extraColumns}
+      groupCol={props.groupCol}
+      {...convertChartParams(props.params)}
+      cacheOptions={props.cacheOptions}
+    />
 );
 
 export { Chart, ContextListener, DataSource, GrTable, convertChartParams};
