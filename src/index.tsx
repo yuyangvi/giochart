@@ -52,7 +52,6 @@ const convertChartParams = (v3Params: any): GioProps => {
       granularities = granularities.concat({id: dimensions[0], top: v3Params.top});
       dimensions = ["tm"].concat(dimensions);
     }
-
     if (dimensions.length === 0) {
         dimensions = [v3Params.chartType === "bar" ? "v" : "tm"].concat(dimensions);
     }
@@ -85,7 +84,7 @@ const convertChartParams = (v3Params: any): GioProps => {
         filter: v3Params.filter, // 过滤
         granularities, // 粒度
         id: v3Params.id,
-        limit: v3Params.top, // 数据行限制 10
+        limit: ["bar", "abar", "table"].includes(v3Params.chartType) ? v3Params.top : undefined, // 数据行限制 10
         metrics,
         orders: v3Params.orders, // 排序
         timeRange: v3Params.timeRange, // 时间区域 day:8,1
@@ -109,6 +108,8 @@ const convertChartParams = (v3Params: any): GioProps => {
     let adjust: string = v3Params.attrs.subChartType  || "dodge";
     if (adjust === "seperate") {
       adjust = "dodge";
+    } else if (adjust === "total") {
+      adjust = "stack";
     }
 
     const colorTheme: string = v3Params.attrs.colorTheme;

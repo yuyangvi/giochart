@@ -57,8 +57,12 @@ class DataSource extends React.Component <DataLoaderProps, any> {
    });
   }
   */
+  private componentWillUnmount() {
+    // TODO: 取消未完成的请求
+    console.log("正在取消未完成的请求");
+
+  }
   public render() {
-    // TODO div高度
     return React.Children.only(this.props.children);
   }
   // TODO: 用来给子孙节点中的GrChart自定义 Demo props state改变触发 DataSource取数据返回触发

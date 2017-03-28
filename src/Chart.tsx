@@ -30,7 +30,7 @@ const getChartConfig: any = (chartType: string) => {
   // 将图表类型变成不同步骤的组合
   const chartTypeMap: any[string] = {
     area: {geom: "area"},
-    bar:    { geom: "interval", reflect: "y", transpose: true, margin: [20, 20, 10, 100] },
+    bar:    { geom: "interval", reflect: "y", transpose: true, label: true, margin: [20, 20, 10, 100] },
     bubble: { geom: "point", pos: "MM", combinMetrics: false, shape: "circle" },
     comparison: {geom: "area", pos: "MMD", combinMetrics: false, hideAxis: true, tooltipchange: "custom" },
     dualaxis: { geom: "interval", pos: "MMD", combinMetrics: false, margin: [10, 30, 70, 50] },
@@ -50,7 +50,7 @@ class Chart extends React.Component <ChartProps, any> {
   private constructor(props: ChartProps) {
     super();
     // 强制切换theme
-    const colors = [
+    /*const colors = [
       "#fc5f3a", "#fa9d1b",
       "#48a1f9", "#9ecefe",
       "#349a38", "#7fd182",
@@ -61,7 +61,15 @@ class Chart extends React.Component <ChartProps, any> {
       "#755920", "#dab873",
       "#8d49a4", "#da97f1",
       "#f5d360", "#ffbd9c"
+    ];*/
+    const colors = [
+      "#6cd2a8", "#fa8b78",
+      "#8790d2", "#fcc17e",
+      "#abce5b", "#d6dce3",
+      "#fb5e77", "#31c9ef",
+      "#ffe952", "#b389d2"
     ];
+    const defaultColor = "#abce5b";
     // G2 的主题有bug，legend读的是G2.Theme的颜色，因此直接覆盖Theme更合适
     const theme = G2.Util.mix(true, G2.Theme, {
       animate: false,
@@ -81,14 +89,14 @@ class Chart extends React.Component <ChartProps, any> {
         default: colors,
         intervalStack: colors
       },
-      defaultColor: "#fc5f3a",
+      defaultColor,
       shape: {
-        area: { fill: "#fc5f3a" },
-        interval: { fill: "#fc5f3a" },
-        line: { stroke: "#fc5f3a" }
+        area: { fill: defaultColor },
+        interval: { fill: defaultColor, fillOpacity: 1 },
+        line: { stroke: defaultColor }
       },
       tooltipMarker: {
-        stroke: "#fc5f3a"
+        stroke: defaultColor
       }
     });
     // G2.track(false);
@@ -236,7 +244,9 @@ class Chart extends React.Component <ChartProps, any> {
     if (chartCfg.tooltip !== undefined) {
       chart.tooltip(chartCfg.tooltip);
     } else {
-      chart.tooltip({ crosshairs: true });
+      if (["line", "area"].includes(chartCfg.geom)) {
+        chart.tooltip({ crosshairs: true });
+      }
     }
     if (chartCfg.transpose) {
       const coord = chart.coord("rect").transpose();
@@ -268,23 +278,30 @@ class Chart extends React.Component <ChartProps, any> {
     if (dimCols.length < 2) {
       geom.position(G2.Stat.summary.sum(pos));
       if (this.props.colorTheme) {
-        geom.color(`rgb(${this.props.colorTheme})`);
+        if (chartCfg.geom === "area") {
+          geom.color(`l(90) 0:rgba(${this.props.colorTheme}, 0.3) 1:rgba(${this.props.colorTheme}, 0.1)`);
+        } else {
+          geom.color(`rgb(${this.props.colorTheme})`);
+        }
       } else if (chartCfg.pos === "MMD") {
         geom.color(G2.Theme.defaultColor);
       }
     } else {
-      geom.position(chartParams.adjust === "percent" ? G2.Stat.summary.percent(pos): pos);
+      geom.position(chartParams.adjust === "percent" ? G2.Stat.summary.percent(pos) : pos);
       if (chartCfg.pos !== "MMD") {
         geom.color(dimCols[1]);
       } else if (this.props.colorTheme) {
-        geom.color(`rgb(${this.props.colorTheme})`);
+        geom.color(`l(90) 0:rgba(${this.props.colorTheme}, 0.3) 1:rgba(${this.props.colorTheme}, 0.1)`);
       }
     }
     if (chartCfg.pos === "MMD") { // 双y
-      chart.line().size(2).position(dimCols[0] + "*" + metricCols[1]).color("#e1dac8");
+      chart.line().size(2).position(dimCols[0] + "*" + metricCols[1]).color("#d6dce3");
       if (chartCfg.hideAxis) {
         chart.axis(metricCols[1], false);
       }
+    }
+    if (chartCfg.label) {
+      geom.label(metricCols[0]);
     }
 
     // size
@@ -295,7 +312,7 @@ class Chart extends React.Component <ChartProps, any> {
       geom.shape(chartCfg.shape);
     }
 
-    if (chartCfg.geom === "area" && adjust === "dodge") { // 为了area 好看点,画线
+    if (chartCfg.geom === "area" && adjust !== "stack") { // 为了area 好看点,画线
       const styleGeom = chart.line();
       if (this.props.colorTheme) {
         styleGeom.color(`rgb(${this.props.colorTheme})`);
