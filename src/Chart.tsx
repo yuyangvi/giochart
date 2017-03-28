@@ -203,6 +203,8 @@ class Chart extends React.Component <ChartProps, any> {
         sourceDef[id].min = 0;
         sourceDef[id].max = maxScale;
       });
+    } else if (chartParams.chartType === "singleNumber") {
+      dimCols = ["tm"];
     }
 
     // 需要多值域合并
@@ -271,12 +273,13 @@ class Chart extends React.Component <ChartProps, any> {
     const geom = chart[chartCfg.geom](adjust);
 
     // position
-    const pos = chartCfg.pos === "MM" ?
+    let pos = chartCfg.pos === "MM" ?
       (metricCols[0] + "*" + metricCols[1]) :
       (dimCols[0] + "*" + metricCols[0]);
 
     if (dimCols.length < 2) {
-      geom.position(G2.Stat.summary.sum(pos));
+      pos = G2.Stat.summary.sum(pos);
+      geom.position(pos);
       if (this.props.colorTheme) {
         if (chartCfg.geom === "area") {
           geom.color(`l(90) 0:rgba(${this.props.colorTheme}, 0.3) 1:rgba(${this.props.colorTheme}, 0.1)`);

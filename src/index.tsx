@@ -48,7 +48,7 @@ const convertChartParams = (v3Params: any): GioProps => {
     const metrics = v3Params.metrics;
     let dimensions = v3Params.dimensions || [];
     let granularities: Granulariy[] = [];
-    if (v3Params.chartType.includes("dimension")) {
+    if (["dimensionLine", "dimensionVbar", "singleNumber"].includes(v3Params.chartType) && !dimensions.includes("tm")) {
       granularities = granularities.concat({id: dimensions[0], top: v3Params.top});
       dimensions = ["tm"].concat(dimensions);
     }
