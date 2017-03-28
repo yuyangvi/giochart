@@ -9,8 +9,9 @@ const siPrefix = (n: number): string => {
   if (suffixIndex === 0 && Number.isInteger(n)) {
       return n.toString();
   }
-  return (n * Math.pow(0.1, 4 * suffixIndex)).toPrecision(3) + suffixArray[suffixIndex];
-}
+  return (n * Math.pow(0.1, 4 * suffixIndex)).toPrecision(4) + suffixArray[suffixIndex];
+};
+
 const Aggregate = (props: any) => {
   const { data, period }  = props;
   return props.data ? (
@@ -21,7 +22,7 @@ const Aggregate = (props: any) => {
       </div>
     </div>
   ) : null;
-}
+};
 
 const AggregatePercent = (props: any) => (
   <div className="gr-chart-aggregate-percent">
@@ -31,6 +32,6 @@ const AggregatePercent = (props: any) => (
     </div>
     <span className="gr-chart-trend-desc">{props.period ? "在最近7天" : "相比7天前"}</span>
   </div>
-)
+);
 
 export default Aggregate;
