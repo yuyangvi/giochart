@@ -76,19 +76,19 @@ const convertChartParams = (v3Params: any): GioProps => {
       aggregator = "sum";
       aggregation = false;
     }
-    const params: DataRequestProps =  {
-        aggregation, // 只有大数字是true
-        aggregator, // 聚合类型: sum, avg
-        attrs: v3Params.attrs, // 属性
-        dimensions,
-        filter: v3Params.filter, // 过滤
-        granularities, // 粒度
-        id: v3Params.id,
-        limit: ["bar", "abar", "table"].includes(v3Params.chartType) ? v3Params.top : undefined, // 数据行限制 10
-        metrics,
-        orders: v3Params.orders, // 排序
-        timeRange: v3Params.timeRange, // 时间区域 day:8,1
-        userTag: v3Params.userTag // 用户分群ID
+    const params: DataRequestProps = {
+      aggregation, // 只有大数字是true
+      aggregator, // 聚合类型: sum, avg
+      attrs: v3Params.attrs, // 属性
+      dimensions,
+      filter: v3Params.filter, // 过滤
+      granularities, // 粒度
+      id: v3Params.id,
+      limit: ["bar", "abar", "table"].includes(v3Params.chartType) ? v3Params.top : undefined, // 数据行限制 10
+      metrics,
+      orders: v3Params.orders, // 排序
+      timeRange: v3Params.timeRange, // 时间区域 day:8,1
+      userTag: v3Params.userTag // 用户分群ID
     };
 
     let chartType: string = v3Params.chartType;
@@ -101,9 +101,11 @@ const convertChartParams = (v3Params: any): GioProps => {
     if (chartType === "line" && v3Params.attrs.subChartType && v3Params.attrs.subChartType !== "seperate") {
       chartType = "area";
     }
-
     if (chartType === "abar") {
       chartType = "bar";
+    }
+    if (chartType === "funnel") {
+      params.type = "funnel";
     }
     let adjust: string = v3Params.attrs.subChartType  || "dodge";
     if (adjust === "seperate") {
@@ -116,16 +118,24 @@ const convertChartParams = (v3Params: any): GioProps => {
     return { adjust, chartType, params, colorTheme };
 }
 
-const GioChart = (props: GioProps) => (
-  props.chartType ?
-    <ChartV4 {...props}/> :
+const GioChart = (props: GioProps) => {
+  if (props.chartType) {
+    return <ChartV4 {...props}/>;
+  }
+  const convertV4: GioProps = convertChartParams(props.params);
+  if (props.groupCol) {
+    convertV4.params.expanded = true;
+  }
+
+  return (
     <ChartV4
       extraColumns={props.extraColumns}
       groupCol={props.groupCol}
-      {...convertChartParams(props.params)}
+      {...convertV4}
       cacheOptions={props.cacheOptions}
     />
-);
+  );
+};
 
 export { Chart, ContextListener, DataSource, GrTable, convertChartParams};
 export default GioChart;

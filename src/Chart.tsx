@@ -22,7 +22,7 @@ interface SourceConfig {
 }
 
 const numberPretty = (n: number | null) => {
-  if (!n) {
+  if (typeof n !== "number") {
     return n;
   } else {
     return (Number.isInteger(n) ? n : n.toPrecision(3));
