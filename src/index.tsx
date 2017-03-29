@@ -5,7 +5,7 @@
 import { assign, map, zip } from "lodash";
 import * as React from "react";
 import Chart from "./Chart";
-import {DataRequestProps, Granulariy, SingleChartProps} from "./ChartProps";
+import {DataRequestProps, Granulariy, SingleChartProps, Source} from "./ChartProps";
 import ContextListener from "./ContextListener";
 import DataSource from "./DataSource";
 import GrTable from "./GrTable";
@@ -14,11 +14,11 @@ interface GioProps {
   chartType: string;
   colorTheme?: string;
   params: DataRequestProps;
-  style?: any;
   extraColumns?: any;
   groupCol?: string;
   sourceUrl?: string;
   cacheOptions?: any;
+  sourceHook?: (source: Source) => Source;
 }
 const timeWeekRange = (timeRange = "day:8,1") => {
   const [cate, v] = timeRange.split(":");
@@ -31,7 +31,7 @@ const timeWeekRange = (timeRange = "day:8,1") => {
 }
 
 const ChartV4 = (props: GioProps) => (
-  <DataSource params={props.params} cacheOptions={props.cacheOptions}>
+  <DataSource params={props.params} cacheOptions={props.cacheOptions} sourceHook={props.sourceHook}>
     <ContextListener
       chartType={props.chartType}
       colorTheme={props.colorTheme}
@@ -49,7 +49,7 @@ const convertChartParams = (v3Params: any): GioProps => {
     let dimensions = v3Params.dimensions || [];
     let granularities: Granulariy[] = [];
     if (["dimensionLine", "dimensionVbar", "singleNumber"].includes(v3Params.chartType) && !dimensions.includes("tm")) {
-      granularities = granularities.concat({id: dimensions[0], top: v3Params.top});
+      granularities = granularities.concat({ id: dimensions[0] });
       dimensions = ["tm"].concat(dimensions);
     }
     if (dimensions.length === 0) {

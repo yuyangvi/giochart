@@ -4,7 +4,7 @@
 import { assign, flatten, isEqual, map, zipObject, zipWith } from "lodash";
 import * as React from "react";
 import * as DataCache from "./DataCache";
-import {DataLoaderProps, DataRequestProps, Metric, ResponseParams} from "./ChartProps";
+import {DataLoaderProps, DataRequestProps, Metric, ResponseParams, Source} from "./ChartProps";
 // declare function fetch(a: any, b?: any): any;
 declare const project: any;
 // 数据统计必备字段，中端需要以下字段提供数据
@@ -177,7 +177,10 @@ class DataSource extends React.Component <DataLoaderProps, any> {
         })
       ));
     }
-    const source = map(sourceData, (n: number[]) => zipObject(colIds, n));
+    let source: Source = map(sourceData, (n: number[]) => zipObject(colIds, n));
+    if (this.props.sourceHook) {
+      source = this.props.sourceHook(source);
+    }
     const state = {
       aggregates: chartData.meta.aggregates,
       columns,

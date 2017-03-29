@@ -21,11 +21,18 @@ interface SourceConfig {
   [colName: string]: G2Scale;
 }
 
+const numberPretty = (n: number | null) => {
+  if (!n) {
+    return n;
+  } else {
+    return (Number.isInteger(n) ? n : n.toPrecision(3));
+  }
+}
 const getChartConfig: any = (chartType: string) => {
   const defaultMetric = {
     combinMetrics: true,
     geom: "line",
-    margin: [10, 30, 30, 70]
+    margin: [10, 30, 30, 60]
   };
   // 将图表类型变成不同步骤的组合
   const chartTypeMap: any[string] = {
@@ -33,7 +40,7 @@ const getChartConfig: any = (chartType: string) => {
     bar:    { geom: "interval", reflect: "y", transpose: true, label: true, margin: [20, 20, 10, 100] },
     bubble: { geom: "point", pos: "MM", combinMetrics: false, shape: "circle" },
     comparison: {geom: "area", pos: "MMD", combinMetrics: false, hideAxis: true, tooltipchange: "custom" },
-    dualaxis: { geom: "interval", pos: "MMD", combinMetrics: false, margin: [10, 30, 70, 50] },
+    dualaxis: { geom: "interval", pos: "MMD", combinMetrics: false, margin: [10, 30, 50, 50] },
     funnel: { axis: false, geom: "intervalSymmetric", transpose: true, scale: true, shape: "funnel" },
     line:   { geom: "line", size: 2 },
     retention: {geom: "line", size: 2, counter: "day"},
@@ -63,13 +70,13 @@ class Chart extends React.Component <ChartProps, any> {
       "#f5d360", "#ffbd9c"
     ];*/
     const colors = [
-      "#6cd2a8", "#fa8b78",
-      "#8790d2", "#fcc17e",
+      "#6cd2a8", "#fcc17e",
+      "#8790d2", "#fa8b78",
       "#abce5b", "#d6dce3",
       "#fb5e77", "#31c9ef",
       "#ffe952", "#b389d2"
     ];
-    const defaultColor = "#abce5b";
+    const defaultColor = "#6cd2a8";
     // G2 的主题有bug，legend读的是G2.Theme的颜色，因此直接覆盖Theme更合适
     const theme = G2.Util.mix(true, G2.Theme, {
       animate: false,
@@ -97,6 +104,11 @@ class Chart extends React.Component <ChartProps, any> {
       },
       tooltipMarker: {
         stroke: defaultColor
+      },
+      legend: {
+        bottom: {
+          dy: 20
+        }
       }
     });
     // G2.track(false);
@@ -221,13 +233,17 @@ class Chart extends React.Component <ChartProps, any> {
         type: "cat",
         formatter: (n: string): string => metricDict[n]
       };
+      sourceDef.val = {
+        type: "linear",
+        formatter: numberPretty
+      }
       metricCols = ["val"];
     }
 
     // 计算legend的留空，tick的留空
     // 存在legend的可能有
     if (dimCols.length > 1) {
-      chartCfg.margin[2] = 70;
+      chartCfg.margin[2] = 50;
     }
     const chart = new G2.Chart({
       container: dom,
@@ -403,6 +419,8 @@ class Chart extends React.Component <ChartProps, any> {
       };
       if (m.isRate) {
         sourceDef[m.id].formatter = (n: number): string => `${(100 * n).toPrecision(3)}%`;
+      } else {
+        sourceDef[m.id].formatter = numberPretty;
       }
     });
 
