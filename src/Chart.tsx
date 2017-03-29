@@ -37,7 +37,7 @@ const getChartConfig: any = (chartType: string) => {
   // 将图表类型变成不同步骤的组合
   const chartTypeMap: any[string] = {
     area: {geom: "area"},
-    bar:    { geom: "interval", reflect: "y", transpose: true, label: true, margin: [20, 20, 10, 100] },
+    bar:    { geom: "interval", reflect: "y", transpose: true, label: true, margin: [20, 20, 10, 10] },
     bubble: { geom: "point", pos: "MM", combinMetrics: false, shape: "circle" },
     comparison: {geom: "area", pos: "MMD", combinMetrics: false, hideAxis: true, tooltipchange: "custom" },
     dualaxis: { geom: "interval", pos: "MMD", combinMetrics: false, margin: [10, 30, 50, 50] },
@@ -245,6 +245,12 @@ class Chart extends React.Component <ChartProps, any> {
     if (dimCols.length > 1) {
       chartCfg.margin[2] = 50;
     }
+    // 横向bar图， 需要计算左侧的距离
+    if (chartParams.chartType === "bar") {
+      const maxWordLength = Math.max.apply(null, map(frame.colArray(dimCols[0]), "length"));
+      chartCfg.margin[3] = Math.min(120, 10 + 12 * maxWordLength);
+    }
+
     const chart = new G2.Chart({
       container: dom,
       forceFit: true,
