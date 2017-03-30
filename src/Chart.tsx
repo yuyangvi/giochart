@@ -86,9 +86,11 @@ class Chart extends React.Component <ChartProps, any> {
           title: null
         },
         left: {
-          labels: {
-            autoRotate: false
-          },
+          labels: { autoRotate: false },
+          title: null
+        },
+        right: {
+          labels: { autoRotate: false },
           title: null
         }
       },
@@ -235,7 +237,7 @@ class Chart extends React.Component <ChartProps, any> {
       };
       sourceDef.val = {
         type: "linear",
-        formatter: numberPretty
+        formatter: sourceDef[metricCols[0]].formatter
       }
       metricCols = ["val"];
     }
@@ -426,7 +428,7 @@ class Chart extends React.Component <ChartProps, any> {
         type: (m.isDim) ? "cat" : "linear"
       };
       if (m.isRate) {
-        sourceDef[m.id].formatter = (n: number): string => `${(100 * n).toPrecision(3)}%`;
+        sourceDef[m.id].formatter = (n: number): string => `${numberPretty(100 * n)}%`;
       } else {
         sourceDef[m.id].formatter = numberPretty;
       }
