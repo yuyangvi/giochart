@@ -246,15 +246,17 @@ class Chart extends React.Component <ChartProps, any> {
       chartCfg.margin[2] = 50;
     }
     // 横向bar图， 需要计算左侧的距离
+    let canvasHeight: number = canvasRect.height;
     if (chartParams.chartType === "bar") {
       const maxWordLength = Math.max.apply(null, map(frame.colArray(dimCols[0]), "length"));
-      chartCfg.margin[3] = Math.min(120, 10 + 12 * maxWordLength);
+      chartCfg.margin[3] = Math.min(120, 25 + 12 * maxWordLength);
+      canvasHeight = Math.max(15 * frame.rowCount(), canvasHeight);
     }
 
     const chart = new G2.Chart({
       container: dom,
       forceFit: true,
-      height: canvasRect.height || 300,
+      height: canvasHeight || 300,
       plotCfg: {
         margin: chartCfg.margin
       }
