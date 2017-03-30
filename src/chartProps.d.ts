@@ -14,6 +14,7 @@ export interface DataRequestProps {
   aggregator?: string; // sum | avg | NULL -- 按照那种聚合函数做聚合
   attrs?: any; // 属性
   interval?: number; // 时间粒度 deperated
+  expanded?: boolean; //
 }
 interface Filter {
   op: string;
@@ -66,10 +67,10 @@ export type Source = Array<{[column: string]: number}>;
 
 export interface DataLoaderProps {
   hashKeys?: string;
-  style?: any;
   params: DataRequestProps;
-  sourceUrl?: string;
   source?: Source;
+  sourceHook?: (source: Source) => Source;
+  sourceUrl?: string;
   onLoad?: (state: any) => void;
   cacheOptions?: {
     ttl: number;
