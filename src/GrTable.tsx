@@ -20,11 +20,12 @@ const calculateWeight = (range: [number, number],  median: number) => (v: number
 }
 // 根据metric取得背景色
 const descValue = (value: number|undefined, isRate: boolean): string|undefined => {
-  if (value && !Number.isInteger(value)) {
+  if (value) {
     if (isRate) {
       return (100 * value).toPrecision(3) + "%";
+    } else if (!Number.isInteger(value)) {
+      return value.toPrecision(3);
     }
-    return value.toPrecision(3);
   }
   return value === undefined ? undefined : value.toString();
 }
