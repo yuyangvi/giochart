@@ -135,7 +135,7 @@ class GrTable extends React.Component <ChartProps, any> {
         columns={cols}
         dataSource={source}
         emptyText={ () => "" }
-        pagination={source.length > 20 ? undefined : false}
+        pagination={source.length > 19 ? { current: 1, pageSize: 10 } : false}
         rowKey={GrTable.getRowKey}
       />
     );
