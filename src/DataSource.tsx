@@ -187,6 +187,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
     let source: Source = map(sourceData, (n: number[]) => zipObject(colIds, n));
     if (this.props.params.attrs && this.props.params.attrs.isAddFakeMetric) {
       const lastCol = columns[columns.length - 1];
+      lastCol.name += "转化率";
       lastCol.isRate = true;
       const id = lastCol.id;
       source.forEach((n: any) => {

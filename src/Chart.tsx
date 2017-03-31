@@ -363,6 +363,9 @@ class Chart extends React.Component <ChartProps, any> {
     if (chartCfg.tooltipchange) {
       // chart.tooltip(true, {title: null});
       chart.on("tooltipchange", (ev: any) => {
+        if (ev.items.length > 1) {
+          ev.items.splice(-1);
+        }
         const item: any = ev.items[0]; // 获取tooltip要显示的内容
         const originPoint = item.point._origin;
         const tm = item.name === "上一周期" ? originPoint.tm_ : originPoint.tm;
