@@ -178,9 +178,19 @@ class DataSource extends React.Component <DataLoaderProps, any> {
       ));
     }
     let source: Source = map(sourceData, (n: number[]) => zipObject(colIds, n));
-    if (this.props.sourceHook) {
-      source = this.props.sourceHook(source);
+    if (this.props.params.attrs && this.props.params.attrs.isAddFakeMetric) {
+      const lastCol = columns[columns.length - 1];
+      lastCol.isRate = true;
+      const id = lastCol.id;
+      source.forEach((n: any) => {
+        if (n["9yGbpp8x"]) {
+          n[id] /= n["9yGbpp8x"];
+        } else {
+          n[id] = undefined;
+        }
+      });
     }
+
     const state = {
       aggregates: chartData.meta.aggregates,
       columns,

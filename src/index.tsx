@@ -18,9 +18,11 @@ interface GioProps {
   groupCol?: string;
   sourceUrl?: string;
   cacheOptions?: any;
-  sourceHook?: (source: Source) => Source;
 }
-const timeWeekRange = (timeRange = "day:8,1") => {
+const timeWeekRange = (timeRange: string) => {
+  if (!timeRange) {
+    timeRange = "day:8,1";
+  }
   const [cate, v] = timeRange.split(":");
   const [start, end] = v.split(",");
   if (cate === "day") {
@@ -31,7 +33,7 @@ const timeWeekRange = (timeRange = "day:8,1") => {
 }
 
 const ChartV4 = (props: GioProps) => (
-  <DataSource params={props.params} cacheOptions={props.cacheOptions} sourceHook={props.sourceHook}>
+  <DataSource params={props.params} cacheOptions={props.cacheOptions}>
     <ContextListener
       chartType={props.chartType}
       colorTheme={props.colorTheme}
