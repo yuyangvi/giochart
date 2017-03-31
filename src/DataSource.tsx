@@ -63,6 +63,13 @@ class DataSource extends React.Component <DataLoaderProps, any> {
 
   }
   public render() {
+    if (!this.state.source) {
+      return (
+        <div className="gr-loading-mask">
+          <div className="loading-gif" />
+        </div>
+      );
+    }
     return React.Children.only(this.props.children);
   }
   // TODO: 用来给子孙节点中的GrChart自定义 Demo props state改变触发 DataSource取数据返回触发

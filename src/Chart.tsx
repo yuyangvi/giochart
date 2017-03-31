@@ -451,6 +451,7 @@ class Chart extends React.Component <ChartProps, any> {
     if (chartConfig.counter === "day") {
       sourceDef.tm = {
         formatter: (n: number): string => (n > 0 ? `${n}天后` : `当天`),
+        tickCount: 4,
         type: "linear", // TODO 可能有其他case
       };
     }
