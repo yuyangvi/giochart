@@ -40,7 +40,7 @@ const getChartConfig: any = (chartType: string) => {
     bar:    { geom: "interval", reflect: "y", transpose: true, label: true, margin: [20, 20, 10, 10] },
     bubble: { geom: "point", pos: "MM", combinMetrics: false, shape: "circle" },
     comparison: {geom: "area", pos: "MMD", combinMetrics: false, hideAxis: true, tooltipchange: "custom" },
-    dualaxis: { geom: "interval", pos: "MMD", combinMetrics: false, margin: [10, 30, 50, 50] },
+    dualaxis: { geom: "interval", pos: "MMD", combinMetrics: false, margin: [10, 50, 50, 50] },
     funnel: { axis: false, geom: "intervalSymmetric", transpose: true, scale: true, shape: "funnel" },
     line:   { geom: "line", size: 2 },
     retention: {geom: "line", size: 2, counter: "day"},
@@ -428,6 +428,7 @@ class Chart extends React.Component <ChartProps, any> {
         type: (m.isDim) ? "cat" : "linear"
       };
       if (m.isRate) {
+        sourceDef[m.id].min = 0;
         sourceDef[m.id].formatter = (n: number): string => `${numberPretty(100 * n)}%`;
       } else {
         sourceDef[m.id].formatter = numberPretty;
@@ -449,7 +450,7 @@ class Chart extends React.Component <ChartProps, any> {
     // 针对留存的补丁， Fuck！
     if (chartConfig.counter === "day") {
       sourceDef.tm = {
-        formatter: (n: number): string => (n > 0 ? `第${n}天` : `当天`),
+        formatter: (n: number): string => (n > 0 ? `${n}天后` : `当天`),
         type: "linear", // TODO 可能有其他case
       };
     }
