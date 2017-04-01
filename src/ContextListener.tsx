@@ -19,6 +19,9 @@ class ContextListener extends React.Component <SingleChartProps, any> {
   public render() {
     const chartParams = this.generateChartParams();
     const withAggregate: boolean = ["comparison", "singleNumber"].includes(chartParams.chartType);
+    if (!this.context.source || !this.context.source.length) {
+      return null;
+    }
     if (chartParams.chartType === "table") {
       return (
         <GrTable
@@ -63,7 +66,6 @@ class ContextListener extends React.Component <SingleChartProps, any> {
         chartParams={chartParams}
         source={this.context.source}
         select={this.props.select}
-        colorTheme={this.props.colorTheme}
         selected={this.context.selected}
       />
     );
@@ -75,6 +77,7 @@ class ContextListener extends React.Component <SingleChartProps, any> {
     return {
       adjust: this.props.adjust,
       chartType: this.props.chartType,
+      colorTheme: this.props.colorTheme,
       columns: this.context.columns,
       granularities: this.props.granularities,
       groupCol: this.props.groupCol

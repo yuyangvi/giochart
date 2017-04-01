@@ -32,8 +32,11 @@ const timeWeekRange = (timeRange: string) => {
   }
 }
 
-const ChartV4 = (props: GioProps) => (
-  <DataSource params={props.params} cacheOptions={props.cacheOptions}>
+const ChartV4 = (props: GioProps) => {
+  if (props.extraColumns && props.params.attrs) {
+    props.params.attrs.isAddFakeMetric = false;
+  }
+  return <DataSource params={props.params} cacheOptions={props.cacheOptions}>
     <ContextListener
       chartType={props.chartType}
       colorTheme={props.colorTheme}
@@ -43,8 +46,8 @@ const ChartV4 = (props: GioProps) => (
       groupCol={props.groupCol}
       range={timeWeekRange(props.params.timeRange)}
     />
-  </DataSource>
-);
+  </DataSource>;
+};
 // 根据v3的chartParams计算v4的Scheme转化
 const convertChartParams = (v3Params: any): GioProps => {
   if (!v3Params.chartType) {
@@ -67,6 +70,9 @@ const convertChartParams = (v3Params: any): GioProps => {
       interval: v3Params.interval,
       period: (v3Params.chartType === "comparison" ? "auto" : undefined)
     });
+  }
+  if (dimensions.length < 1 || metrics.length < 1){
+    return null;
   }
 
   // 计算是否有总计: 线图、柱图、维度线图、维度柱图percent， 大数字
@@ -95,7 +101,6 @@ const convertChartParams = (v3Params: any): GioProps => {
     timeRange: v3Params.timeRange, // 时间区域 day:8,1
     userTag: v3Params.userTag // 用户分群ID
   };
-
   let chartType: string = v3Params.chartType;
   if (chartType === "line" && v3Params.metrics.length < 2) {
     chartType = "area";

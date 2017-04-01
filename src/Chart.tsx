@@ -4,6 +4,7 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import {ChartProps, DrawParamsProps, Granulariy, Metric, Source} from "./ChartProps";
 import * as moment from "moment";
+import { formatNumber } from "./utils";
 interface G2Scale {
   type: string;
   formatter?: (n: string|number) => string;
@@ -21,29 +22,22 @@ interface SourceConfig {
   [colName: string]: G2Scale;
 }
 
-const numberPretty = (n: number | null) => {
-  if (typeof n !== "number") {
-    return n;
-  } else {
-    return (Number.isInteger(n) ? n : n.toPrecision(3));
-  }
-}
 const getChartConfig: any = (chartType: string) => {
   const defaultMetric = {
-    combinMetrics: true,
+    combineMetrics: true,
     geom: "line",
-    margin: [10, 30, 30, 60]
+    margin: [10, 30, 50, 30]
   };
   // 将图表类型变成不同步骤的组合
   const chartTypeMap: any[string] = {
     area: {geom: "area"},
     bar:    { geom: "interval", reflect: "y", transpose: true, label: true, margin: [20, 20, 10, 10] },
-    bubble: { geom: "point", pos: "MM", combinMetrics: false, shape: "circle" },
-    comparison: {geom: "area", pos: "MMD", combinMetrics: false, hideAxis: true, tooltipchange: "custom" },
-    dualaxis: { geom: "interval", pos: "MMD", combinMetrics: false, margin: [10, 50, 50, 50] },
-    funnel: { axis: false, geom: "intervalSymmetric", transpose: true, scale: true, shape: "funnel" },
+    bubble: { geom: "point", pos: "MM", combineMetrics: false, shape: "circle" },
+    comparison: {geom: "area", pos: "MMD", combineMetrics: false, hideAxis: true, tooltipchange: "custom" },
+    dualaxis: { geom: "interval", pos: "MMD", combineMetrics: false, margin: [10, 50, 50, 50] },
+    funnel: { geom: "line", size: 2 },
     line:   { geom: "line", size: 2 },
-    retention: {geom: "line", size: 2, counter: "day"},
+    retention: { geom: "line", size: 2, counter: "day" },
     singleNumber: { geom: "area", shape: "smooth", combineMetrics: false, axis: false, tooltip: false, margin: [0, 0, 0, 0] },
     vbar:   { geom: "interval" }
 };
@@ -70,13 +64,16 @@ class Chart extends React.Component <ChartProps, any> {
       "#f5d360", "#ffbd9c"
     ];*/
     const colors = [
-      "#6cd2a8", "#fcc17e",
-      "#8790d2", "#fa8b78",
-      "#abce5b", "#d6dce3",
-      "#fb5e77", "#31c9ef",
-      "#ffe952", "#b389d2"
+      "#5FB6C7", "#FFD159",
+      "#C9C77C", "#FA7413",
+      "#D6DCE3", "#6F5D45",
+      "#FDF0A1", "#bf1f41",
+      "#A1EBDE", "#CBBD8C",
+      "#B96285", "#8a73c9",
+      "#005a03", "#320096",
+      "#673000", "#2d396b"
     ];
-    const defaultColor = "#6cd2a8";
+    const defaultColor = "#abce5b";
     // G2 的主题有bug，legend读的是G2.Theme的颜色，因此直接覆盖Theme更合适
     const theme = G2.Util.mix(true, G2.Theme, {
       animate: false,
@@ -100,9 +97,9 @@ class Chart extends React.Component <ChartProps, any> {
       },
       defaultColor,
       shape: {
-        area: { fill: defaultColor },
+        area: { fill: "#5FB6C7" },
         interval: { fill: defaultColor, fillOpacity: 1 },
-        line: { stroke: defaultColor }
+        line: { stroke: "#5FB6C7" }
       },
       tooltipMarker: {
         stroke: defaultColor
@@ -158,7 +155,7 @@ class Chart extends React.Component <ChartProps, any> {
       const metricCols = map(filter(chartParams.columns, { isDim: false }), "id");
       const dimCols    = map(filter(chartParams.columns, { isDim: true }), "id");
 
-      if (chartCfg.combinMetrics && metricCols.length > 1) {
+      if (chartCfg.combineMetrics && metricCols.length > 1) {
         frame = G2.Frame.combinColumns(frame, metricCols, "val", "metric", dimCols);
         const metricNames = map(filter(chartParams.columns, { isDim: false }), "name");
         // const metricDict = fromPairs(zip(metricCols, metricNames));
@@ -222,7 +219,7 @@ class Chart extends React.Component <ChartProps, any> {
     }
 
     // 需要多值域合并
-    if (chartCfg.combinMetrics && metricCols.length > 1) {
+    if (chartCfg.combineMetrics && dimCols.length > 1) {
       frame = G2.Frame.combinColumns(frame, metricCols, "val", "metric", dimCols);
       if (chartCfg.shape === "funnel") {
         dimCols = ["metric"];
@@ -237,16 +234,13 @@ class Chart extends React.Component <ChartProps, any> {
       };
       sourceDef.val = {
         type: "linear",
-        formatter: sourceDef[metricCols[0]].formatter
+        formatter: metricCols.length > 1 ? formatNumber : sourceDef[metricCols[0]].formatter
       }
       metricCols = ["val"];
     }
 
     // 计算legend的留空，tick的留空
     // 存在legend的可能有
-    if (dimCols.length > 1) {
-      chartCfg.margin[2] = 50;
-    }
     // 横向bar图， 需要计算左侧的距离
     let canvasHeight: number = canvasRect.height;
     if (chartParams.chartType === "bar") {
@@ -268,7 +262,14 @@ class Chart extends React.Component <ChartProps, any> {
     // geom
     if (chartCfg.axis !== undefined) {
       chart.axis(chartCfg.axis);
-    }
+    } /* else if (dimCols.length < 2) {
+      chart.axis(dimCols[0], {title: {
+        fontSize: '12',
+        textAlign: 'center',
+        fill: '#999',
+        fontWeight: 'bold'
+      } });
+    } */
     if (chartCfg.tooltip !== undefined) {
       chart.tooltip(chartCfg.tooltip);
     } else {
@@ -303,26 +304,28 @@ class Chart extends React.Component <ChartProps, any> {
       (metricCols[0] + "*" + metricCols[1]) :
       (dimCols[0] + "*" + metricCols[0]);
 
+    // position and colored
     if (dimCols.length < 2) {
       pos = G2.Stat.summary.sum(pos);
       geom.position(pos);
-      if (this.props.colorTheme) {
+      if (chartParams.colorTheme) {
         if (chartCfg.geom === "area") {
-          geom.color(`l(90) 0:rgba(${this.props.colorTheme}, 0.3) 1:rgba(${this.props.colorTheme}, 0.1)`);
+          geom.color(`l(90) 0:rgba(${chartParams.colorTheme}, 0.3) 1:rgba(${chartParams.colorTheme}, 0.1)`);
         } else {
-          geom.color(`rgb(${this.props.colorTheme})`);
+          geom.color(`rgb(${chartParams.colorTheme})`);
         }
       } else if (chartCfg.pos === "MMD") {
-        geom.color(G2.Theme.defaultColor);
+        geom.color(G2.Theme.defaultColor); // Wrong
       }
     } else {
       geom.position(chartParams.adjust === "percent" ? G2.Stat.summary.percent(pos) : pos);
       if (chartCfg.pos !== "MMD") {
         geom.color(dimCols[1]);
-      } else if (this.props.colorTheme) {
-        geom.color(`l(90) 0:rgba(${this.props.colorTheme}, 0.3) 1:rgba(${this.props.colorTheme}, 0.1)`);
+      } else if (chartParams.colorTheme) {
+        geom.color(`l(90) 0:rgba(${chartParams.colorTheme}, 0.3) 1:rgba(${chartParams.colorTheme}, 0.1)`);
       }
     }
+
     if (chartCfg.pos === "MMD") { // 双y
       chart.line().size(2).position(dimCols[0] + "*" + metricCols[1]).color("#d6dce3");
       if (chartCfg.hideAxis) {
@@ -343,8 +346,8 @@ class Chart extends React.Component <ChartProps, any> {
 
     if (chartCfg.geom === "area" && adjust !== "stack") { // 为了area 好看点,画线
       const styleGeom = chart.line();
-      if (this.props.colorTheme) {
-        styleGeom.color(`rgb(${this.props.colorTheme})`);
+      if (chartParams.colorTheme) {
+        styleGeom.color(`rgb(${chartParams.colorTheme})`);
       }
 
       if (chartCfg.shape) {
@@ -363,7 +366,7 @@ class Chart extends React.Component <ChartProps, any> {
     if (chartCfg.tooltipchange) {
       // chart.tooltip(true, {title: null});
       chart.on("tooltipchange", (ev: any) => {
-        if (ev.items.length > 1) {
+        if (ev.items.length > 2) {
           ev.items.splice(-1);
         }
         const item: any = ev.items[0]; // 获取tooltip要显示的内容
@@ -432,9 +435,9 @@ class Chart extends React.Component <ChartProps, any> {
       };
       if (m.isRate) {
         sourceDef[m.id].min = 0;
-        sourceDef[m.id].formatter = (n: number): string => `${numberPretty(100 * n)}%`;
+        sourceDef[m.id].formatter = (n: number): string => `${(100 * n).toPrecision(3)}%`;
       } else {
-        sourceDef[m.id].formatter = numberPretty;
+        sourceDef[m.id].formatter = formatNumber;
       }
     });
 
