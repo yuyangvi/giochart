@@ -212,7 +212,7 @@ class Chart extends React.Component <ChartProps, any> {
         record[metricCols[1]] ? (record[metricCols[0]] / record[metricCols[1]] - 1) : 0
       ));
       sourceDef.rate = {
-        formatter: (n: number): string => `${(100 * n).toPrecision(3)}%`
+        formatter: (n: number): string => `${parseFloat((100 * n).toPrecision(3))}%`
       };
 
       // 获取metricid, 计算最大值,统一两条线的区间范围
@@ -227,6 +227,7 @@ class Chart extends React.Component <ChartProps, any> {
     }
     // 需要多值域合并
     if (chartCfg.combineMetrics && metricCols.length > 1) {
+      console.log(metricCols);
       frame = G2.Frame.combinColumns(frame, metricCols, "val", "metric", dimCols);
       if (chartCfg.shape === "funnel") {
         dimCols = ["metric"];
@@ -338,7 +339,6 @@ class Chart extends React.Component <ChartProps, any> {
     if (chartCfg.label) {
       geom.label(metricCols[0]);
     }
-    console.log('pos', pos);
 
     // size
     if (chartCfg.size) {
@@ -440,7 +440,7 @@ class Chart extends React.Component <ChartProps, any> {
       };
       if (m.isRate) {
         sourceDef[m.id].min = 0;
-        sourceDef[m.id].formatter = (n: number): string => `${(100 * n).toPrecision(3)}%`;
+        sourceDef[m.id].formatter = (n: number): string => `${parseFloat((100 * n).toPrecision(3))}%`;
       } else {
         sourceDef[m.id].formatter = formatNumber;
       }
