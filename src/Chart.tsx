@@ -38,7 +38,7 @@ const getChartConfig: any = (chartType: string) => {
     funnel: { geom: "line", size: 2 },
     line:   { geom: "line", size: 2 },
     retention: { geom: "line", size: 2, counter: "day" },
-    singleNumber: { geom: "area", shape: "smooth", combineMetrics: false, axis: false, tooltip: false, margin: [0, 0, 0, 0] },
+    singleNumber: { geom: "area", shape: "smooth", combineMetrics: false, axis: false, tooltip: false, margin: [0, 0, 0, 0], colorTheme: "252, 95, 58" },
     vbar:   { geom: "interval" }
 };
   return merge({}, defaultMetric, chartTypeMap[chartType]);
