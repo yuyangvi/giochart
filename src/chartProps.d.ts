@@ -40,6 +40,7 @@ interface Granulariy {
 export interface DrawParamsProps {
   adjust?: string;
   chartType: string;
+  colorTheme?: string;
   columns: Metric[];
   granularities?: Granulariy[];
   groupCol?: string;

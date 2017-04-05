@@ -26,14 +26,14 @@ const getChartConfig: any = (chartType: string) => {
   const defaultMetric = {
     combineMetrics: true,
     geom: "line",
-    margin: [10, 30, 50, 30]
+    margin: [10, 30, 50, 50]
   };
   // 将图表类型变成不同步骤的组合
   const chartTypeMap: any[string] = {
     area: {geom: "area"},
     bar:    { geom: "interval", reflect: "y", transpose: true, label: true, margin: [20, 20, 10, 10] },
     bubble: { geom: "point", pos: "MM", combineMetrics: false, shape: "circle" },
-    comparison: {geom: "area", pos: "MMD", combineMetrics: false, hideAxis: true, tooltipchange: "custom" },
+    comparison: {geom: "area", pos: "MMD", combineMetrics: false, hideAxis: true, tooltipchange: "custom", colorTheme: "252, 95, 58" },
     dualaxis: { geom: "interval", pos: "MMD", combineMetrics: false, margin: [10, 50, 50, 50] },
     funnel: { geom: "line", size: 2 },
     line:   { geom: "line", size: 2 },
@@ -207,7 +207,15 @@ class Chart extends React.Component <ChartProps, any> {
 
     // 周期对比图 的 hook
     if (chartParams.chartType === "comparison") {
-      // 获取metricid, 计算最大值
+      // 给frame增加字段， 用以显示tooltip的title
+      frame.addCol("rate", (record: any) => (
+        record[metricCols[1]] ? (record[metricCols[0]] / record[metricCols[1]] - 1) : 0
+      ));
+      sourceDef.rate = {
+        formatter: (n: number): string => `${(100 * n).toPrecision(3)}%`
+      };
+
+      // 获取metricid, 计算最大值,统一两条线的区间范围
       const mids = map(filter(chartParams.columns, { isDim: true }), "id");
       const maxScale: number = Math.max.apply(null, map(mids, (col: string) => G2.Frame.max(frame, col)));
       mids.forEach((id: string) => {
@@ -248,7 +256,6 @@ class Chart extends React.Component <ChartProps, any> {
       chartCfg.margin[3] = Math.min(120, 25 + 12 * maxWordLength);
       canvasHeight = Math.max(15 * frame.rowCount(), canvasHeight);
     }
-
     const chart = new G2.Chart({
       container: dom,
       forceFit: true,
@@ -303,6 +310,9 @@ class Chart extends React.Component <ChartProps, any> {
     let pos = chartCfg.pos === "MM" ?
       (metricCols[0] + "*" + metricCols[1]) :
       (dimCols[0] + "*" + metricCols[0]);
+    if (chartCfg.colorTheme && !chartParams.colorTheme) {
+      chartParams.colorTheme = chartCfg.colorTheme;
+    }
 
     // position and colored
     if (dimCols.length < 2) {
@@ -327,7 +337,7 @@ class Chart extends React.Component <ChartProps, any> {
     }
 
     if (chartCfg.pos === "MMD") { // 双y
-      chart.line().size(2).position(dimCols[0] + "*" + metricCols[1]).color("#d6dce3");
+      chart.line().size(2).position(dimCols[0] + "*" + metricCols[1]).color("#d6dce3").tooltip(metricCols.join("*"));
       if (chartCfg.hideAxis) {
         chart.axis(metricCols[1], false);
       }
@@ -357,27 +367,27 @@ class Chart extends React.Component <ChartProps, any> {
       if (dimCols.length > 1 && chartCfg.pos !== "MMD") {
         // styleGeom.color(dimCols[1]);
       }
-    }
+      if (chartCfg.tooltipchange) {
+        styleGeom.tooltip(false);
+      }
     // legend
     chart.legend({
       position: "bottom"
     });
 
+    // 针对周期对比图的tooltip
     if (chartCfg.tooltipchange) {
-      // chart.tooltip(true, {title: null});
+      // 前面把rate字段加上了
+      geom.tooltip("rate");
+      chart.tooltip(true, { map : { title: "rate" } });
       chart.on("tooltipchange", (ev: any) => {
-        if (ev.items.length > 2) {
-          ev.items.splice(-1);
-        }
-        const item: any = ev.items[0]; // 获取tooltip要显示的内容
-        const originPoint = item.point._origin;
-        const tm = item.name === "上一周期" ? originPoint.tm_ : originPoint.tm;
-        moment.locale("zh-cn");
-        item.name = moment(tm).format("YYYY-MM-DD dddd hh:mm");
-        if (ev.items.length > 1) {
-          item.title = (item.value / ev.items[1].value * 100 - 100).toPrecision(3) + "%";
-          ev.items[1].title = item.title;
-          ev.items[1].name = moment(originPoint.tm_).format("YYYY-MM-DD dddd hh:mm");
+        if (ev.items.length === 4) {
+          ev.items[0] = ev.items[3];
+          ev.items[1] = ev.items[2];
+          ev.items.splice(2);
+        } else {
+          ev.items[0] = ev.items[1];
+          ev.items.splice(1);
         }
       });
     }
