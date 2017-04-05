@@ -225,9 +225,8 @@ class Chart extends React.Component <ChartProps, any> {
     } else if (chartParams.chartType === "singleNumber") {
       dimCols = ["tm"];
     }
-
     // 需要多值域合并
-    if (chartCfg.combineMetrics && dimCols.length > 1) {
+    if (chartCfg.combineMetrics && metricCols.length > 1) {
       frame = G2.Frame.combinColumns(frame, metricCols, "val", "metric", dimCols);
       if (chartCfg.shape === "funnel") {
         dimCols = ["metric"];
@@ -256,6 +255,7 @@ class Chart extends React.Component <ChartProps, any> {
       chartCfg.margin[3] = Math.min(120, 25 + 12 * maxWordLength);
       canvasHeight = Math.max(15 * frame.rowCount(), canvasHeight);
     }
+
     const chart = new G2.Chart({
       container: dom,
       forceFit: true,
@@ -269,14 +269,7 @@ class Chart extends React.Component <ChartProps, any> {
     // geom
     if (chartCfg.axis !== undefined) {
       chart.axis(chartCfg.axis);
-    } /* else if (dimCols.length < 2) {
-      chart.axis(dimCols[0], {title: {
-        fontSize: '12',
-        textAlign: 'center',
-        fill: '#999',
-        fontWeight: 'bold'
-      } });
-    } */
+    }
     if (chartCfg.tooltip !== undefined) {
       chart.tooltip(chartCfg.tooltip);
     } else {
@@ -345,6 +338,7 @@ class Chart extends React.Component <ChartProps, any> {
     if (chartCfg.label) {
       geom.label(metricCols[0]);
     }
+    console.log('pos', pos);
 
     // size
     if (chartCfg.size) {
@@ -370,6 +364,7 @@ class Chart extends React.Component <ChartProps, any> {
       if (chartCfg.tooltipchange) {
         styleGeom.tooltip(false);
       }
+    }
     // legend
     chart.legend({
       position: "bottom"
