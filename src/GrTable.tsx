@@ -99,6 +99,7 @@ class GrTable extends React.Component <ChartProps, any> {
     } else {
       const frame = new G2.Frame(source);
       cols = chartParams.columns.map((m: Metric) => ({
+        className: m.isDim ? undefined : "metric",
         dataIndex: m.id,
         key: m.id,
         render: (m.isDim ?
