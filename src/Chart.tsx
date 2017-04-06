@@ -4,7 +4,7 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import {ChartProps, DrawParamsProps, Granulariy, Metric, Source} from "./ChartProps";
 import * as moment from "moment";
-import { formatNumber } from "./utils";
+import { formatNumber, calculateTimeRange } from "./utils";
 interface G2Scale {
   type: string;
   formatter?: (n: string|number) => string;
@@ -227,7 +227,6 @@ class Chart extends React.Component <ChartProps, any> {
     }
     // 需要多值域合并
     if (chartCfg.combineMetrics && metricCols.length > 1) {
-      console.log(metricCols);
       frame = G2.Frame.combinColumns(frame, metricCols, "val", "metric", dimCols);
       if (chartCfg.shape === "funnel") {
         dimCols = ["metric"];
@@ -256,6 +255,12 @@ class Chart extends React.Component <ChartProps, any> {
       chartCfg.margin[3] = Math.min(120, 25 + 12 * maxWordLength);
       canvasHeight = Math.max(15 * frame.rowCount(), canvasHeight);
     }
+    // 补丁: tm的值不仅跟interval有关，也跟timeRange有关，但是取不到timeRange,就以source为准
+    /* if (sourceDef.tm) {
+      const range = G2.Frame.range(frame, "tm");
+      console.log(range);
+      sourceDef.tm.mask = (range[1] - range[0] >= 864e5) ? "mm-dd" : "HH:MM";
+    }*/
 
     const chart = new G2.Chart({
       container: dom,

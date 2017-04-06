@@ -18,3 +18,17 @@ export const formatNumber = (n: number): string => {
   }
   return parseFloat((n * Math.pow(0.1, 4 * suffixIndex)).toPrecision(3)) + suffixArray[suffixIndex];
 };
+// 时间区间
+export const calculateTimeRange = (timeRange: string) => {
+  if (!timeRange) {
+    timeRange = "day:8,1";
+  }
+  const [cate, v] = timeRange.split(":");
+  const [start, end] = v.split(",");
+  if (cate === "day") {
+    return parseInt(start, 10) * 864e5;
+  } else if (cate === "abs") {
+    return parseInt(end, 10) - parseInt(start, 10);
+  }
+}
+

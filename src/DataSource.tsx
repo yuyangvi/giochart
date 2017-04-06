@@ -50,13 +50,13 @@ class DataSource extends React.Component <DataLoaderProps, any> {
     };
   }
   private componentWillReceiveProps(nextProps: DataLoaderProps) {
-    if (!isEqual(this.props.params, nextProps.params)) { // 配置修改了，重新绘制
+    /*if (!isEqual(this.props.params, nextProps.params)) { // 配置修改了，重新绘制
       this.setState({
         aggregates: null,
         columns: null,
         source: null
       });
-    }
+    }*/
   }
 
   /*
@@ -68,8 +68,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
   */
   private componentWillUnmount() {
     // TODO: 取消未完成的请求
-    console.log("正在取消未完成的请求");
-
+    // console.log("正在取消未完成的请求");
   }
   public render() {
     if (!this.state.source) {
@@ -153,7 +152,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
     }).then((data: ResponseParams) => callback(data)).catch((e: any) => void(0));
   }
 
-  private componentDidMount() {
+  private componentWillMount() {
     const { params } = this.props;
     if (this.props.hasOwnProperty("cacheOptions")) {
       const chartDataInCache = DataCache.getChartData(params, this.props.hashKeys);
