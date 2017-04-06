@@ -20,7 +20,23 @@ class ContextListener extends React.Component <SingleChartProps, any> {
     const chartParams = this.generateChartParams();
     const withAggregate: boolean = ["comparison", "singleNumber"].includes(chartParams.chartType);
     if (!this.context.source || !this.context.source.length) {
-      return null;
+      const outerStyle = {
+        "-webkit-box-orient": "vertical",
+        "-webkit-box-pack": "center",
+        "display": "-webkit-box",
+        "height": "100%"
+      };
+      const wordStyle = {
+        color: "#999999",
+        fontSize: 16,
+        fontWeight: "bold",
+        textAlign: "center"
+      };
+      return (
+        <div style={outerStyle}>
+          <div style={wordStyle}>暂无数据</div>
+        </div>
+      );
     }
     if (chartParams.chartType === "table") {
       return (

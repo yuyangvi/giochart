@@ -1,10 +1,10 @@
 import G2 = require("g2");
-import { assign, filter, find, fromPairs, isEmpty, isEqual, isMatch, map, merge, pick, some, zip, zipObject } from "lodash";
+import { filter, fromPairs, isEmpty, isEqual,
+  isMatch, map, merge, pick, some, zip, zipObject } from "lodash";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import {ChartProps, DrawParamsProps, Granulariy, Metric, Source} from "./ChartProps";
-import * as moment from "moment";
-import { formatNumber, calculateTimeRange } from "./utils";
+import { formatNumber } from "./utils";
 interface G2Scale {
   type: string;
   formatter?: (n: string|number) => string;
@@ -32,7 +32,7 @@ const getChartConfig: any = (chartType: string) => {
   const chartTypeMap: any[string] = {
     area: {geom: "area"},
     bar:    { geom: "interval", reflect: "y", transpose: true, label: true, margin: [20, 20, 10, 10] },
-    bubble: { geom: "point", pos: "MM", combineMetrics: false, shape: "circle" },
+    bubble: { geom: "point", pos: "MM", combineMetrics: false, shape: "circle", colorTheme: "252, 95, 58" },
     comparison: {geom: "area", pos: "MMD", combineMetrics: false, hideAxis: true, tooltipchange: "custom", colorTheme: "252, 95, 58" },
     dualaxis: { geom: "interval", pos: "MMD", combineMetrics: false, margin: [10, 50, 50, 50] },
     funnel: { geom: "line", size: 2 },
@@ -256,11 +256,12 @@ class Chart extends React.Component <ChartProps, any> {
       canvasHeight = Math.max(15 * frame.rowCount(), canvasHeight);
     }
     // 补丁: tm的值不仅跟interval有关，也跟timeRange有关，但是取不到timeRange,就以source为准
-    /* if (sourceDef.tm) {
+    if (sourceDef.tm) {
       const range = G2.Frame.range(frame, "tm");
-      console.log(range);
-      sourceDef.tm.mask = (range[1] - range[0] >= 864e5) ? "mm-dd" : "HH:MM";
-    }*/
+      if (range.length >1) {
+        sourceDef.tm.mask = (range[1] - range[0] >= 864e5) ? "mm-dd" : "HH:MM";
+      }
+    }
 
     const chart = new G2.Chart({
       container: dom,
@@ -348,6 +349,9 @@ class Chart extends React.Component <ChartProps, any> {
     // size
     if (chartCfg.size) {
       geom.size(chartCfg.size);
+    } else if (chartCfg.pos === "MM" && metricCols.length >2) {
+      geom.size(metricCols[2], 30, 5);
+      chart.legend(false);
     }
     if (chartCfg.shape) {
       geom.shape(chartCfg.shape);
@@ -371,9 +375,11 @@ class Chart extends React.Component <ChartProps, any> {
       }
     }
     // legend
-    chart.legend({
-      position: "bottom"
-    });
+    if (chartCfg.pos !== "MM") {
+      chart.legend({
+        position: "bottom"
+      });
+    }
 
     // 针对周期对比图的tooltip
     if (chartCfg.tooltipchange) {
