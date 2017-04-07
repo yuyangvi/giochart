@@ -5,6 +5,9 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import {ChartProps, DrawParamsProps, Granulariy, Metric, Source} from "./ChartProps";
 import { formatNumber } from "./utils";
+import * as moment from "moment";
+moment.locale("zh-cn");
+
 interface G2Scale {
   type: string;
   formatter?: (n: string|number) => string;
@@ -155,7 +158,7 @@ class Chart extends React.Component <ChartProps, any> {
       const metricCols = map(filter(chartParams.columns, { isDim: false }), "id");
       const dimCols    = map(filter(chartParams.columns, { isDim: true }), "id");
 
-      if (chartCfg.combineMetrics && metricCols.length > 1) {
+      if (chartCfg.combineMetrics && dimCols.length === 1) {
         frame = G2.Frame.combinColumns(frame, metricCols, "val", "metric", dimCols);
         const metricNames = map(filter(chartParams.columns, { isDim: false }), "name");
         // const metricDict = fromPairs(zip(metricCols, metricNames));
@@ -226,7 +229,7 @@ class Chart extends React.Component <ChartProps, any> {
       dimCols = ["tm"];
     }
     // 需要多值域合并
-    if (chartCfg.combineMetrics && metricCols.length > 1) {
+    if (chartCfg.combineMetrics && dimCols.length === 1) {
       frame = G2.Frame.combinColumns(frame, metricCols, "val", "metric", dimCols);
       if (chartCfg.shape === "funnel") {
         dimCols = ["metric"];
@@ -258,11 +261,12 @@ class Chart extends React.Component <ChartProps, any> {
     // 补丁: tm的值不仅跟interval有关，也跟timeRange有关，但是取不到timeRange,就以source为准
     if (sourceDef.tm) {
       const range = G2.Frame.range(frame, "tm");
-      if (range.length >1) {
+      if (range.length > 1) {
         sourceDef.tm.mask = (range[1] - range[0] >= 864e5) ? "mm-dd" : "HH:MM";
       }
+      // console.log(source.length);
+      // sourceDef.tm.tickCount = Math.min(sourceDef.tm.tickCount, source.length);
     }
-
     const chart = new G2.Chart({
       container: dom,
       forceFit: true,
@@ -337,13 +341,23 @@ class Chart extends React.Component <ChartProps, any> {
     }
 
     if (chartCfg.pos === "MMD") { // 双y
-      chart.line().size(2).position(dimCols[0] + "*" + metricCols[1]).color("#d6dce3").tooltip(metricCols.join("*"));
+      const cgeom = chart.line().size(2).position(dimCols[0] + "*" + metricCols[1]).color("#d6dce3");
+      // hard code for comparison
       if (chartCfg.hideAxis) {
+        cgeom.tooltip(metricCols.join("*"));
         chart.axis(metricCols[1], false);
+      } else {
+        cgeom.tooltip(metricCols[1]);
       }
     }
+    // 横向图
     if (chartCfg.label) {
-      geom.label(metricCols[0]);
+      const sum = chartParams.aggregates[0];
+      geom.label(metricCols[0], {
+        renderer: function(text) {
+          return `${text}(${parseFloat((100 * text / sum).toPrecision(3))}%)`;
+        }
+      });
     }
 
     // size
@@ -377,6 +391,7 @@ class Chart extends React.Component <ChartProps, any> {
     // legend
     if (chartCfg.pos !== "MM") {
       chart.legend({
+        itemWrap: true,
         position: "bottom"
       });
     }
@@ -456,18 +471,26 @@ class Chart extends React.Component <ChartProps, any> {
         sourceDef[m.id].formatter = formatNumber;
       }
     });
+    if (sourceDef.tm) {
+      sourceDef.tm = {
+        tickCount: 4,
+        type: ( chartConfig.geom !== "interval" ? "time" : "timeCat" ), // TODO 可能有其他case
+        formatter: (v: number) => moment.unix(v / 1000).format(v % 864e5 === 576e5 ? "MM-DD" : "HH:mm")
+      };
+    }
 
-    if (chartParams.granularities) {
+    /*if (chartParams.granularities) {
       chartParams.granularities.forEach((glt: Granulariy) => {
         if (glt.interval) {
           sourceDef[glt.id] = {
-            mask: (glt.interval >= 864e5) ? "mm-dd" : "HH:MM",
+            // mask: (glt.interval >= 864e5) ? "mm-dd" : "HH:MM",
             tickCount: 4,
-            type: ( chartConfig.geom !== "interval" ? "time" : "timeCat" ) // TODO 可能有其他case
+            type: ( chartConfig.geom !== "interval" ? "time" : "timeCat" ), // TODO 可能有其他case
+            formatter: (v: number) => moment.unix(v / 1000).format(v % 864e5 === 576e5 ? "MM-DD" : "HH:mm")
           };
         }
       });
-    }
+    }*/
 
     // 针对留存的补丁， Fuck！
     if (chartConfig.counter === "day") {

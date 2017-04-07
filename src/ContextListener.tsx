@@ -92,9 +92,11 @@ class ContextListener extends React.Component <SingleChartProps, any> {
     }
     return {
       adjust: this.props.adjust,
+      aggregates: this.context.aggregates,
       chartType: this.props.chartType,
       colorTheme: this.props.colorTheme,
       columns: this.context.columns,
+      // 以下目前只有表格处用到
       granularities: this.props.granularities,
       groupCol: this.props.groupCol
     };

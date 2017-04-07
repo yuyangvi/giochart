@@ -9,13 +9,13 @@ import {ChartProps, Metric, Source} from "./ChartProps";
 // import Table from 'antd/lib/table';
 import G2 = require("g2");
 const sorterDecorator = (column: string) => (a: any, b: any) => (a[column] > b[column] ? 1 : -1);
-
+moment.locale("zh-cn");
 // 根据中位数计算颜色,这段难理解，自己斟酌
 const calculateWeight = (range: [number, number],  median: number) => (v: number) => {
   if (v > median) {
-    return `rgba(255,211,99, ${(v - median) / (range[1] - median)})`;
+    return `rgba(255,211,99, ${(v - median) /  median})`;
   } else if (v < median) {
-    return `rgba(95,182,199, ${(v - median) / (range[0] - median)})`;
+    return `rgba(95,182,199, ${(median - v) / median})`;
   }
 }
 // 根据metric取得背景色
@@ -42,6 +42,16 @@ class GrTable extends React.Component <ChartProps, any> {
   }
   private static getRowKey(r: any, i: number) {
     return `${i}`;
+  }
+  private checkDate(m: Metric) {
+    if (m.id === "tm") {
+      const gra = find(this.props.chartParams.granularities, {id: "tm"});
+      if (gra.interval && gra.interval >= 864e5) {
+        return (v: number) => moment.unix(v / 1000).format("YYYY-MM-DD");
+      } else {
+        return (v: number) => moment.unix(v / 1000).format("YYYY-MM-DD hh:mm");
+      }
+    }
   }
   // 将多指标扁平成一条
   private static groupFlatter(n: any, groupCol: string, groupCols: string[], otherDims: string[]) {
@@ -87,6 +97,7 @@ class GrTable extends React.Component <ChartProps, any> {
         children: map(metrics, (m: Metric) => {
           const id = `${chartParams.groupCol}_${i}_${m.id}`;
           return {
+            className: "metric",
             dataIndex: id,
             key: id,
             render: generateColRender(calculateWeight(G2.Frame.range(frame, id), G2.Frame.median(frame, id)), m),
@@ -103,7 +114,7 @@ class GrTable extends React.Component <ChartProps, any> {
         dataIndex: m.id,
         key: m.id,
         render: (m.isDim ?
-            checkDate(m) :
+            this.checkDate(m) :
             generateColRender(calculateWeight(G2.Frame.range(frame, m.id), G2.Frame.median(frame, m.id)), m)
         ),
         sorter: sorterDecorator(m.id),
