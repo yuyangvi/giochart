@@ -34,13 +34,11 @@ const getChartConfig: any = (chartType: string) => {
   // 将图表类型变成不同步骤的组合
   const chartTypeMap: any[string] = {
     area: {geom: "area"},
-    bar:    { geom: "interval", reflect: "y", transpose: true, label: true, margin: [20, 20, 10, 10] },
+    bar:    { geom: "interval", reflect: "y", transpose: true, combineMetrics: false, label: true, margin: [20, 40, 10, 10] },
     bubble: { geom: "point", pos: "MM", combineMetrics: false, shape: "circle", colorTheme: "252, 95, 58" },
     comparison: {geom: "area", pos: "MMD", combineMetrics: false, hideAxis: true, tooltipchange: "custom", colorTheme: "252, 95, 58" },
     dualaxis: { geom: "interval", pos: "MMD", combineMetrics: false, margin: [10, 50, 50, 50] },
-    funnel: { geom: "line", size: 2 },
-    line:   { geom: "line", size: 2 },
-    retention: { geom: "line", size: 2, counter: "day" },
+    funnel: { geom: "line", size: 2 }retention: { geom: "line", size: 2, counter: "day" },
     singleNumber: { geom: "area", shape: "smooth", combineMetrics: false, axis: false, tooltip: false, margin: [0, 0, 0, 0], colorTheme: "252, 95, 58" },
     vbar:   { geom: "interval" }
 };
@@ -267,6 +265,11 @@ class Chart extends React.Component <ChartProps, any> {
       // console.log(source.length);
       // sourceDef.tm.tickCount = Math.min(sourceDef.tm.tickCount, source.length);
     }
+    if (chartParams.adjust === "percent") {
+      sourceDef['..percent'] = {
+        formatter: (v: number) => `${parseFloat((100 * v).toPrecision(3))}%`
+      }
+    }
     const chart = new G2.Chart({
       container: dom,
       forceFit: true,
@@ -354,9 +357,11 @@ class Chart extends React.Component <ChartProps, any> {
     if (chartCfg.label) {
       const sum = chartParams.aggregates[0];
       geom.label(metricCols[0], {
-        renderer: function(text) {
-          return `${text}(${parseFloat((100 * text / sum).toPrecision(3))}%)`;
-        }
+        custom: true, // 使用自定义文本
+        renderer: function(text, item) {
+          return `${text}(${parseFloat((100 * item.point[metricCols[0]] / sum).toPrecision(3))}%)`;
+        },
+        offset: 5
       });
     }
 
@@ -391,7 +396,6 @@ class Chart extends React.Component <ChartProps, any> {
     // legend
     if (chartCfg.pos !== "MM") {
       chart.legend({
-        itemWrap: true,
         position: "bottom"
       });
     }
@@ -404,7 +408,9 @@ class Chart extends React.Component <ChartProps, any> {
       chart.on("tooltipchange", (ev: any) => {
         if (ev.items.length === 4) {
           ev.items[0] = ev.items[3];
+          ev.items[0].name = getTooltipName(ev.items[0], "tm");
           ev.items[1] = ev.items[2];
+          ev.items[1].name = getTooltipName(ev.items[1], "tm_");
           ev.items.splice(2);
         } else {
           ev.items[0] = ev.items[1];
@@ -485,7 +491,7 @@ class Chart extends React.Component <ChartProps, any> {
           sourceDef[glt.id] = {
             // mask: (glt.interval >= 864e5) ? "mm-dd" : "HH:MM",
             tickCount: 4,
-            type: ( chartConfig.geom !== "interval" ? "time" : "timeCat" ), // TODO 可能有其他case
+            type: ( chartConfig.geom !== "interval" ? "time" : "timeCat" ),
             formatter: (v: number) => moment.unix(v / 1000).format(v % 864e5 === 576e5 ? "MM-DD" : "HH:mm")
           };
         }
@@ -505,5 +511,10 @@ class Chart extends React.Component <ChartProps, any> {
     };*/
     return sourceDef;
   }
+}
+
+const getTooltipName = (item: any, key: string) => {
+  const point: any = item.point._origin[key];
+  return moment.unix(point / 1000).format("YYYY-MM-DD hh:mm");
 }
 export default Chart;
