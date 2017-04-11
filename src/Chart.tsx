@@ -24,24 +24,30 @@ interface G2Scale {
 interface SourceConfig {
   [colName: string]: G2Scale;
 }
-
+const countTick = (maxTick: number, total: number) => {
+  const interval = Math.ceil(total / maxTick);
+  return Math.ceil(total / interval);
+};
 const getChartConfig: any = (chartType: string) => {
   const defaultMetric = {
     combineMetrics: true,
     geom: "line",
-    margin: [10, 30, 50, 50]
+    margin: [10, 30, 50, 70]
   };
   // 将图表类型变成不同步骤的组合
   const chartTypeMap: any[string] = {
-    line: {geom: "line", size: 2},
-    area: {geom: "area", size: 2},
-    bar:    { geom: "interval", reflect: "y", transpose: true, combineMetrics: false, label: true, margin: [20, 40, 10, 10] },
+    area: { geom: "area", size: 2 },
+    bar:    { combineMetrics: false, geom: "interval", label: true, margin: [20, 40, 10, 10], reflect: "y",
+      transpose: true },
     bubble: { geom: "point", pos: "MM", combineMetrics: false, shape: "circle", colorTheme: "252, 95, 58" },
-    comparison: {geom: "area", pos: "MMD", combineMetrics: false, hideAxis: true, tooltipchange: "custom", colorTheme: "252, 95, 58" },
+    comparison: {geom: "area", pos: "MMD", combineMetrics: false, hideAxis: true, tooltipchange: "custom",
+      colorTheme: "252, 95, 58" },
     dualaxis: { geom: "interval", pos: "MMD", combineMetrics: false, margin: [10, 50, 50, 50] },
     funnel: { geom: "line", size: 2 },
+    line: {geom: "line", size: 2},
     retention: { geom: "line", size: 2, counter: "day" },
-    singleNumber: { geom: "area", shape: "smooth", size: 2, combineMetrics: false, axis: false, tooltip: false, margin: [0, 0, 0, 0], colorTheme: "252, 95, 58" },
+    singleNumber: { geom: "area", shape: "smooth", size: 2, combineMetrics: false, axis: false, tooltip: false,
+      margin: [0, 0, 0, 0], colorTheme: "252, 95, 58" },
     vbar:   { geom: "interval" }
 };
   return merge({}, defaultMetric, chartTypeMap[chartType]);
@@ -99,19 +105,19 @@ class Chart extends React.Component <ChartProps, any> {
         intervalStack: colors
       },
       defaultColor,
-      shape: {
-        point: {fill: "#5FB6C7" },
-        area: { fill: "#5FB6C7" },
-        interval: { fill: defaultColor, fillOpacity: 1 },
-        line: { stroke: "#5FB6C7" }
-      },
-      tooltipMarker: {
-        stroke: defaultColor
-      },
       legend: {
         bottom: {
           dy: 20
         }
+      },
+      shape: {
+        area: { fill: "#5FB6C7" },
+        interval: { fill: defaultColor, fillOpacity: 1 },
+        line: { stroke: "#5FB6C7" },
+        point: {fill: "#5FB6C7" }
+      },
+      tooltipMarker: {
+        stroke: defaultColor
       }
     });
     // G2.track(false);
@@ -145,7 +151,12 @@ class Chart extends React.Component <ChartProps, any> {
         }
         this.drawChart(nextProps.chartParams, source);
       } else {
-        this.changeData(source);
+        // this.changeData(source);
+        if (this.chart) {
+          this.chart.destroy();
+        }
+        this.drawChart(nextProps.chartParams, source);
+
       }
     }
   }
@@ -202,10 +213,10 @@ class Chart extends React.Component <ChartProps, any> {
     */
     }
     const chartCfg = getChartConfig(chartParams.chartType);
-    let sourceDef = this.buildSourceConfig(chartParams);
+    const sourceDef = this.buildSourceConfig(chartParams);
 
     // 建立Frame
-    let metricCols = map(filter(chartParams.columns, { isDim: false }), "id");
+    let metricCols: any[] = map(filter(chartParams.columns, { isDim: false }), "id");
     let dimCols    = map(filter(chartParams.columns, { isDim: true }), "id");
     let frame      = new G2.Frame(source);
 
@@ -249,6 +260,14 @@ class Chart extends React.Component <ChartProps, any> {
         formatter: metricCols.length > 1 ? formatNumber : sourceDef[metricCols[0]].formatter
       }
       metricCols = ["val"];
+    } else {
+      /*metricCols.forEach((s: string) => {
+        console.log(s);
+        chart.axis(s, { title: { fill: "#999" } });
+      });*/
+      if (chartCfg.pos !== "MMD") {
+        chartCfg.margin[3] += 10;
+      }
     }
 
     // 计算legend的留空，tick的留空
@@ -261,7 +280,9 @@ class Chart extends React.Component <ChartProps, any> {
       if (range.length > 1) {
         sourceDef.tm.mask = (range[1] - range[0] >= 864e5) ? "mm-dd" : "HH:MM";
       }
-      // sourceDef.tm.tickCount = Math.min(sourceDef.tm.tickCount, source.length);
+      const tmLength = G2.Frame.group(frame, ["tm"]).length;
+      sourceDef.tm.tickCount = countTick(parseInt(canvasRect.width/ 80), tmLength-1);
+      console.log(sourceDef);
     }
     if (chartParams.adjust === "percent") {
       sourceDef['..percent'] = {
@@ -277,7 +298,7 @@ class Chart extends React.Component <ChartProps, any> {
       sourceDef[metricCols[0]].tickCount = 4;
       // }
     }
-    console.log(sourceDef);
+
     const chart = new G2.Chart({
       container: dom,
       forceFit: true,
@@ -287,6 +308,13 @@ class Chart extends React.Component <ChartProps, any> {
       }
     });
     chart.source(frame, sourceDef);
+    if (chartCfg.pos !== "MMD") {
+      metricCols.forEach((s: string) => {
+        if (s !== "val") {
+          chart.axis(s, {title: {fill: "#999"}});
+        }
+      });
+    }
 
     // geom
     if (chartCfg.axis !== undefined) {
@@ -414,7 +442,6 @@ class Chart extends React.Component <ChartProps, any> {
         }
       });
     }
-
     // others
     if (this.props.hasOwnProperty("select") && this.props.select) {
       geom.selected(true, {
