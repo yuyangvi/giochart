@@ -33,13 +33,15 @@ const getChartConfig: any = (chartType: string) => {
   };
   // 将图表类型变成不同步骤的组合
   const chartTypeMap: any[string] = {
-    area: {geom: "area"},
+    line: {geom: "line", size: 2},
+    area: {geom: "area", size: 2},
     bar:    { geom: "interval", reflect: "y", transpose: true, combineMetrics: false, label: true, margin: [20, 40, 10, 10] },
     bubble: { geom: "point", pos: "MM", combineMetrics: false, shape: "circle", colorTheme: "252, 95, 58" },
     comparison: {geom: "area", pos: "MMD", combineMetrics: false, hideAxis: true, tooltipchange: "custom", colorTheme: "252, 95, 58" },
     dualaxis: { geom: "interval", pos: "MMD", combineMetrics: false, margin: [10, 50, 50, 50] },
-    funnel: { geom: "line", size: 2 }retention: { geom: "line", size: 2, counter: "day" },
-    singleNumber: { geom: "area", shape: "smooth", combineMetrics: false, axis: false, tooltip: false, margin: [0, 0, 0, 0], colorTheme: "252, 95, 58" },
+    funnel: { geom: "line", size: 2 },
+    retention: { geom: "line", size: 2, counter: "day" },
+    singleNumber: { geom: "area", shape: "smooth", size: 2, combineMetrics: false, axis: false, tooltip: false, margin: [0, 0, 0, 0], colorTheme: "252, 95, 58" },
     vbar:   { geom: "interval" }
 };
   return merge({}, defaultMetric, chartTypeMap[chartType]);
@@ -98,6 +100,7 @@ class Chart extends React.Component <ChartProps, any> {
       },
       defaultColor,
       shape: {
+        point: {fill: "#5FB6C7" },
         area: { fill: "#5FB6C7" },
         interval: { fill: defaultColor, fillOpacity: 1 },
         line: { stroke: "#5FB6C7" }
@@ -168,7 +171,7 @@ class Chart extends React.Component <ChartProps, any> {
   }
   private componentDidMount() {
     const { chartParams, source } = this.props;
-    if (this.props.source) {
+    if (source) {
       if (this.chart) {
         this.chart.destroy();
       }
@@ -251,23 +254,26 @@ class Chart extends React.Component <ChartProps, any> {
     // 存在legend的可能有
     // 横向bar图， 需要计算左侧的距离
     let canvasHeight: number = canvasRect.height;
-    if (chartParams.chartType === "bar") {
-      const maxWordLength = Math.max.apply(null, map(frame.colArray(dimCols[0]), "length"));
-      chartCfg.margin[3] = Math.min(120, 25 + 12 * maxWordLength);
-      canvasHeight = Math.max(15 * frame.rowCount(), canvasHeight);
-    }
     // 补丁: tm的值不仅跟interval有关，也跟timeRange有关，但是取不到timeRange,就以source为准
     if (sourceDef.tm) {
       const range = G2.Frame.range(frame, "tm");
       if (range.length > 1) {
         sourceDef.tm.mask = (range[1] - range[0] >= 864e5) ? "mm-dd" : "HH:MM";
       }
-      // console.log(source.length);
       // sourceDef.tm.tickCount = Math.min(sourceDef.tm.tickCount, source.length);
     }
     if (chartParams.adjust === "percent") {
       sourceDef['..percent'] = {
         formatter: (v: number) => `${parseFloat((100 * v).toPrecision(3))}%`
+      };
+    }
+    if (chartParams.chartType === "bar") {
+      const maxWordLength = Math.max.apply(null, map(frame.colArray(dimCols[0]), "length"));
+      chartCfg.margin[3] = Math.min(120, 25 + 12 * maxWordLength);
+      canvasHeight = Math.max(15 * frame.rowCount(), canvasHeight);
+      // 横向柱图微图显示时，文字重叠
+      if (canvasRect.width < 330) {
+        sourceDef[metricCols[0]].tickCount = 3;
       }
     }
     const chart = new G2.Chart({
@@ -309,10 +315,6 @@ class Chart extends React.Component <ChartProps, any> {
     } else if ("interval" !== chartCfg.geom && chartParams.adjust === "dodge") {
       adjust = undefined;
     }
-
-    // console.log(chartCfg.geom, adjust);
-    const geom = chart[chartCfg.geom](adjust);
-
     // position
     let pos = chartCfg.pos === "MM" ?
       (metricCols[0] + "*" + metricCols[1]) :
@@ -321,16 +323,18 @@ class Chart extends React.Component <ChartProps, any> {
       chartParams.colorTheme = chartCfg.colorTheme;
     }
 
+    const geom = chart[chartCfg.geom === "area" ? "line" : chartCfg.geom](adjust);
     // position and colored
     if (dimCols.length < 2) {
       pos = G2.Stat.summary.sum(pos);
       geom.position(pos);
       if (chartParams.colorTheme) {
-        if (chartCfg.geom === "area") {
+        /*if (chartCfg.geom === "area") {
           geom.color(`l(90) 0:rgba(${chartParams.colorTheme}, 0.3) 1:rgba(${chartParams.colorTheme}, 0.1)`);
         } else {
           geom.color(`rgb(${chartParams.colorTheme})`);
-        }
+        }*/
+        geom.color(`rgb(${chartParams.colorTheme})`);
       } else if (chartCfg.pos === "MMD") {
         geom.color(G2.Theme.defaultColor); // Wrong
       }
@@ -339,20 +343,21 @@ class Chart extends React.Component <ChartProps, any> {
       if (chartCfg.pos !== "MMD") {
         geom.color(dimCols[1]);
       } else if (chartParams.colorTheme) {
-        geom.color(`l(90) 0:rgba(${chartParams.colorTheme}, 0.3) 1:rgba(${chartParams.colorTheme}, 0.1)`);
+        geom.color(`rgb(${chartParams.colorTheme})`).size(2);
+        //geom.color(`l(90) 0:rgba(${chartParams.colorTheme}, 0.3) 1:rgba(${chartParams.colorTheme}, 0.1)`);
       }
+    }
+    if (chartCfg.pos === "MMD") { // 双y
+      chart.line().size(2).position(dimCols[0] + "*" + metricCols[1]).color("#d6dce3").tooltip(metricCols[1]);
+    }
+    if (chartCfg.counter) {
+      chart.point().shape("circle").size(3).position(pos).tooltip(false);
     }
 
-    if (chartCfg.pos === "MMD") { // 双y
-      const cgeom = chart.line().size(2).position(dimCols[0] + "*" + metricCols[1]).color("#d6dce3");
-      // hard code for comparison
-      if (chartCfg.hideAxis) {
-        cgeom.tooltip(metricCols.join("*"));
-        chart.axis(metricCols[1], false);
-      } else {
-        cgeom.tooltip(metricCols[1]);
-      }
+    if (chartCfg.hideAxis) {
+      chart.axis(metricCols[0], false);
     }
+
     // 横向图
     if (chartCfg.label) {
       const sum = chartParams.aggregates[0];
@@ -368,7 +373,7 @@ class Chart extends React.Component <ChartProps, any> {
     // size
     if (chartCfg.size) {
       geom.size(chartCfg.size);
-    } else if (chartCfg.pos === "MM" && metricCols.length >2) {
+    } else if (chartCfg.pos === "MM" && metricCols.length > 2) {
       geom.size(metricCols[2], 30, 5);
       chart.legend(false);
     }
@@ -377,21 +382,21 @@ class Chart extends React.Component <ChartProps, any> {
     }
 
     if (chartCfg.geom === "area" && adjust !== "stack") { // 为了area 好看点,画线
-      const styleGeom = chart.line();
+      const styleGeom = chart.area();
       if (chartParams.colorTheme) {
-        styleGeom.color(`rgb(${chartParams.colorTheme})`);
+        styleGeom.color(`l(90) 0:rgba(${chartParams.colorTheme}, 0.3) 1:rgba(${chartParams.colorTheme}, 0.1)`);
       }
 
       if (chartCfg.shape) {
         styleGeom.shape(chartCfg.shape);
       }
-      styleGeom.position(pos).size(2);
+      styleGeom.position(pos); // .size(2);
       if (dimCols.length > 1 && chartCfg.pos !== "MMD") {
         // styleGeom.color(dimCols[1]);
       }
-      if (chartCfg.tooltipchange) {
-        styleGeom.tooltip(false);
-      }
+      // if (chartCfg.tooltipchange) {
+      styleGeom.tooltip("");
+      // }
     }
     // legend
     if (chartCfg.pos !== "MM") {
@@ -403,19 +408,13 @@ class Chart extends React.Component <ChartProps, any> {
     // 针对周期对比图的tooltip
     if (chartCfg.tooltipchange) {
       // 前面把rate字段加上了
-      geom.tooltip("rate");
+      geom.tooltip(metricCols[0]);
       chart.tooltip(true, { map : { title: "rate" } });
       chart.on("tooltipchange", (ev: any) => {
-        if (ev.items.length === 4) {
-          ev.items[0] = ev.items[3];
-          ev.items[0].name = getTooltipName(ev.items[0], "tm");
-          ev.items[1] = ev.items[2];
-          ev.items[1].name = getTooltipName(ev.items[1], "tm_");
-          ev.items.splice(2);
-        } else {
-          ev.items[0] = ev.items[1];
-          ev.items.splice(1);
-        }
+        ev.items[0].name = getTooltipName(ev.items[0], "tm_");
+        ev.items[1] = ev.items[2];
+        ev.items[1].name = getTooltipName(ev.items[1], "tm");
+        ev.items.splice(ev.items.length - 1);
       });
     }
 
@@ -481,7 +480,7 @@ class Chart extends React.Component <ChartProps, any> {
       sourceDef.tm = {
         tickCount: 4,
         type: ( chartConfig.geom !== "interval" ? "time" : "timeCat" ), // TODO 可能有其他case
-        formatter: (v: number) => moment.unix(v / 1000).format(v % 864e5 === 576e5 ? "MM-DD" : "HH:mm")
+        formatter: (v: number) => moment.unix(v / 1000).format(v % 864e5 === 576e5 ? "MM-DD ddd" : "HH:mm")
       };
     }
 
@@ -515,6 +514,6 @@ class Chart extends React.Component <ChartProps, any> {
 
 const getTooltipName = (item: any, key: string) => {
   const point: any = item.point._origin[key];
-  return moment.unix(point / 1000).format("YYYY-MM-DD hh:mm");
+  return moment.unix(point / 1000).format("YYYY-MM-DD ddd hh:mm");
 }
 export default Chart;

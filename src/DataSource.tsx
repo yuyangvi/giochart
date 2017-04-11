@@ -44,6 +44,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
     this.state = {
       aggregates: null,
       columns: null,
+      error: false,
       isLoaded: false,
       selected: null,
       source: null
@@ -71,7 +72,25 @@ class DataSource extends React.Component <DataLoaderProps, any> {
     // console.log("正在取消未完成的请求");
   }
   public render() {
-    if (!this.state.source) {
+    if (this.state.error) {
+      const outerStyle = {
+        "-webkit-box-orient": "vertical",
+        "-webkit-box-pack": "center",
+        "display": "-webkit-box",
+        "height": "100%"
+      };
+      const wordStyle = {
+        color: "#999999",
+        fontSize: 16,
+        fontWeight: "bold",
+        textAlign: "center"
+      };
+      return (
+        <div style={outerStyle}>
+          <div style={wordStyle}>加载失败</div>
+        </div>
+      );
+    } else if (!this.state.source) {
       return (
         <div className="gr-loading-mask">
           <div className="loading-gif" />
@@ -119,19 +138,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
     let fetchObj;
     // Todo 检查是否是DEV环境
     if (this.props.hasOwnProperty("sourceUrl")) {
-      if (this.props.sourceUrl === "auto") { // TODO: 临时在线上用的，上线前务必删掉。
-        const headers = new Headers();
-        headers.append("authorization", "Token 836bd4152bbb69b979a7b2c3299d1af75a99faa883f69e07182165c61ae52c39");
-        const request = new Request(`http://gat.growingio.dev:18443/v4/projects/${project.id}/chartdata`, { headers: headers });
-        fetchObj = fetch(request, {
-          body: JSON.stringify(chartParams),
-          credentials: "same-origin",
-          /* contentType: "application/json", */
-          method: "post"
-        });
-      } else {
-        fetchObj = fetch(this.props.sourceUrl);
-      }
+      fetchObj = fetch(this.props.sourceUrl);
     } else {
       fetchObj = fetch(`/v4/projects/${project.id}/chartdata`, {
         body: JSON.stringify(chartParams),
@@ -148,6 +155,10 @@ class DataSource extends React.Component <DataLoaderProps, any> {
       } else if (status === HttpStatus.RequestTimeout && this.tryTimes < 2) {
         this.tryTimes++;
         setTimeout(this.defaultRequest.bind(this, chartParams, callback), 200);
+      } else {
+        this.setState({
+          error: true
+        });
       }
     }).then((data: ResponseParams) => callback(data)).catch((e: any) => void(0));
   }

@@ -139,6 +139,10 @@ const GioChart = (props: GioProps) => {
   if (props.chartType) {
     return <ChartV4 {...props}/>;
   }
+  const params = props.params;
+  if (props.colorTheme) {
+    params.attrs.colorTheme = props.colorTheme;
+  }
   const convertV4: GioProps = convertChartParams(props.params);
   if (!convertV4) {
     return <p>参数不合法</p>;
