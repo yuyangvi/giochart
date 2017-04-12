@@ -74,9 +74,6 @@ class ContextListener extends React.Component <SingleChartProps, any> {
           />
         </div>);
     }
-    if (chartParams.chartType === "bar") {
-      // chartParams
-    }
     return (
       <Chart
         chartParams={chartParams}

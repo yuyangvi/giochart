@@ -50,15 +50,6 @@ class DataSource extends React.Component <DataLoaderProps, any> {
       source: null
     };
   }
-  private componentWillReceiveProps(nextProps: DataLoaderProps) {
-    /*if (!isEqual(this.props.params, nextProps.params)) { // 配置修改了，重新绘制
-      this.setState({
-        aggregates: null,
-        columns: null,
-        source: null
-      });
-    }*/
-  }
 
   /*
   selectHandler(evt: any) {

@@ -126,12 +126,23 @@ class Chart extends React.Component <ChartProps, any> {
   public render() {
     return <div className="giochart" style={this.props.style} />;
   }
+  private isValideParams(chartParams: DrawParamsProps, source: Source){
+    console.log(chartParams, source);
+    if (chartParams.chartType === "comparison" && !source[0].tm_) {
+      return false;
+    }
+    return true;
+  }
   // 这个函数是用来区分changeData还是draw, 通常尽量不要用componentWillReceiveProps
   private componentWillReceiveProps(nextProps: ChartProps) {
     if (isEmpty(nextProps.source)) {
       return;
     }
     const source: Source = nextProps.source;
+    // 若是chartParams和source不合法,那说明数据没有传输到，
+    if (!this.isValideParams(nextProps.chartParams, nextProps.source)) {
+      return;
+    }
     if (!isEmpty(nextProps.selected)) { // 需要筛选数据
       const dimCols = map(filter(nextProps.chartParams.columns, { isDim: true }), "id");
       const filteredSelected = filter(nextProps.selected, (item) =>  isEmpty(pick(item, dimCols)));
@@ -148,12 +159,14 @@ class Chart extends React.Component <ChartProps, any> {
       if (!isEqual(this.props.chartParams, nextProps.chartParams)) { // 配置修改了，重新绘制
         if (this.chart) {
           this.chart.destroy();
+          ReactDOM.findDOMNode(this).innerHTML = "";
         }
         this.drawChart(nextProps.chartParams, source);
       } else {
         // this.changeData(source);
         if (this.chart) {
           this.chart.destroy();
+          ReactDOM.findDOMNode(this).innerHTML = "";
         }
         this.drawChart(nextProps.chartParams, source);
 
@@ -182,6 +195,9 @@ class Chart extends React.Component <ChartProps, any> {
   }
   private componentDidMount() {
     const { chartParams, source } = this.props;
+    if (!this.isValideParams(chartParams, source)) {
+      return;
+    }
     if (source) {
       if (this.chart) {
         this.chart.destroy();
@@ -193,6 +209,7 @@ class Chart extends React.Component <ChartProps, any> {
   private componentWillUnmount() {
     if (this.chart) {
       this.chart.destroy();
+      ReactDOM.findDOMNode(this).innerHTML = "";
     }
   }
 
@@ -282,7 +299,6 @@ class Chart extends React.Component <ChartProps, any> {
       }
       const tmLength = G2.Frame.group(frame, ["tm"]).length;
       sourceDef.tm.tickCount = countTick(parseInt(canvasRect.width/ 80), tmLength-1);
-      console.log(sourceDef);
     }
     if (chartParams.adjust === "percent") {
       sourceDef['..percent'] = {
@@ -434,10 +450,10 @@ class Chart extends React.Component <ChartProps, any> {
       chart.tooltip(true, { map : { title: "rate" } });
       chart.on("tooltipchange", (ev: any) => {
         ev.items[0] = ev.items[1];
-        ev.items[0].name = getTooltipName(ev.items[0], "tm_");
+        ev.items[0].name = getTooltipName(ev.items[0], "tm");
         if (ev.items.length > 2) {
           ev.items[1] = ev.items[2];
-          ev.items[1].name = getTooltipName(ev.items[1], "tm");
+          ev.items[1].name = getTooltipName(ev.items[1], "tm_");
           ev.items.splice(ev.items.length - 1);
         }
       });
