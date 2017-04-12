@@ -459,13 +459,14 @@ class Chart extends React.Component <ChartProps, any> {
     } else if (chartCfg.tooltipchange) {
       // 前面把rate字段加上了
       geom.tooltip("rate*" + metricCols[0]);
+      const isHour = chartParams.granularities[0].interval < 864e5;
       chart.tooltip(true, { map : { title: "rate" } });
       chart.on("tooltipchange", (ev: any) => {
         ev.items[0] = ev.items[1];
-        ev.items[0].name = getTooltipName(ev.items[0], "tm");
+        ev.items[0].name = getTooltipName(ev.items[0], "tm", isHour);
         if (ev.items.length > 2) {
           ev.items[1] = ev.items[2];
-          ev.items[1].name = getTooltipName(ev.items[1], "tm_");
+          ev.items[1].name = getTooltipName(ev.items[1], "tm_", isHour);
           ev.items.splice(ev.items.length - 1);
         }
       });
@@ -570,8 +571,8 @@ class Chart extends React.Component <ChartProps, any> {
   }
 }
 
-const getTooltipName = (item: any, key: string) => {
+const getTooltipName = (item: any, key: string, isHour: boolean) => {
   const point: any = item.point._origin[key];
-  return moment.unix(point / 1000).format("YYYY-MM-DD ddd hh:mm");
+  return moment.unix(point / 1000).format("YYYY-MM-DD ddd" + (isHour ? "hh:mm" : ""));
 }
 export default Chart;
