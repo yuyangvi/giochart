@@ -39,13 +39,13 @@ const getChartConfig: any = (chartType: string) => {
     area: { geom: "area", size: 2 },
     bar:    { combineMetrics: false, geom: "interval", label: true, margin: [20, 40, 10, 10], reflect: "y",
       transpose: true },
-    bubble: { geom: "point", pos: "MM", combineMetrics: false, shape: "circle", colorTheme: "252, 95, 58" },
+    bubble: { geom: "point", pos: "MM", combineMetrics: false, shape: "circle" },
     comparison: {geom: "area", pos: "MMD", combineMetrics: false, hideAxis: true, tooltipchange: "custom",
-      colorTheme: "252, 95, 58" },
+      colorTheme: "252, 95, 58", margin: [10, 50, 50, 50] },
     dualaxis: { geom: "interval", pos: "MMD", combineMetrics: false, margin: [10, 50, 50, 50] },
     funnel: { geom: "line", size: 2 },
     line: {geom: "line", size: 2},
-    retention: { geom: "line", size: 2, counter: "day" },
+    retention: { geom: "line", size: 2, counter: "day", margin: [10, 30, 50, 40] },
     singleNumber: { geom: "area", shape: "smooth", size: 2, combineMetrics: false, axis: false, tooltip: false,
       margin: [0, 0, 0, 0], colorTheme: "252, 95, 58" },
     vbar:   { geom: "interval" }
@@ -82,7 +82,7 @@ class Chart extends React.Component <ChartProps, any> {
       "#005a03", "#320096",
       "#673000", "#2d396b"
     ];
-    const defaultColor = "#abce5b";
+    const defaultColor = "#5FB6C7";
     // G2 的主题有bug，legend读的是G2.Theme的颜色，因此直接覆盖Theme更合适
     const theme = G2.Util.mix(true, G2.Theme, {
       animate: false,
@@ -112,12 +112,15 @@ class Chart extends React.Component <ChartProps, any> {
       },
       shape: {
         area: { fill: "#5FB6C7" },
-        interval: { fill: defaultColor, fillOpacity: 1 },
+        hollowPoint: {fill: "#5FB6C7" },
+        interval: { fill: "#abce5b", fillOpacity: 1 },
         line: { stroke: "#5FB6C7" },
         point: {fill: "#5FB6C7" }
       },
-      tooltipMarker: {
-        stroke: defaultColor
+      tooltip: {
+        tooltipMarker: {
+          stroke: "#5FB6C7"
+        }
       }
     });
     // G2.track(false);
@@ -126,9 +129,8 @@ class Chart extends React.Component <ChartProps, any> {
   public render() {
     return <div className="giochart" style={this.props.style} />;
   }
-  private isValideParams(chartParams: DrawParamsProps, source: Source){
-    console.log(chartParams, source);
-    if (chartParams.chartType === "comparison" && !source[0].tm_) {
+  private isValideParams(chartParams: DrawParamsProps, source: Source) {
+    if (chartParams.chartType === "comparison" && source.length && !source[0].tm_) {
       return false;
     }
     return true;
@@ -256,6 +258,10 @@ class Chart extends React.Component <ChartProps, any> {
       });
     } else if (chartParams.chartType === "singleNumber") {
       dimCols = ["tm"];
+    } else if (chartParams.chartType === "funnel") {
+      // 漏斗铲掉人数
+      chartCfg.appendTip = [metricCols[0]];
+      metricCols = [metricCols[1]];
     }
 
     // 需要多值域合并
@@ -327,7 +333,7 @@ class Chart extends React.Component <ChartProps, any> {
     if (chartCfg.pos !== "MMD") {
       metricCols.forEach((s: string) => {
         if (s !== "val") {
-          chart.axis(s, {title: {fill: "#999"}});
+          chart.axis(s, { title: { fill: "#999", textAlign: "center" } });
         }
       });
     }
@@ -367,8 +373,12 @@ class Chart extends React.Component <ChartProps, any> {
       chartParams.colorTheme = chartCfg.colorTheme;
     }
 
-    const geom = chart[chartCfg.geom === "area" ? "line" : chartCfg.geom](adjust);
-    if (chartCfg.pos === "MMD") { // 双y
+    const geom = chart[
+      /*(chartCfg.geom === "area" && chartParams.adjust === "dodge") ?
+        "line" : */
+        chartCfg.geom
+      ](adjust);
+    if (chartCfg.pos === "MMD") { // 双轴,周期对比会有另一条线
       chart.line().size(2).position(dimCols[0] + "*" + metricCols[1]).color("#d6dce3").tooltip(metricCols[1]);
     }
     // position and colored
@@ -388,7 +398,7 @@ class Chart extends React.Component <ChartProps, any> {
         geom.color(`rgb(${chartParams.colorTheme})`).size(2);
       }
     }
-    if (chartCfg.counter) {
+    if (chartCfg.counter || chartParams.chartType === "funnel") { // 留存点缀
       chart.point().shape("circle").size(3).position(pos).tooltip(false);
     }
 
@@ -444,7 +454,9 @@ class Chart extends React.Component <ChartProps, any> {
     }
 
     // 针对周期对比图的tooltip
-    if (chartCfg.tooltipchange) {
+    if (chartParams.chartType === "funnel") { // hard code
+      geom.tooltip(metricCols + "*" + chartCfg.appendTip);
+    } else if (chartCfg.tooltipchange) {
       // 前面把rate字段加上了
       geom.tooltip("rate*" + metricCols[0]);
       chart.tooltip(true, { map : { title: "rate" } });
@@ -456,6 +468,12 @@ class Chart extends React.Component <ChartProps, any> {
           ev.items[1].name = getTooltipName(ev.items[1], "tm_");
           ev.items.splice(ev.items.length - 1);
         }
+      });
+    } else if (chartParams.chartType === "bubble") {
+      geom.tooltip(metricCols.join("*") + "*" + dimCols[0]);
+      chart.tooltip(true, {map: {title: dimCols[0]}});
+      chart.on("tooltipchange", (ev: any) => {
+        ev.items.splice(ev.items.length - 1);
       });
     }
     // others

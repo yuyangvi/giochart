@@ -213,6 +213,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
     const state = {
       aggregates: chartData.meta.aggregates,
       columns,
+      error: false,
       source
     };
     if (this.props.hasOwnProperty("cacheOptions")) {
