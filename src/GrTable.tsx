@@ -2,16 +2,19 @@
  * 文档
  */
 import { Table } from "antd";
-import { difference, fill, filter, find, flatMap, forIn, groupBy, map, unionBy, values } from "lodash";
+import { difference, fill, filter, find, flatMap, forIn, groupBy, map, pick, unionBy, values, isEqual } from "lodash";
 import * as moment from "moment";
 import * as React from "react";
 import {ChartProps, Metric, Source} from "./ChartProps";
 // import Table from 'antd/lib/table';
 import G2 = require("g2");
-const sorterDecorator = (column: string) => (a: any, b: any) => (a[column] > b[column] ? 1 : -1);
+const sorterDecorator = (column: string) => (a: any, b: any) => (a[column] >= b[column] ? 1 : -1);
 moment.locale("zh-cn");
 // 根据中位数计算颜色,这段难理解，自己斟酌
 const calculateWeight = (range: [number, number],  median: number) => (v: number) => {
+  if (median ===  null) {
+    return "";
+  }
   if (v > median) {
     return `rgba(255,211,99, ${(v - median) /  (range[1] - median)})`;
   } else if (v < median) {
@@ -26,6 +29,12 @@ const descValue = (value: number|undefined, isRate: boolean): string|undefined =
     } else if (!Number.isInteger(value)) {
       return value.toPrecision(3);
     }
+  }
+  if (typeof value === "string") {
+    return value;
+  }
+  if (value === null) {
+    return "";
   }
   return value === undefined ? undefined : value.toString();
 }
@@ -43,6 +52,7 @@ class GrTable extends React.Component <ChartProps, any> {
   private static getRowKey(r: any, i: number) {
     return `${i}`;
   }
+  private lastSorter: null;
   private checkDate(m: Metric) {
     if (m.id === "tm") {
       const gra = find(this.props.chartParams.granularities, {id: "tm"});
@@ -82,7 +92,8 @@ class GrTable extends React.Component <ChartProps, any> {
 
       const groupColValues: any[] = flatMap(unionBy(source, chartParams.groupCol), chartParams.groupCol);
       // 按时间分组 TODO
-      const groupSource = values(groupBy(source, dimNames[0]));
+      const join = (row: any) => values(pick(row, dimNames)).join("");
+      const groupSource = values(groupBy(source, join));
       source = map(groupSource, (n: any) => GrTable.groupFlatter(n, chartParams.groupCol, groupColValues, dimNames));
       const frame = new G2.Frame(source);
       // 分三段
@@ -149,8 +160,15 @@ class GrTable extends React.Component <ChartProps, any> {
         emptyText={ () => "" }
         pagination={source.length > 19 ? { current: 1, pageSize: 10 } : false}
         rowKey={GrTable.getRowKey}
+        onChange={this.onChange.bind(this)}
       />
     );
+  }
+  private onChange(pagination: any, filters: any, sorter: any) {
+    if (!isEqual(this.lastSorter, sorter)) {
+      this.props.sortHandler(sorter);
+      this.lastSorter = sorter;
+    }
   }
 }
 

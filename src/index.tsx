@@ -2,10 +2,10 @@
 /*
  * 用来简易使用单图的模块，将获取数据和绘制图表用在一起
  */
-import { assign, map, zip } from "lodash";
+import { clone, find } from "lodash";
 import * as React from "react";
 import Chart from "./Chart";
-import {DataRequestProps, Granulariy, SingleChartProps, Source} from "./ChartProps";
+import {DataRequestProps, Granulariy} from "./ChartProps";
 import ContextListener from "./ContextListener";
 import DataSource from "./DataSource";
 import GrTable from "./GrTable";
@@ -32,22 +32,48 @@ const timeWeekRange = (timeRange: string) => {
   }
 }
 
-const ChartV4 = (props: GioProps) => {
-  if (props.extraColumns && props.params.attrs) {
-    props.params.attrs.isAddFakeMetric = false;
+// 表格的sorter，在ChartV4里处理，这样可以避免在其他地方用到。
+class ChartV4 extends React.Component <GioProps, any> {
+  private constructor(props: GioProps) {
+    super(props);
+    // 加载状态
+    this.state = {
+      field: null,
+      order: null
+    };
   }
-  return <DataSource params={props.params} cacheOptions={props.cacheOptions}>
-    <ContextListener
-      chartType={props.chartType}
-      colorTheme={props.colorTheme}
-      granularities={props.params.granularities}
-      adjust={props.adjust}
-      extraColumns={props.extraColumns}
-      groupCol={props.groupCol}
-      range={timeWeekRange(props.params.timeRange)}
-    />
-  </DataSource>;
-};
+
+  public render() {
+    const props = this.props;
+    const params = clone(props.params);
+    if (props.extraColumns && props.params.attrs) {
+      props.params.attrs.isAddFakeMetric = false;
+    }
+    if (this.state.field) {
+      const m = find(params.metrics, { id: this.state.field });
+      params.orders = [{
+        id: this.state.field,
+        isDim: !m,
+        orderType: this.state.order === "descend" ? "desc" : "asc"
+      }];
+    }
+    return <DataSource params={params} cacheOptions={props.cacheOptions}>
+      <ContextListener
+        chartType={props.chartType}
+        colorTheme={props.colorTheme}
+        granularities={props.params.granularities}
+        adjust={props.adjust}
+        extraColumns={props.extraColumns}
+        groupCol={props.groupCol}
+        range={timeWeekRange(props.params.timeRange)}
+        sortHandler={this.sortHandler.bind(this)}
+      />
+    </DataSource>;
+  }
+  private sortHandler(sort) {
+    this.setState(sort);
+  }
+}
 // 根据v3的chartParams计算v4的Scheme转化
 const convertChartParams = (v3Params: any): GioProps => {
   if (!v3Params.chartType) {
@@ -60,7 +86,7 @@ const convertChartParams = (v3Params: any): GioProps => {
     if (v3Params.aggregateType === "sum") {
       dimensions = ["tm"];
     } else {
-      dimensions = ["tm"].concat(dimensions)
+      dimensions = ["tm"].concat(dimensions);
     }
   }
   if (["dimensionLine", "dimensionVbar"].includes(v3Params.chartType) && !dimensions.includes("tm")) {
@@ -90,7 +116,7 @@ const convertChartParams = (v3Params: any): GioProps => {
   if (v3Params.chartType === "singleNumber") {
     aggregation = true;
     aggregator = v3Params.aggregateType || "sum";
-  } else if (v3Params.chartType === "bar") {
+  } else if (["bar", "abar"].includes(v3Params.chartType)) {
     aggregator = "sum";
     aggregation = false;
   }

@@ -46,6 +46,7 @@ class ContextListener extends React.Component <SingleChartProps, any> {
           select={this.props.select}
           selected={this.context.selected}
           extraColumns={this.props.extraColumns}
+          sortHandler={this.props.sortHandler}
         />
       );
     } else if (withAggregate) {

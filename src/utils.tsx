@@ -18,7 +18,7 @@ export const formatNumber = (n: number): string => {
   }
   return parseFloat((n * Math.pow(0.1, 4 * suffixIndex)).toPrecision(3)) + suffixArray[suffixIndex];
 };
-// 时间区间
+// 计量时间区间
 export const calculateTimeRange = (timeRange: string) => {
   if (!timeRange) {
     timeRange = "day:8,1";
@@ -31,4 +31,3 @@ export const calculateTimeRange = (timeRange: string) => {
     return parseInt(end, 10) - parseInt(start, 10);
   }
 }
-

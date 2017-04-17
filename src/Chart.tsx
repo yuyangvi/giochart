@@ -1,5 +1,5 @@
 import G2 = require("g2");
-import { filter, fromPairs, isEmpty, isEqual,
+import { find, filter, fromPairs, isEmpty, isEqual,
   isMatch, map, merge, pick, some, zip, zipObject } from "lodash";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
@@ -32,7 +32,7 @@ const getChartConfig: any = (chartType: string) => {
   const defaultMetric = {
     combineMetrics: true,
     geom: "line",
-    margin: [10, 30, 50, 70]
+    margin: [10, 30, 55, 70]
   };
   // 将图表类型变成不同步骤的组合
   const chartTypeMap: any[string] = {
@@ -41,7 +41,7 @@ const getChartConfig: any = (chartType: string) => {
       transpose: true },
     bubble: { geom: "point", pos: "MM", combineMetrics: false, shape: "circle" },
     comparison: {geom: "area", pos: "MMD", combineMetrics: false, hideAxis: true, tooltipchange: "custom",
-      colorTheme: "252, 95, 58", margin: [10, 50, 50, 50] },
+      colorTheme: "252, 95, 58", margin: [10, 30, 50, 50] },
     dualaxis: { geom: "interval", pos: "MMD", combineMetrics: false, margin: [10, 50, 50, 50] },
     funnel: { geom: "line", size: 2 },
     line: {geom: "line", size: 2},
@@ -49,7 +49,7 @@ const getChartConfig: any = (chartType: string) => {
     singleNumber: { geom: "area", shape: "smooth", size: 2, combineMetrics: false, axis: false, tooltip: false,
       margin: [0, 0, 0, 0], colorTheme: "252, 95, 58" },
     vbar:   { geom: "interval" }
-};
+  };
   return merge({}, defaultMetric, chartTypeMap[chartType]);
 };
 
@@ -129,9 +129,13 @@ class Chart extends React.Component <ChartProps, any> {
   public render() {
     return <div className="giochart" style={this.props.style} />;
   }
-  private isValideParams(chartParams: DrawParamsProps, source: Source) {
+  private isValidParams(chartParams: DrawParamsProps, source: Source) {
     if (chartParams.chartType === "comparison" && source.length && !source[0].tm_) {
       return false;
+    } else if (chartParams.chartType === "bar") {
+      // 是否有非tm的维度
+      const dim = find(chartParams.columns, {isDim: true});
+      return dim.id !== "tm";
     }
     return true;
   }
@@ -142,7 +146,7 @@ class Chart extends React.Component <ChartProps, any> {
     }
     const source: Source = nextProps.source;
     // 若是chartParams和source不合法,那说明数据没有传输到，
-    if (!this.isValideParams(nextProps.chartParams, nextProps.source)) {
+    if (!this.isValidParams(nextProps.chartParams, nextProps.source)) {
       return;
     }
     if (!isEmpty(nextProps.selected)) { // 需要筛选数据
@@ -197,7 +201,7 @@ class Chart extends React.Component <ChartProps, any> {
   }
   private componentDidMount() {
     const { chartParams, source } = this.props;
-    if (!this.isValideParams(chartParams, source)) {
+    if (!this.isValidParams(chartParams, source)) {
       return;
     }
     if (source) {
@@ -374,8 +378,8 @@ class Chart extends React.Component <ChartProps, any> {
     }
 
     const geom = chart[
-      /*(chartCfg.geom === "area" && chartParams.adjust === "dodge") ?
-        "line" : */
+      (chartCfg.geom === "area" && chartParams.adjust === "dodge") ?
+        "line" :
         chartCfg.geom
       ](adjust);
     if (chartCfg.pos === "MMD") { // 双轴,周期对比会有另一条线
@@ -409,13 +413,15 @@ class Chart extends React.Component <ChartProps, any> {
     // 横向图
     if (chartCfg.label) {
       const sum = chartParams.aggregates[0];
-      geom.label(metricCols[0], {
-        custom: true, // 使用自定义文本
-        renderer: function(text, item) {
-          return parseFloat((100 * item.point[metricCols[0]] / sum).toPrecision(3)) + '%';
-        },
-        offset: 5
-      });
+      if (sum) {
+        geom.label(metricCols[0], {
+          custom: true, // 使用自定义文本
+          renderer: function (text, item) {
+            return parseFloat((100 * item.point[metricCols[0]] / sum).toPrecision(3)) + '%';
+          },
+          offset: 5
+        });
+      }
     }
 
     // size
@@ -433,6 +439,8 @@ class Chart extends React.Component <ChartProps, any> {
       const styleGeom = chart.area();
       if (chartParams.colorTheme) {
         styleGeom.color(`l(90) 0:rgba(${chartParams.colorTheme}, 0.3) 1:rgba(${chartParams.colorTheme}, 0.1)`);
+      } else {
+        styleGeom.opacity(.3);
       }
 
       if (chartCfg.shape) {
@@ -573,6 +581,6 @@ class Chart extends React.Component <ChartProps, any> {
 
 const getTooltipName = (item: any, key: string, isHour: boolean) => {
   const point: any = item.point._origin[key];
-  return moment.unix(point / 1000).format("YYYY-MM-DD ddd" + (isHour ? "hh:mm" : ""));
+  return moment.unix(point / 1000).format("YYYY-MM-DD ddd" + (isHour ? " hh:mm" : ""));
 }
 export default Chart;
