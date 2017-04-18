@@ -1,3 +1,8 @@
+/**
+ * 图表的绘制，
+ * TODO： 按照声明式去配置
+ */
+
 import G2 = require("g2");
 import { find, filter, fromPairs, isEmpty, isEqual,
   isMatch, map, merge, pick, some, zip, zipObject } from "lodash";
@@ -324,6 +329,8 @@ class Chart extends React.Component <ChartProps, any> {
       sourceDef[metricCols[0]].tickCount = 4;
       // }
     }
+    // TODO：排序
+    // frame = this.sort(frame);
 
     const chart = new G2.Chart({
       container: dom,

@@ -19,7 +19,18 @@ class ContextListener extends React.Component <SingleChartProps, any> {
   public render() {
     const chartParams = this.generateChartParams();
     const withAggregate: boolean = ["comparison", "singleNumber"].includes(chartParams.chartType);
-    if (!this.context.source || !this.context.source.length) {
+    if (chartParams.chartType === "table") {
+      return (
+        <GrTable
+          chartParams={chartParams}
+          source={this.context.source}
+          select={this.props.select}
+          selected={this.context.selected}
+          extraColumns={this.props.extraColumns}
+          sortHandler={this.props.sortHandler}
+        />
+      );
+    } else if (!this.context.source || !this.context.source.length) {
       const outerStyle = {
         "-webkit-box-orient": "vertical",
         "-webkit-box-pack": "center",
@@ -36,18 +47,6 @@ class ContextListener extends React.Component <SingleChartProps, any> {
         <div style={outerStyle}>
           <div style={wordStyle}>暂无数据</div>
         </div>
-      );
-    }
-    if (chartParams.chartType === "table") {
-      return (
-        <GrTable
-          chartParams={chartParams}
-          source={this.context.source}
-          select={this.props.select}
-          selected={this.context.selected}
-          extraColumns={this.props.extraColumns}
-          sortHandler={this.props.sortHandler}
-        />
       );
     } else if (withAggregate) {
       return (

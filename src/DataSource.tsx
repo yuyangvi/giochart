@@ -45,7 +45,6 @@ class DataSource extends React.Component <DataLoaderProps, any> {
       aggregates: null,
       columns: null,
       error: false,
-      isLoaded: false,
       selected: null,
       source: null
     };
@@ -195,6 +194,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
       ));
     }
     let source: Source = map(sourceData, (n: number[]) => zipObject(colIds, n));
+
     // 强行添加转化率
     if (this.props.params.attrs && this.props.params.attrs.isAddFakeMetric) {
       const lastCol = columns[columns.length - 1];

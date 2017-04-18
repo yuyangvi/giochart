@@ -103,6 +103,7 @@ class GrTable extends React.Component <ChartProps, any> {
         sorter: sorterDecorator(id),
         title: find(chartParams.columns, { id }).name
       }));
+      console.log(source);
       const metricCols = groupColValues.map((name: string, i: number) => ({
         title: name,
         children: map(metrics, (m: Metric) => {
@@ -125,8 +126,8 @@ class GrTable extends React.Component <ChartProps, any> {
         dataIndex: m.id,
         key: m.id,
         render: (m.isDim ?
-            this.checkDate(m) :
-            generateColRender(calculateWeight(G2.Frame.range(frame, m.id), G2.Frame.median(frame, m.id)), m)
+          this.checkDate(m) :
+          generateColRender(calculateWeight(G2.Frame.range(frame, m.id), G2.Frame.median(frame, m.id)), m)
         ),
         sorter: sorterDecorator(m.id),
         title: m.name,
