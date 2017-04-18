@@ -4,7 +4,7 @@
  */
 
 import G2 = require("g2");
-import { find, filter, fromPairs, isEmpty, isEqual,
+import { find, filter, fromPairs, isEmpty, isEqualWith,
   isMatch, map, merge, pick, some, zip, zipObject } from "lodash";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
@@ -167,20 +167,19 @@ class Chart extends React.Component <ChartProps, any> {
       );
       this.changeData(filterSource || source);
     } else { // 不需要筛选数据，或者取消筛选
-      if (!isEqual(this.props.chartParams, nextProps.chartParams)) { // 配置修改了，重新绘制
+      if (!isEqualWith(this.props.chartParams, nextProps.chartParams, JSON.stringify)) { // 配置修改了，重新绘制
         if (this.chart) {
           this.chart.destroy();
           ReactDOM.findDOMNode(this).innerHTML = "";
         }
         this.drawChart(nextProps.chartParams, source);
-      } else {
+      } else if (!isEqualWith(source, this.props.source, JSON.stringify)) {
         // this.changeData(source);
         if (this.chart) {
           this.chart.destroy();
           ReactDOM.findDOMNode(this).innerHTML = "";
         }
         this.drawChart(nextProps.chartParams, source);
-
       }
     }
   }
@@ -301,6 +300,16 @@ class Chart extends React.Component <ChartProps, any> {
         chartCfg.margin[3] += 10;
       }
     }
+    // 针对分组的线图重新排序
+    if (dimCols.length > 1) {
+      const stat = G2.Stat.summary.sum(dimCols[1] + "*" + metricCols[0]);
+      stat.init();
+      const groupFrame = stat.execFrame(frame);
+      const sortedDim = G2.Frame.sort(groupFrame, metricCols[0]).colArray(dimCols[1]);
+      frame = G2.Frame.sortBy(frame, (a: any, b: any) => {
+        return sortedDim.indexOf(a[dimCols[1]]) < sortedDim.indexOf(b[dimCols[1]]) ? 1 : -1;
+      });
+    }
 
     // 计算legend的留空，tick的留空
     // 存在legend的可能有
@@ -410,7 +419,10 @@ class Chart extends React.Component <ChartProps, any> {
       }
     }
     if (chartCfg.counter || chartParams.chartType === "funnel") { // 留存点缀
-      chart.point().shape("circle").size(3).position(pos).tooltip(false);
+      const pointGeom = chart.point().shape("circle").size(3).position(pos).tooltip(false);
+      if (dimCols.length > 1) {
+        pointGeom.color(dimCols[1]);
+      }
     }
 
     if (chartCfg.hideAxis) {
@@ -573,8 +585,10 @@ class Chart extends React.Component <ChartProps, any> {
 
     // 针对留存的补丁， Fuck！
     if (chartConfig.counter === "day") {
+      const tm = find(chartParams.columns, { id: "tm" });
+      const dict = { day: "天", week: "周", month: "月" };
       sourceDef.tm = {
-        formatter: (n: number): string => (n > 0 ? `${n}天后` : `当天`),
+        formatter: (n: number): string => (n > 0 ? `${n}${dict[tm.counter]}后` : `当${dict[tm.counter]}`),
         tickCount: 4,
         type: "linear", // TODO 可能有其他case
       };
