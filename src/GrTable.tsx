@@ -59,7 +59,7 @@ class GrTable extends React.Component <ChartProps, any> {
       if (gra.interval && gra.interval >= 864e5) {
         return (v: number) => moment.unix(v / 1000).format("YYYY-MM-DD");
       } else {
-        return (v: number) => moment.unix(v / 1000).format("YYYY-MM-DD hh:mm");
+        return (v: number) => moment.unix(v / 1000).format("YYYY-MM-DD HH:mm");
       }
     }
   }
@@ -159,7 +159,7 @@ class GrTable extends React.Component <ChartProps, any> {
         columns={cols}
         dataSource={source}
         emptyText={ () => "" }
-        pagination={source.length > 19 ? { current: 1, pageSize: 10 } : false}
+        pagination={source.length > 10 ? { current: 1, pageSize: 10 } : false}
         rowKey={GrTable.getRowKey}
         onChange={this.onChange.bind(this)}
       />

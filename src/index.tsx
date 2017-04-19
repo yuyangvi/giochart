@@ -128,6 +128,7 @@ const convertChartParams = (v3Params: any): GioProps => {
     filter: v3Params.filter, // 过滤
     granularities, // 粒度
     id: v3Params.id,
+    name: v3Params.name,
     limit: ["bar", "abar", "table"].includes(v3Params.chartType) ? v3Params.top : undefined, // 数据行限制 10
     metrics,
     orders: v3Params.orders, // 排序

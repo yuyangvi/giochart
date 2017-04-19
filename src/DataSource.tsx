@@ -38,6 +38,11 @@ class DataSource extends React.Component <DataLoaderProps, any> {
     source: React.PropTypes.any
   };
   private tryTimes = 0;
+  private startTime = 0;
+  private trackWords = {
+    channel_name: "",
+    board_name: ""
+  };
   private constructor(props: DataLoaderProps) {
     super(props);
     // 加载状态
@@ -48,19 +53,9 @@ class DataSource extends React.Component <DataLoaderProps, any> {
       selected: null,
       source: null
     };
+
   }
 
-  /*
-  selectHandler(evt: any) {
-   this.setState({
-   selected: evt.selected
-   });
-  }
-  */
-  private componentWillUnmount() {
-    // TODO: 取消未完成的请求
-    // console.log("正在取消未完成的请求");
-  }
   public render() {
     if (this.state.error) {
       const outerStyle = {
@@ -111,6 +106,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
           return;
         }
       }
+      this.startTime = Date.now();
       this.defaultRequest(nextProps.params, this.afterFetch.bind(this));
     }
   }
@@ -125,6 +121,8 @@ class DataSource extends React.Component <DataLoaderProps, any> {
    return result;
   } */
   private defaultRequest(chartParams: DataRequestProps, callback: any) {
+    const vds = window._vds;
+
     let fetchObj;
     // Todo 检查是否是DEV环境
     if (this.props.hasOwnProperty("sourceUrl")) {
@@ -149,12 +147,29 @@ class DataSource extends React.Component <DataLoaderProps, any> {
         this.setState({
           error: true
         });
+        console.log("report_load_fail");
+
+        vds.track("report_load_fail", {
+          project_id: window.project.id,
+          chart_name: chartParams.name,
+          board_name: this.trackWords.board_name,
+          report_load_time: Date.now() - this.startTime,
+          channel_name: this.trackWords.channel_name
+        });
       }
     }).then((data: ResponseParams) => callback(data)).catch((e: any) => void(0));
   }
 
   private componentWillMount() {
     const { params } = this.props;
+    const trackWords = location.pathname.match(/\/projects\/\w{8}\/([^\/]+)\/([^\/]+)/);
+    if (trackWords.length > 2) {
+      this.trackWords = {
+        channel_name: trackWords[1],
+        board_name: trackWords[2]
+      };
+    }
+
     if (this.props.hasOwnProperty("cacheOptions")) {
       const chartDataInCache = DataCache.getChartData(params, this.props.hashKeys);
       if (chartDataInCache) {
@@ -162,6 +177,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
         return;
       }
     }
+    this.startTime = Date.now();
     this.defaultRequest(params, this.afterFetch.bind(this));
   }
 
@@ -208,6 +224,23 @@ class DataSource extends React.Component <DataLoaderProps, any> {
           n[id] = undefined;
         }
       });
+    }
+
+    // 加载成功，打点
+    if (!source || source.length === 0) {
+      console.log("report_no_data");
+      try {
+        const vds = window._vds;
+        vds.track("report_no_data", {
+          project_id: window.project.id,
+          chart_name: this.props.params.name,
+          board_name: this.trackWords.board_name,
+          report_load_time: Date.now() - this.startTime,
+          channel_name: this.trackWords.channel_name
+        });
+      } catch(e) {
+
+      }
     }
 
     const state = {

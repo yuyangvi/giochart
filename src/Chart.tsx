@@ -4,7 +4,7 @@
  */
 
 import G2 = require("g2");
-import { find, filter, fromPairs, isEmpty, isEqualWith,
+import { find, filter, fromPairs, isEmpty, isEqual,
   isMatch, map, merge, pick, some, zip, zipObject } from "lodash";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
@@ -41,7 +41,7 @@ const getChartConfig: any = (chartType: string) => {
   };
   // 将图表类型变成不同步骤的组合
   const chartTypeMap: any[string] = {
-    area: { geom: "area", size: 2 },
+    area: { geom: "area" },
     bar:    { combineMetrics: false, geom: "interval", label: true, margin: [20, 40, 10, 10], reflect: "y",
       transpose: true },
     bubble: { geom: "point", pos: "MM", combineMetrics: false, shape: "circle" },
@@ -167,13 +167,13 @@ class Chart extends React.Component <ChartProps, any> {
       );
       this.changeData(filterSource || source);
     } else { // 不需要筛选数据，或者取消筛选
-      if (!isEqualWith(this.props.chartParams, nextProps.chartParams, JSON.stringify)) { // 配置修改了，重新绘制
+      if (!isEqual(this.props.chartParams, nextProps.chartParams)) { // 配置修改了，重新绘制
         if (this.chart) {
           this.chart.destroy();
           ReactDOM.findDOMNode(this).innerHTML = "";
         }
         this.drawChart(nextProps.chartParams, source);
-      } else if (!isEqualWith(source, this.props.source, JSON.stringify)) {
+      } else if (!isEqual(source, this.props.source)) {
         // this.changeData(source);
         if (this.chart) {
           this.chart.destroy();
@@ -393,11 +393,12 @@ class Chart extends React.Component <ChartProps, any> {
       chartParams.colorTheme = chartCfg.colorTheme;
     }
 
-    const geom = chart[
-      (chartCfg.geom === "area" && chartParams.adjust === "dodge") ?
-        "line" :
-        chartCfg.geom
-      ](adjust);
+    let geom;
+    if (chartCfg.geom === "area" && chartParams.adjust === "dodge") {
+      geom = chart.line().size(2);
+    } else {
+      geom = chart[chartCfg.geom](adjust);
+    }
     if (chartCfg.pos === "MMD") { // 双轴,周期对比会有另一条线
       chart.line().size(2).position(dimCols[0] + "*" + metricCols[1]).color("#d6dce3").tooltip(metricCols[1]);
     }
@@ -418,6 +419,7 @@ class Chart extends React.Component <ChartProps, any> {
         geom.color(`rgb(${chartParams.colorTheme})`).size(2);
       }
     }
+
     if (chartCfg.counter || chartParams.chartType === "funnel") { // 留存点缀
       const pointGeom = chart.point().shape("circle").size(3).position(pos).tooltip(false);
       if (dimCols.length > 1) {
@@ -444,12 +446,13 @@ class Chart extends React.Component <ChartProps, any> {
     }
 
     // size
-    if (chartCfg.size) {
+    /*if (chartCfg.size) {
       geom.size(chartCfg.size);
     } else if (chartCfg.pos === "MM" && metricCols.length > 2) {
       geom.size(metricCols[2], 30, 5);
       chart.legend(false);
-    }
+    }*/
+
     if (chartCfg.shape) {
       geom.shape(chartCfg.shape);
     }
