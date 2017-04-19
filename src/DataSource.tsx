@@ -189,7 +189,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
     let sourceData: any = chartData.data;
 
     // 为了支持周期对比图，这里需要meta的offset 转化
-    if (chartData.meta.offset) {
+    if (chartData.meta.offset !== undefined) {
       // 寻找粒度
       const offsetPeriod = (7 * 86400000);
       // 强行配对，没验证...

@@ -134,6 +134,8 @@ class Chart extends React.Component <ChartProps, any> {
   public render() {
     return <div className="giochart" style={this.props.style} />;
   }
+
+  // 按理不需要绘制对不上的图
   private isValidParams(chartParams: DrawParamsProps, source: Source) {
     if (chartParams.chartType === "comparison" && source.length && !source[0].tm_) {
       return false;
@@ -322,7 +324,7 @@ class Chart extends React.Component <ChartProps, any> {
         sourceDef.tm.mask = (range[1] - range[0] >= 864e5) ? "mm-dd" : "HH:MM";
       }
       const tmLength = G2.Frame.group(frame, ["tm"]).length;
-      sourceDef.tm.tickCount = countTick(parseInt(canvasRect.width/ 80), tmLength-1);
+      sourceDef.tm.tickCount = countTick(parseInt(canvasRect.width/ 80), tmLength - 1);
     }
     if (chartParams.adjust === "percent") {
       sourceDef['..percent'] = {
