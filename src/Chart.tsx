@@ -226,304 +226,329 @@ class Chart extends React.Component <ChartProps, any> {
   }
 
   private drawChart(chartParams: DrawParamsProps, source: any[]) {
-    const dom = document.createElement("div");
-    dom.style.height = "100%";
-    ReactDOM.findDOMNode(this).appendChild(dom);
+    try {
+      const dom = document.createElement("div");
+      dom.style.height = "100%";
+      ReactDOM.findDOMNode(this).appendChild(dom);
 
-    const canvasRect = dom.getBoundingClientRect();
-    if (!chartParams.chartType) {
-      // TODO invariant
-      console.error("Error 101: 图表没有指定类型或类型不合法，请访问ChartParams.md获取类型定义的方案");
-      return;
-    /*
-    } else if (canvasRect.height === 0) {
-      console.error("Error 103: 绘制图形取决于外框高度,而当前外框的高度为0,如果你已经设置了高度，那可能绘制发生在了样式生效前");
-      return;
-    */
-    }
-    const chartCfg = getChartConfig(chartParams.chartType);
-    const sourceDef = this.buildSourceConfig(chartParams);
-
-    // 建立Frame
-    let metricCols: any[] = map(filter(chartParams.columns, { isDim: false }), "id");
-    let dimCols    = map(filter(chartParams.columns, { isDim: true }), "id");
-    let frame      = new G2.Frame(source);
-
-    // 周期对比图 的 hook
-    if (chartParams.chartType === "comparison") {
-      // 给frame增加字段， 用以显示tooltip的title
-      frame.addCol("rate", (record: any) => (
-        record[metricCols[1]] ? (record[metricCols[0]] / record[metricCols[1]] - 1) : 0
-      ));
-      sourceDef.rate = {
-        formatter: (n: number): string => `${parseFloat((100 * n).toPrecision(3))}%`
-      };
-
-      // 获取metricid, 计算最大值,统一两条线的区间范围
-      const mids = map(filter(chartParams.columns, { isDim: false }), "id");
-      const maxScale: number = Math.max.apply(null, map(mids, (col: string) => G2.Frame.max(frame, col)));
-      mids.forEach((id: string) => {
-        sourceDef[id].min = 0;
-        sourceDef[id].max = maxScale;
-      });
-    } else if (chartParams.chartType === "singleNumber") {
-      dimCols = ["tm"];
-    } else if (chartParams.chartType === "funnel") {
-      // 漏斗铲掉人数
-      chartCfg.appendTip = [metricCols[0]];
-      metricCols = [metricCols[1]];
-    }
-
-    // 需要多值域合并
-    if (chartCfg.combineMetrics && metricCols.length > 1) {
-      frame = G2.Frame.combinColumns(frame, metricCols, "val", "metric", dimCols);
-      if (chartCfg.shape === "funnel") {
-        dimCols = ["metric"];
-      } else {
-        dimCols.push("metric");
+      const canvasRect = dom.getBoundingClientRect();
+      if (!chartParams.chartType) {
+        // TODO invariant
+        console.error("Error 101: 图表没有指定类型或类型不合法，请访问ChartParams.md获取类型定义的方案");
+        return;
+        /*
+         } else if (canvasRect.height === 0) {
+         console.error("Error 103: 绘制图形取决于外框高度,而当前外框的高度为0,如果你已经设置了高度，那可能绘制发生在了样式生效前");
+         return;
+         */
       }
-      const metricNames = map(filter(chartParams.columns, { isDim: false }), "name");
-      const metricDict = fromPairs(zip(metricCols, metricNames));
-      sourceDef.metric = {
-        type: "cat",
-        formatter: (n: string): string => metricDict[n]
-      };
-      sourceDef.val = {
-        type: "linear",
-        formatter: metricCols.length > 1 ? formatNumber : sourceDef[metricCols[0]].formatter
-      }
-      metricCols = ["val"];
-    } else {
-      /*metricCols.forEach((s: string) => {
-        console.log(s);
-        chart.axis(s, { title: { fill: "#999" } });
-      });*/
-      if (chartCfg.pos !== "MMD") {
-        chartCfg.margin[3] += 10;
-      }
-    }
-    // 针对分组的线图重新排序
-    if (dimCols.length > 1) {
-      const stat = G2.Stat.summary.sum(dimCols[1] + "*" + metricCols[0]);
-      stat.init();
-      const groupFrame = stat.execFrame(frame);
-      const sortedDim = G2.Frame.sort(groupFrame, metricCols[0]).colArray(dimCols[1]);
-      frame = G2.Frame.sortBy(frame, (a: any, b: any) => {
-        return sortedDim.indexOf(a[dimCols[1]]) < sortedDim.indexOf(b[dimCols[1]]) ? 1 : -1;
-      });
-    }
+      const chartCfg = getChartConfig(chartParams.chartType);
+      const sourceDef = this.buildSourceConfig(chartParams);
 
-    // 计算legend的留空，tick的留空
-    // 存在legend的可能有
-    // 横向bar图， 需要计算左侧的距离
-    let canvasHeight: number = canvasRect.height;
-    // 补丁: tm的值不仅跟interval有关，也跟timeRange有关，但是取不到timeRange,就以source为准
-    if (sourceDef.tm) {
-      const range = G2.Frame.range(frame, "tm");
-      if (range.length > 1) {
-        sourceDef.tm.mask = (range[1] - range[0] >= 864e5) ? "mm-dd" : "HH:MM";
-      }
-      const tmLength = G2.Frame.group(frame, ["tm"]).length;
-      sourceDef.tm.tickCount = countTick(parseInt(canvasRect.width/ 80), tmLength - 1);
-    }
-    if (chartParams.adjust === "percent") {
-      sourceDef['..percent'] = {
-        formatter: (v: number) => `${parseFloat((100 * v).toPrecision(3))}%`
-      };
-    }
-    if (chartParams.chartType === "bar") {
-      const maxWordLength = Math.max.apply(null, map(frame.colArray(dimCols[0]), "length"));
-      chartCfg.margin[3] = Math.min(120, 25 + 12 * maxWordLength);
-      canvasHeight = Math.max(15 * frame.rowCount(), canvasHeight);
-      // 横向柱图微图显示时，文字重叠
-      // if (canvasRect.width < 400) {
-      sourceDef[metricCols[0]].tickCount = 4;
-      // }
-    }
-    // TODO：排序
-    // frame = this.sort(frame);
+      // 建立Frame
+      let metricCols: any[] = map(filter(chartParams.columns, {isDim: false}), "id");
+      let dimCols = map(filter(chartParams.columns, {isDim: true}), "id");
+      let frame = new G2.Frame(source);
 
-    const chart = new G2.Chart({
-      container: dom,
-      forceFit: true,
-      height: canvasHeight || 300,
-      plotCfg: {
-        margin: chartCfg.margin
+      // 周期对比图 的 hook
+      if (chartParams.chartType === "comparison") {
+        // 给frame增加字段， 用以显示tooltip的title
+        frame.addCol("rate", (record: any) => (
+          record[metricCols[1]] ? (record[metricCols[0]] / record[metricCols[1]] - 1) : 0
+        ));
+        sourceDef.rate = {
+          formatter: (n: number): string => `${parseFloat((100 * n).toPrecision(3))}%`
+        };
+
+        // 获取metricid, 计算最大值,统一两条线的区间范围
+        const mids = map(filter(chartParams.columns, {isDim: false}), "id");
+        const maxScale: number = Math.max.apply(null, map(mids, (col: string) => G2.Frame.max(frame, col)));
+        mids.forEach((id: string) => {
+          sourceDef[id].min = 0;
+          sourceDef[id].max = maxScale;
+        });
+      } else if (chartParams.chartType === "singleNumber") {
+        dimCols = ["tm"];
+      } else if (chartParams.chartType === "funnel") {
+        // 漏斗铲掉人数
+        chartCfg.appendTip = [metricCols[0]];
+        metricCols = [metricCols[1]];
       }
-    });
-    chart.source(frame, sourceDef);
-    if (chartCfg.pos !== "MMD") {
-      metricCols.forEach((s: string) => {
-        if (s !== "val") {
-          chart.axis(s, { title: { fill: "#999", textAlign: "center" } });
+
+      // 需要多值域合并
+      if (chartCfg.combineMetrics && metricCols.length > 1) {
+        frame = G2.Frame.combinColumns(frame, metricCols, "val", "metric", dimCols);
+        if (chartCfg.shape === "funnel") {
+          dimCols = ["metric"];
+        } else {
+          dimCols.push("metric");
         }
-      });
-    }
-
-    // geom
-    if (chartCfg.axis !== undefined) {
-      chart.axis(chartCfg.axis);
-    }
-    if (chartCfg.tooltip !== undefined) {
-      chart.tooltip(chartCfg.tooltip);
-    } else  if (["line", "area"].includes(chartCfg.geom)) {
-      chart.tooltip({ crosshairs: true });
-    }
-    if (chartCfg.transpose) {
-      const coord = chart.coord("rect").transpose();
-      if (chartCfg.reflect) {
-        coord.reflect(chartCfg.reflect);
+        const metricNames = map(filter(chartParams.columns, {isDim: false}), "name");
+        const metricDict = fromPairs(zip(metricCols, metricNames));
+        sourceDef.metric = {
+          type: "cat",
+          formatter: (n: string): string => metricDict[n]
+        };
+        sourceDef.val = {
+          type: "linear",
+          formatter: metricCols.length > 1 ? formatNumber : sourceDef[metricCols[0]].formatter
+        }
+        metricCols = ["val"];
+      } else {
+        /*metricCols.forEach((s: string) => {
+         console.log(s);
+         chart.axis(s, { title: { fill: "#999" } });
+         });*/
+        if (chartCfg.pos !== "MMD") {
+          chartCfg.margin[3] += 10;
+        }
       }
-      if (chartCfg.scale) {
-        coord.scale(1, 1);
-      }
-    }
-    let adjust = chartParams.adjust;
-    if (adjust === "percent") {
-      adjust = "stack";
-    }
-    if ("line" === chartCfg.geom) {
-      adjust = undefined;
-    } else if ("interval" !== chartCfg.geom && chartParams.adjust === "dodge") {
-      adjust = undefined;
-    }
-    // position
-    let pos = chartCfg.pos === "MM" ?
-      (metricCols[0] + "*" + metricCols[1]) :
-      (dimCols[0] + "*" + metricCols[0]);
-    if (chartCfg.colorTheme && !chartParams.colorTheme) {
-      chartParams.colorTheme = chartCfg.colorTheme;
-    }
-
-    let geom;
-    if (chartCfg.geom === "area" && chartParams.adjust === "dodge") {
-      geom = chart.line().size(2);
-    } else {
-      geom = chart[chartCfg.geom](adjust);
-    }
-    if (chartCfg.pos === "MMD") { // 双轴,周期对比会有另一条线
-      chart.line().size(2).position(dimCols[0] + "*" + metricCols[1]).color("#d6dce3").tooltip(metricCols[1]);
-    }
-    // position and colored
-    if (dimCols.length < 2) {
-      pos = G2.Stat.summary.sum(pos);
-      geom.position(pos);
-      if (chartParams.colorTheme) {
-        geom.color(`rgb(${chartParams.colorTheme})`);
-      } else if (chartCfg.pos === "MMD") {
-        geom.color(G2.Theme.defaultColor); // Wrong
-      }
-    } else {
-      geom.position(chartParams.adjust === "percent" ? G2.Stat.summary.percent(pos) : pos);
-      if (chartCfg.pos !== "MMD") {
-        geom.color(dimCols[1]);
-      } else if (chartParams.colorTheme) {
-        geom.color(`rgb(${chartParams.colorTheme})`).size(2);
-      }
-    }
-
-    if (chartCfg.counter || chartParams.chartType === "funnel") { // 留存点缀
-      const pointGeom = chart.point().shape("circle").size(3).position(pos).tooltip(false);
+      // 针对分组的线图重新排序
       if (dimCols.length > 1) {
-        pointGeom.color(dimCols[1]);
-      }
-    }
-
-    if (chartCfg.hideAxis) {
-      chart.axis(metricCols[1], false);
-    }
-
-    // 横向图
-    if (chartCfg.label) {
-      const sum = chartParams.aggregates[0];
-      if (sum) {
-        geom.label(metricCols[0], {
-          custom: true, // 使用自定义文本
-          renderer: function (text, item) {
-            return parseFloat((100 * item.point[metricCols[0]] / sum).toPrecision(3)) + '%';
-          },
-          offset: 5
+        const stat = G2.Stat.summary.sum(dimCols[1] + "*" + metricCols[0]);
+        stat.init();
+        const groupFrame = stat.execFrame(frame);
+        const sortedDim = G2.Frame.sort(groupFrame, metricCols[0]).colArray(dimCols[1]);
+        frame = G2.Frame.sortBy(frame, (a: any, b: any) => {
+          return sortedDim.indexOf(a[dimCols[1]]) < sortedDim.indexOf(b[dimCols[1]]) ? 1 : -1;
         });
       }
-    }
 
-    // size
-    /*if (chartCfg.size) {
-      geom.size(chartCfg.size);
-    } else if (chartCfg.pos === "MM" && metricCols.length > 2) {
-      geom.size(metricCols[2], 30, 5);
-      chart.legend(false);
-    }*/
-
-    if (chartCfg.shape) {
-      geom.shape(chartCfg.shape);
-    }
-
-    if (chartCfg.geom === "area" && adjust !== "stack") { // 为了area 好看点,画线
-      const styleGeom = chart.area();
-      if (chartParams.colorTheme) {
-        styleGeom.color(`l(90) 0:rgba(${chartParams.colorTheme}, 0.3) 1:rgba(${chartParams.colorTheme}, 0.1)`);
-      } else {
-        styleGeom.opacity(.3);
+      // 计算legend的留空，tick的留空
+      // 存在legend的可能有
+      // 横向bar图， 需要计算左侧的距离
+      let canvasHeight: number = canvasRect.height;
+      // 补丁: tm的值不仅跟interval有关，也跟timeRange有关，但是取不到timeRange,就以source为准
+      if (sourceDef.tm) {
+        const range = G2.Frame.range(frame, "tm");
+        if (range.length > 1) {
+          sourceDef.tm.mask = (range[1] - range[0] >= 864e5) ? "mm-dd" : "HH:MM";
+        }
+        const tmLength = G2.Frame.group(frame, ["tm"]).length;
+        sourceDef.tm.tickCount = countTick(parseInt(canvasRect.width / 80), tmLength - 1);
       }
-
-      if (chartCfg.shape) {
-        styleGeom.shape(chartCfg.shape);
+      if (chartParams.adjust === "percent") {
+        sourceDef['..percent'] = {
+          formatter: (v: number) => `${parseFloat((100 * v).toPrecision(3))}%`
+        };
       }
-      styleGeom.position(pos); // .size(2);
-      if (dimCols.length > 1 && chartCfg.pos !== "MMD") {
-        // styleGeom.color(dimCols[1]);
+      if (chartParams.chartType === "bar") {
+        const maxWordLength = Math.max.apply(null, map(frame.colArray(dimCols[0]), "length"));
+        chartCfg.margin[3] = Math.min(120, 25 + 12 * maxWordLength);
+        canvasHeight = Math.max(15 * frame.rowCount(), canvasHeight);
+        // 横向柱图微图显示时，文字重叠
+        // if (canvasRect.width < 400) {
+        sourceDef[metricCols[0]].tickCount = 4;
+        // }
       }
-      // if (chartCfg.tooltipchange) {
-      styleGeom.tooltip("");
-      // }
-    }
-    // legend
-    if (chartCfg.pos !== "MM") {
-      chart.legend({
-        position: "bottom"
-      });
-    }
+      // TODO：排序
+      // frame = this.sort(frame);
 
-    // 针对周期对比图的tooltip
-    if (chartParams.chartType === "funnel") { // hard code
-      geom.tooltip(metricCols + "*" + chartCfg.appendTip);
-    } else if (chartCfg.tooltipchange) {
-      // 前面把rate字段加上了
-      geom.tooltip("rate*" + metricCols[0]);
-      const isHour = chartParams.granularities[0].interval < 864e5;
-      chart.tooltip(true, { map : { title: "rate" } });
-      chart.on("tooltipchange", (ev: any) => {
-        ev.items[0] = ev.items[1];
-        ev.items[0].name = getTooltipName(ev.items[0], "tm", isHour);
-        if (ev.items.length > 2) {
-          ev.items[1] = ev.items[2];
-          ev.items[1].name = getTooltipName(ev.items[1], "tm_", isHour);
-          ev.items.splice(ev.items.length - 1);
+      const chart = new G2.Chart({
+        container: dom,
+        forceFit: true,
+        height: canvasHeight || 300,
+        plotCfg: {
+          margin: chartCfg.margin
         }
       });
-    } else if (chartParams.chartType === "bubble") {
-      geom.tooltip(metricCols.join("*") + "*" + dimCols[0]);
-      chart.tooltip(true, {map: {title: dimCols[0]}});
-      chart.on("tooltipchange", (ev: any) => {
-        ev.items.splice(ev.items.length - 1);
-      });
-    }
-    // others
-    if (this.props.hasOwnProperty("select") && this.props.select) {
-      geom.selected(true, {
-        selectedMode: "single", // "multiple" || "single"
-        style: { fill: "#fe9929" }
-      });
-      if (dimCols[0] !== "tm") {
-        // plotclick=图表坐标系内的事件  itemselected=图形元素上的事件
-        const selectCols = (chartCfg.pos ? metricCols.slice(0, 2) : [dimCols[0]]) as string[] ;
-        chart.on("plotclick", (evt: any) => this.selectHandler(evt, selectCols));
-        chart.on("itemunselected", (evt: any) => this.unselectHandler(evt, selectCols));
+      chart.source(frame, sourceDef);
+      if (chartCfg.pos !== "MMD") {
+        metricCols.forEach((s: string) => {
+          if (s !== "val") {
+            chart.axis(s, {title: {fill: "#999", textAlign: "center"}});
+          }
+        });
       }
+
+      // geom
+      if (chartCfg.axis !== undefined) {
+        chart.axis(chartCfg.axis);
+      }
+      if (chartCfg.tooltip !== undefined) {
+        chart.tooltip(chartCfg.tooltip);
+      } else if (["line", "area"].includes(chartCfg.geom)) {
+        chart.tooltip({crosshairs: true});
+      }
+      if (chartCfg.transpose) {
+        const coord = chart.coord("rect").transpose();
+        if (chartCfg.reflect) {
+          coord.reflect(chartCfg.reflect);
+        }
+        if (chartCfg.scale) {
+          coord.scale(1, 1);
+        }
+      }
+      let adjust = chartParams.adjust;
+      if (adjust === "percent") {
+        adjust = "stack";
+      }
+      if ("line" === chartCfg.geom) {
+        adjust = undefined;
+      } else if ("interval" !== chartCfg.geom && chartParams.adjust === "dodge") {
+        adjust = undefined;
+      }
+      // position
+      let pos = chartCfg.pos === "MM" ?
+        (metricCols[0] + "*" + metricCols[1]) :
+        (dimCols[0] + "*" + metricCols[0]);
+      if (chartCfg.colorTheme && !chartParams.colorTheme) {
+        chartParams.colorTheme = chartCfg.colorTheme;
+      }
+
+      let geom;
+      if (chartCfg.geom === "area" && chartParams.adjust === "dodge") {
+        geom = chart.line().size(2);
+      } else {
+        geom = chart[chartCfg.geom](adjust);
+      }
+      if (chartCfg.pos === "MMD") { // 双轴,周期对比会有另一条线
+        chart.line().size(2).position(dimCols[0] + "*" + metricCols[1]).color("#d6dce3").tooltip(metricCols[1]);
+      }
+      // position and colored
+      if (dimCols.length < 2) {
+        pos = G2.Stat.summary.sum(pos);
+        geom.position(pos);
+        if (chartParams.colorTheme) {
+          geom.color(`rgb(${chartParams.colorTheme})`);
+        } else if (chartCfg.pos === "MMD") {
+          geom.color(G2.Theme.defaultColor); // Wrong
+        }
+      } else {
+        geom.position(chartParams.adjust === "percent" ? G2.Stat.summary.percent(pos) : pos);
+        if (chartCfg.pos !== "MMD") {
+          geom.color(dimCols[1]);
+        } else if (chartParams.colorTheme) {
+          geom.color(`rgb(${chartParams.colorTheme})`).size(2);
+        }
+      }
+
+      if (chartCfg.counter || chartParams.chartType === "funnel") { // 留存点缀
+        const pointGeom = chart.point().shape("circle").size(3).position(pos).tooltip(false);
+        if (dimCols.length > 1) {
+          pointGeom.color(dimCols[1]);
+        }
+      }
+
+      if (chartCfg.hideAxis) {
+        chart.axis(metricCols[1], false);
+      }
+
+      // 横向图
+      if (chartCfg.label) {
+        const sum = chartParams.aggregates[0];
+        if (sum) {
+          geom.label(metricCols[0], {
+            custom: true, // 使用自定义文本
+            renderer: function (text, item) {
+              return parseFloat((100 * item.point[metricCols[0]] / sum).toPrecision(3)) + '%';
+            },
+            offset: 5
+          });
+        }
+      }
+
+      // size
+      /*if (chartCfg.size) {
+       geom.size(chartCfg.size);
+       } else if (chartCfg.pos === "MM" && metricCols.length > 2) {
+       geom.size(metricCols[2], 30, 5);
+       chart.legend(false);
+       }*/
+
+      if (chartCfg.shape) {
+        geom.shape(chartCfg.shape);
+      }
+
+      if (chartCfg.geom === "area" && adjust !== "stack") { // 为了area 好看点,画线
+        const styleGeom = chart.area();
+        if (chartParams.colorTheme) {
+          styleGeom.color(`l(90) 0:rgba(${chartParams.colorTheme}, 0.3) 1:rgba(${chartParams.colorTheme}, 0.1)`);
+        } else {
+          styleGeom.opacity(.3);
+        }
+
+        if (chartCfg.shape) {
+          styleGeom.shape(chartCfg.shape);
+        }
+        styleGeom.position(pos); // .size(2);
+        if (dimCols.length > 1 && chartCfg.pos !== "MMD") {
+          // styleGeom.color(dimCols[1]);
+        }
+        // if (chartCfg.tooltipchange) {
+        styleGeom.tooltip("");
+        // }
+      }
+      // legend
+      if (chartCfg.pos !== "MM") {
+        chart.legend({
+          position: "bottom"
+        });
+      }
+
+      // 针对周期对比图的tooltip
+      if (chartParams.chartType === "funnel") { // hard code
+        geom.tooltip(metricCols + "*" + chartCfg.appendTip);
+      } else if (chartCfg.tooltipchange) {
+        // 前面把rate字段加上了
+        geom.tooltip("rate*" + metricCols[0]);
+        const isHour = chartParams.granularities[0].interval < 864e5;
+        chart.tooltip(true, {map: {title: "rate"}});
+        chart.on("tooltipchange", (ev: any) => {
+          ev.items[0] = ev.items[1];
+          ev.items[0].name = getTooltipName(ev.items[0], "tm", isHour);
+          if (ev.items.length > 2) {
+            ev.items[1] = ev.items[2];
+            ev.items[1].name = getTooltipName(ev.items[1], "tm_", isHour);
+            ev.items.splice(ev.items.length - 1);
+          }
+        });
+      } else if (chartParams.chartType === "bubble") {
+        geom.tooltip(metricCols.join("*") + "*" + dimCols[0]);
+        chart.tooltip(true, {map: {title: dimCols[0]}});
+        chart.on("tooltipchange", (ev: any) => {
+          ev.items.splice(ev.items.length - 1);
+        });
+      }
+      // others
+      if (this.props.hasOwnProperty("select") && this.props.select) {
+        geom.selected(true, {
+          selectedMode: "single", // "multiple" || "single"
+          style: {fill: "#fe9929"}
+        });
+        if (dimCols[0] !== "tm") {
+          // plotclick=图表坐标系内的事件  itemselected=图形元素上的事件
+          const selectCols = (chartCfg.pos ? metricCols.slice(0, 2) : [dimCols[0]]) as string[];
+          chart.on("plotclick", (evt: any) => this.selectHandler(evt, selectCols));
+          chart.on("itemunselected", (evt: any) => this.unselectHandler(evt, selectCols));
+        }
+      }
+      chart.render();
+      this.chart = chart;
+      //
+      try {
+        const vds = window._vds;
+        vds.track("report_render_success", {
+          project_id: window.project.id,
+          chart_name: this.props.trackWords.name,
+          board_name: this.props.trackWords.board_name,
+          report_load_time: Date.now() - this.props.startTime,
+          channel_name: this.props.trackWords.channel_name
+        });
+      } catch(e) { return ;}
+    } catch(e) {
+      // render error
+      try {
+        const vds = window._vds;
+        vds.track("report_render_fail", {
+          project_id: window.project.id,
+          chart_name: this.props.trackWords.name,
+          board_name: this.props.trackWords.board_name,
+          report_load_time: Date.now() - this.props.startTime,
+          channel_name: this.props.trackWords.channel_name
+        });
+      } catch(e) { return ;}
     }
-    chart.render();
-    this.chart = chart;
   }
 
   private unselectHandler(ev: any, selectCols: string[]) {

@@ -16,9 +16,9 @@ const calculateWeight = (range: [number, number],  median: number) => (v: number
     return "";
   }
   if (v > median) {
-    return `rgba(255,211,99, ${(v - median) /  (range[1] - median)})`;
+    return `rgba(255,211,99, ${(v - median) * 0.5 /  (range[1] - median)})`;
   } else if (v < median) {
-    return `rgba(95,182,199, ${(v - median) / (range[0] - median)})`;
+    return `rgba(95,182,199, ${(v - median) * 0.5 / (range[0] - median)})`;
   }
 }
 // 根据metric取得背景色
@@ -83,74 +83,98 @@ class GrTable extends React.Component <ChartProps, any> {
     const chartParams = this.props.chartParams;
     let source = this.props.source;
     let cols: any[] = [];
-    if (!source || !chartParams) {
-      return null;
-    }
-    if (chartParams.groupCol) {
-      const dimNames: any[] = difference(map(filter(chartParams.columns, "isDim"), "id"), [chartParams.groupCol]);
-      const metrics: Metric[] = filter(chartParams.columns, { isDim: false});
-
-      const groupColValues: any[] = flatMap(unionBy(source, chartParams.groupCol), chartParams.groupCol);
-      // 按时间分组 TODO
-      const join = (row: any) => values(pick(row, dimNames)).join("");
-      const groupSource = values(groupBy(source, join));
-      source = map(groupSource, (n: any) => GrTable.groupFlatter(n, chartParams.groupCol, groupColValues, dimNames));
-      const frame = new G2.Frame(source);
-      // 分三段
-      cols = map(dimNames, (id: string) => ({
-        dataIndex: id,
-        key: id,
-        sorter: sorterDecorator(id),
-        title: find(chartParams.columns, { id }).name
-      }));
-      console.log(source);
-      const metricCols = groupColValues.map((name: string, i: number) => ({
-        title: name,
-        children: map(metrics, (m: Metric) => {
-          const id = `${chartParams.groupCol}_${i}_${m.id}`;
-          return {
-            className: "metric",
-            dataIndex: id,
-            key: id,
-            render: generateColRender(calculateWeight(G2.Frame.range(frame, id), G2.Frame.median(frame, id)), m),
-            sorter: sorterDecorator(id),
-            title: m.name,
-          };
-        })
-      }));
-      cols = cols.concat(metricCols);
-    } else {
-      const frame = new G2.Frame(source);
-      cols = chartParams.columns.map((m: Metric) => ({
-        className: m.isDim ? undefined : "metric",
-        dataIndex: m.id,
-        key: m.id,
-        render: (m.isDim ?
-          this.checkDate(m) :
-          generateColRender(calculateWeight(G2.Frame.range(frame, m.id), G2.Frame.median(frame, m.id)), m)
-        ),
-        sorter: sorterDecorator(m.id),
-        title: m.name,
-      }));
-    }
-    // hardcode
-    if (this.props.hasOwnProperty("extraColumns") && this.props.extraColumns) {
-      const extraColumns = this.props.extraColumns;
-      if (!find(cols, { dataIndex: extraColumns.dataIndex })) { // 防止冲突
-        if (!extraColumns.render) {
-          extraColumns.render = ((v: string) => v);
-        }
-        cols = cols.concat(extraColumns);
+    try {
+      if (!source || !chartParams) {
+        return null;
       }
+      if (chartParams.groupCol) {
+        const dimNames: any[] = difference(map(filter(chartParams.columns, "isDim"), "id"), [chartParams.groupCol]);
+        const metrics: Metric[] = filter(chartParams.columns, {isDim: false});
+
+        const groupColValues: any[] = flatMap(unionBy(source, chartParams.groupCol), chartParams.groupCol);
+        // 按时间分组 TODO
+        const join = (row: any) => values(pick(row, dimNames)).join("");
+        const groupSource = values(groupBy(source, join));
+        source = map(groupSource, (n: any) => GrTable.groupFlatter(n, chartParams.groupCol, groupColValues, dimNames));
+        const frame = new G2.Frame(source);
+        // 分三段
+        cols = map(dimNames, (id: string) => ({
+          dataIndex: id,
+          key: id,
+          sorter: sorterDecorator(id),
+          title: find(chartParams.columns, {id}).name
+        }));
+        const metricCols = groupColValues.map((name: string, i: number) => ({
+          title: name,
+          children: map(metrics, (m: Metric) => {
+            const id = `${chartParams.groupCol}_${i}_${m.id}`;
+            return {
+              className: "metric",
+              dataIndex: id,
+              key: id,
+              render: generateColRender(calculateWeight(G2.Frame.range(frame, id), G2.Frame.median(frame, id)), m),
+              sorter: sorterDecorator(id),
+              title: m.name,
+            };
+          })
+        }));
+        cols = cols.concat(metricCols);
+      } else {
+        const frame = new G2.Frame(source);
+        cols = chartParams.columns.map((m: Metric) => ({
+          className: m.isDim ? undefined : "metric",
+          dataIndex: m.id,
+          key: m.id,
+          render: (m.isDim ?
+              this.checkDate(m) :
+              generateColRender(calculateWeight(G2.Frame.range(frame, m.id), G2.Frame.median(frame, m.id)), m)
+          ),
+          sorter: sorterDecorator(m.id),
+          title: m.name,
+        }));
+      }
+      // hardcode
+      if (this.props.hasOwnProperty("extraColumns") && this.props.extraColumns) {
+        const extraColumns = this.props.extraColumns;
+        if (!find(cols, {dataIndex: extraColumns.dataIndex})) { // 防止冲突
+          if (!extraColumns.render) {
+            extraColumns.render = ((v: string) => v);
+          }
+          cols = cols.concat(extraColumns);
+        }
+      }
+      /*
+       if (this.context.selected) {
+       let selected = this.context.selected;
+       let cols = Object.keys(selected);
+       source = filter(source, (n: any) => every(cols,
+       (c: string) => (n[c] >= selected[c][0] && n[c] <= selected[c][1])
+       ));
+       }*/
+      // 这步就是成功
+      try {
+        const vds = window._vds;
+        vds.track("report_render_fail", {
+          project_id: window.project.id,
+          chart_name: this.props.trackWords.name,
+          board_name: this.props.trackWords.board_name,
+          report_load_time: Date.now() - this.props.startTime,
+          channel_name: this.props.trackWords.channel_name
+        });
+      } catch (e) { return ;}
+    } catch (e) {
+      try {
+        const vds = window._vds;
+        vds.track("report_render_fail", {
+          project_id: window.project.id,
+          chart_name: this.props.trackWords.name,
+          board_name: this.props.trackWords.board_name,
+          report_load_time: Date.now() - this.props.startTime,
+          channel_name: this.props.trackWords.channel_name
+        });
+      } catch (e) { return ;}
     }
-    /*
-    if (this.context.selected) {
-      let selected = this.context.selected;
-      let cols = Object.keys(selected);
-      source = filter(source, (n: any) => every(cols,
-        (c: string) => (n[c] >= selected[c][0] && n[c] <= selected[c][1])
-      ));
-    }*/
+
 
     // TODO: 增加selected处理
     return (

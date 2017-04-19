@@ -14,6 +14,8 @@ class ContextListener extends React.Component <SingleChartProps, any> {
     selectHandler: React.PropTypes.func,
     selected: React.PropTypes.any,
     source: React.PropTypes.any,
+    startTime: React.PropTypes.number,
+    trackWords: React.PropTypes.any
   };
 
   public render() {
@@ -28,6 +30,8 @@ class ContextListener extends React.Component <SingleChartProps, any> {
           selected={this.context.selected}
           extraColumns={this.props.extraColumns}
           sortHandler={this.props.sortHandler}
+          startTime={this.context.startTime}
+          trackWords={this.context.trackWords}
         />
       );
     } else if (!this.context.source || !this.context.source.length) {
@@ -58,6 +62,8 @@ class ContextListener extends React.Component <SingleChartProps, any> {
             source={this.context.source}
             select={this.props.select}
             selected={this.context.selected}
+            startTime={this.context.startTime}
+            trackWords={this.context.trackWords}
           />
         </div>);
     }else if (chartParams.chartType === "singleNumber") {
@@ -71,6 +77,8 @@ class ContextListener extends React.Component <SingleChartProps, any> {
             select={this.props.select}
             style={{height: "calc(100% - 40px)"}}
             selected={this.context.selected}
+            startTime={this.context.startTime}
+            trackWords={this.context.trackWords}
           />
         </div>);
     }
@@ -80,6 +88,8 @@ class ContextListener extends React.Component <SingleChartProps, any> {
         source={this.context.source}
         select={this.props.select}
         selected={this.context.selected}
+        startTime={this.context.startTime}
+        trackWords={this.context.trackWords}
       />
     );
   }

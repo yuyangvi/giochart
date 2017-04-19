@@ -5,7 +5,7 @@ import { assign, flatten, isEqual, map, zipObject, zipWith } from "lodash";
 import * as React from "react";
 import * as DataCache from "./DataCache";
 import {DataLoaderProps, DataRequestProps, Metric, ResponseParams, Source} from "./ChartProps";
-// declare function fetch(a: any, b?: any): any;
+
 declare const project: any;
 // 数据统计必备字段，中端需要以下字段提供数据
 export const HttpStatus = {
@@ -35,7 +35,9 @@ class DataSource extends React.Component <DataLoaderProps, any> {
     columns: React.PropTypes.array,
     selectHandler: React.PropTypes.func,
     selected: React.PropTypes.any,
-    source: React.PropTypes.any
+    source: React.PropTypes.any,
+    startTime: React.PropTypes.number,
+    trackWords: React.PropTypes.any
   };
   private tryTimes = 0;
   private startTime = 0;
@@ -90,7 +92,9 @@ class DataSource extends React.Component <DataLoaderProps, any> {
       aggregates: this.state.aggregates,
       columns: this.state.columns,
       selected: this.state.selected,
-      source: this.state.source
+      source: this.state.source,
+      startTime: this.startTime,
+      trackWords: this.trackWords
       /*,
        selectHandler: this.selectHandler.bind(this)
        */
@@ -147,7 +151,6 @@ class DataSource extends React.Component <DataLoaderProps, any> {
         this.setState({
           error: true
         });
-        console.log("report_load_fail");
 
         vds.track("report_load_fail", {
           project_id: window.project.id,
@@ -166,7 +169,8 @@ class DataSource extends React.Component <DataLoaderProps, any> {
     if (trackWords.length > 2) {
       this.trackWords = {
         channel_name: trackWords[1],
-        board_name: trackWords[2]
+        board_name: trackWords[2],
+        name: params.name
       };
     }
 
@@ -228,7 +232,6 @@ class DataSource extends React.Component <DataLoaderProps, any> {
 
     // 加载成功，打点
     if (!source || source.length === 0) {
-      console.log("report_no_data");
       try {
         const vds = window._vds;
         vds.track("report_no_data", {
@@ -238,9 +241,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
           report_load_time: Date.now() - this.startTime,
           channel_name: this.trackWords.channel_name
         });
-      } catch(e) {
-
-      }
+      } catch (e) { return; }
     }
 
     const state = {
