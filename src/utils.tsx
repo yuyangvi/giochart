@@ -18,6 +18,18 @@ export const formatNumber = (n: number): string => {
   }
   return parseFloat((n * Math.pow(0.1, 4 * suffixIndex)).toPrecision(3)) + suffixArray[suffixIndex];
 };
+export const formatPercent = (n: number): string => {
+  if (typeof n !== "number") {
+    return n;
+  }
+  if (!n) { // 如果n是0
+    return "0%";
+  }
+  if (n < 0.001) {
+    return "< 0.1%";
+  }
+  return `${parseFloat((100 * n).toPrecision(3))}%`;
+}
 // 计量时间区间
 export const calculateTimeRange = (timeRange: string) => {
   if (!timeRange) {

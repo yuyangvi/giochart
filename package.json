@@ -1,6 +1,6 @@
 {
   "name": "giochart",
-  "version": "1.0.17",
+  "version": "1.0.18",
   "description": "",
   "main": "dist/giochart.min.js",
   "scripts": {
@@ -15,7 +15,7 @@
     "transform": {
       ".(ts|tsx)": "<rootDir>/node_modules/ts-jest/preprocessor.js"
     },
-    "testResultsProcessor": "<rootDir>/node_modules/ts-jest/coverageprocessor.js",
+    "testResultsProcessor": "<rootDir>/node_module s/ts-jest/coverageprocessor.js",
     "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$",
     "moduleFileExtensions": [
       "ts",

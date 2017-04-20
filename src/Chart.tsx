@@ -9,7 +9,7 @@ import { find, filter, fromPairs, isEmpty, isEqual,
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import {ChartProps, DrawParamsProps, Granulariy, Metric, Source} from "./ChartProps";
-import { formatNumber } from "./utils";
+import { formatNumber, formatPercent } from "./utils";
 import * as moment from "moment";
 moment.locale("zh-cn");
 
@@ -37,12 +37,12 @@ const getChartConfig: any = (chartType: string) => {
   const defaultMetric = {
     combineMetrics: true,
     geom: "line",
-    margin: [10, 30, 55, 70]
+    margin: [10, 30, 55, 60]
   };
   // 将图表类型变成不同步骤的组合
   const chartTypeMap: any[string] = {
     area: { geom: "area" },
-    bar:    { combineMetrics: false, geom: "interval", label: true, margin: [20, 40, 10, 10], reflect: "y",
+    bar:    { combineMetrics: false, geom: "interval", label: true, margin: [40, 40, 10, 10], reflect: "y",
       transpose: true },
     bubble: { geom: "point", pos: "MM", combineMetrics: false, shape: "circle" },
     comparison: {geom: "area", pos: "MMD", combineMetrics: false, hideAxis: true, tooltipchange: "custom",
@@ -120,7 +120,7 @@ class Chart extends React.Component <ChartProps, any> {
         hollowPoint: {fill: "#5FB6C7" },
         interval: { fill: "#abce5b", fillOpacity: 1 },
         line: { stroke: "#5FB6C7" },
-        point: {fill: "#5FB6C7" }
+        point: {fill: "#5FB6C7", fillOpacity: .5 }
       },
       tooltip: {
         tooltipMarker: {
@@ -174,14 +174,14 @@ class Chart extends React.Component <ChartProps, any> {
           this.chart.destroy();
           ReactDOM.findDOMNode(this).innerHTML = "";
         }
-        this.drawChart(nextProps.chartParams, source);
+        this.drawChart(nextProps.chartParams, source, nextProps.isThumb);
       } else if (!isEqual(source, this.props.source)) {
         // this.changeData(source);
         if (this.chart) {
           this.chart.destroy();
           ReactDOM.findDOMNode(this).innerHTML = "";
         }
-        this.drawChart(nextProps.chartParams, source);
+        this.drawChart(nextProps.chartParams, source, nextProps.isThumb);
       }
     }
   }
@@ -202,11 +202,11 @@ class Chart extends React.Component <ChartProps, any> {
       }
       this.chart.changeData(frame);
     } else {
-      this.drawChart(this.props.chartParams, source);
+      this.drawChart(this.props.chartParams, source, this.props.isThumb);
     }
   }
   private componentDidMount() {
-    const { chartParams, source } = this.props;
+    const { chartParams, isThumb, source } = this.props;
     if (!this.isValidParams(chartParams, source)) {
       return;
     }
@@ -214,7 +214,7 @@ class Chart extends React.Component <ChartProps, any> {
       if (this.chart) {
         this.chart.destroy();
       }
-      this.drawChart(chartParams, source);
+      this.drawChart(chartParams, source, isThumb);
     }
   }
 
@@ -225,7 +225,7 @@ class Chart extends React.Component <ChartProps, any> {
     }
   }
 
-  private drawChart(chartParams: DrawParamsProps, source: any[]) {
+  private drawChart(chartParams: DrawParamsProps, source: any[], isThumb: boolean = false) {
     try {
       const dom = document.createElement("div");
       dom.style.height = "100%";
@@ -257,7 +257,7 @@ class Chart extends React.Component <ChartProps, any> {
           record[metricCols[1]] ? (record[metricCols[0]] / record[metricCols[1]] - 1) : 0
         ));
         sourceDef.rate = {
-          formatter: (n: number): string => `${parseFloat((100 * n).toPrecision(3))}%`
+          formatter: formatPercent
         };
 
         // 获取metricid, 计算最大值,统一两条线的区间范围
@@ -329,7 +329,7 @@ class Chart extends React.Component <ChartProps, any> {
       }
       if (chartParams.adjust === "percent") {
         sourceDef['..percent'] = {
-          formatter: (v: number) => `${parseFloat((100 * v).toPrecision(3))}%`
+          formatter: formatPercent
         };
       }
       if (chartParams.chartType === "bar") {
@@ -349,25 +349,29 @@ class Chart extends React.Component <ChartProps, any> {
         forceFit: true,
         height: canvasHeight || 300,
         plotCfg: {
-          margin: chartCfg.margin
+          margin: isThumb ? [0, 0, 0, 0] : chartCfg.margin
         }
       });
       chart.source(frame, sourceDef);
-      if (chartCfg.pos !== "MMD") {
-        metricCols.forEach((s: string) => {
-          if (s !== "val") {
-            chart.axis(s, {title: {fill: "#999", textAlign: "center"}});
-          }
-        });
+      if (!isThumb) { //如果是Thumb，禁止显示
+        if (chartCfg.pos !== "MMD") {
+          metricCols.forEach((s: string) => {
+            if (s !== "val") {
+              if (chartCfg.transpose) {
+                chart.axis(s, {title: {fill: "#999", textAlign: "right"}, titleOffset: 30});
+              } else {
+                chart.axis(s, {title: {fill: "#999", textAlign: "center"}});
+              }
+            }
+          });
+        }
       }
-
-      // geom
       if (chartCfg.axis !== undefined) {
         chart.axis(chartCfg.axis);
       }
       if (chartCfg.tooltip !== undefined) {
         chart.tooltip(chartCfg.tooltip);
-      } else if (["line", "area"].includes(chartCfg.geom)) {
+      } else if (["line", "area"].includes(chartCfg.geom) && !isThumb) {
         chart.tooltip({crosshairs: true});
       }
       if (chartCfg.transpose) {
@@ -434,14 +438,14 @@ class Chart extends React.Component <ChartProps, any> {
         chart.axis(metricCols[1], false);
       }
 
-      // 横向图
+      // 横向图需要设label
       if (chartCfg.label) {
         const sum = chartParams.aggregates[0];
         if (sum) {
           geom.label(metricCols[0], {
             custom: true, // 使用自定义文本
             renderer: function (text, item) {
-              return parseFloat((100 * item.point[metricCols[0]] / sum).toPrecision(3)) + '%';
+              return parseFloat((100 * item.point[metricCols[0]] / sum).toPrecision(3)) + "%";
             },
             offset: 5
           });
@@ -449,12 +453,12 @@ class Chart extends React.Component <ChartProps, any> {
       }
 
       // size
-      /*if (chartCfg.size) {
-       geom.size(chartCfg.size);
-       } else if (chartCfg.pos === "MM" && metricCols.length > 2) {
-       geom.size(metricCols[2], 30, 5);
-       chart.legend(false);
-       }*/
+      if (chartCfg.size) {
+        geom.size(chartCfg.size);
+      } else if (chartCfg.pos === "MM" && metricCols.length > 2) {
+        geom.size(metricCols[2], 30, 5);
+        chart.legend(false);
+      }
 
       if (chartCfg.shape) {
         geom.shape(chartCfg.shape);
@@ -487,28 +491,30 @@ class Chart extends React.Component <ChartProps, any> {
       }
 
       // 针对周期对比图的tooltip
-      if (chartParams.chartType === "funnel") { // hard code
-        geom.tooltip(metricCols + "*" + chartCfg.appendTip);
-      } else if (chartCfg.tooltipchange) {
-        // 前面把rate字段加上了
-        geom.tooltip("rate*" + metricCols[0]);
-        const isHour = chartParams.granularities[0].interval < 864e5;
-        chart.tooltip(true, {map: {title: "rate"}});
-        chart.on("tooltipchange", (ev: any) => {
-          ev.items[0] = ev.items[1];
-          ev.items[0].name = getTooltipName(ev.items[0], "tm", isHour);
-          if (ev.items.length > 2) {
-            ev.items[1] = ev.items[2];
-            ev.items[1].name = getTooltipName(ev.items[1], "tm_", isHour);
+      if (!isThumb) {
+        if (chartParams.chartType === "funnel") { // hard code
+          geom.tooltip(metricCols + "*" + chartCfg.appendTip);
+        } else if (chartCfg.tooltipchange) {
+          // 前面把rate字段加上了
+          geom.tooltip("rate*" + metricCols[0]);
+          const isHour = chartParams.granularities[0].interval < 864e5;
+          chart.tooltip(true, {map: {title: "rate"}});
+          chart.on("tooltipchange", (ev: any) => {
+            ev.items[0] = ev.items[1];
+            ev.items[0].name = getTooltipName(ev.items[0], "tm", isHour);
+            if (ev.items.length > 2) {
+              ev.items[1] = ev.items[2];
+              ev.items[1].name = getTooltipName(ev.items[1], "tm_", isHour);
+              ev.items.splice(ev.items.length - 1);
+            }
+          });
+        } else if (chartParams.chartType === "bubble") {
+          geom.tooltip(metricCols.join("*") + "*" + dimCols[0]);
+          chart.tooltip(true, {map: {title: dimCols[0]}});
+          chart.on("tooltipchange", (ev: any) => {
             ev.items.splice(ev.items.length - 1);
-          }
-        });
-      } else if (chartParams.chartType === "bubble") {
-        geom.tooltip(metricCols.join("*") + "*" + dimCols[0]);
-        chart.tooltip(true, {map: {title: dimCols[0]}});
-        chart.on("tooltipchange", (ev: any) => {
-          ev.items.splice(ev.items.length - 1);
-        });
+          });
+        }
       }
       // others
       if (this.props.hasOwnProperty("select") && this.props.select) {
@@ -522,6 +528,9 @@ class Chart extends React.Component <ChartProps, any> {
           chart.on("plotclick", (evt: any) => this.selectHandler(evt, selectCols));
           chart.on("itemunselected", (evt: any) => this.unselectHandler(evt, selectCols));
         }
+      }
+      if (isThumb) {
+        chart.legend(false);
       }
       chart.render();
       this.chart = chart;
@@ -587,7 +596,7 @@ class Chart extends React.Component <ChartProps, any> {
       };
       if (m.isRate) {
         sourceDef[m.id].min = 0;
-        sourceDef[m.id].formatter = (n: number): string => `${parseFloat((100 * n).toPrecision(3))}%`;
+        sourceDef[m.id].formatter = formatPercent;
       } else {
         sourceDef[m.id].formatter = formatNumber;
       }

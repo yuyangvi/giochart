@@ -25,10 +25,10 @@ class ContextListener extends React.Component <SingleChartProps, any> {
       return (
         <GrTable
           chartParams={chartParams}
+          extraColumns={this.props.extraColumns}
           source={this.context.source}
           select={this.props.select}
           selected={this.context.selected}
-          extraColumns={this.props.extraColumns}
           sortHandler={this.props.sortHandler}
           startTime={this.context.startTime}
           trackWords={this.context.trackWords}
@@ -53,9 +53,10 @@ class ContextListener extends React.Component <SingleChartProps, any> {
         </div>
       );
     } else if (withAggregate) {
+      const isRate = !!(this.context.columns && this.context.columns.length > 1 && this.context.columns[1].isRate);
       return (
         <div className={`gr-chart-wrapper ${chartParams.chartType}`}>
-          <Aggregate data={this.context.aggregates} period={this.props.range} />
+          <Aggregate data={this.context.aggregates} period={this.props.range} isRate={isRate} />
           <Chart
             chartParams={chartParams}
             colorTheme={this.props.colorTheme}
@@ -64,9 +65,10 @@ class ContextListener extends React.Component <SingleChartProps, any> {
             selected={this.context.selected}
             startTime={this.context.startTime}
             trackWords={this.context.trackWords}
+            isThumb={this.props.isThumb}
           />
         </div>);
-    }else if (chartParams.chartType === "singleNumber") {
+    } else if (chartParams.chartType === "singleNumber") {
       return (
         <div className="gr-chart-wrapper">
           <Aggregate data={this.context.aggregates} period={this.props.range} />
@@ -79,6 +81,7 @@ class ContextListener extends React.Component <SingleChartProps, any> {
             selected={this.context.selected}
             startTime={this.context.startTime}
             trackWords={this.context.trackWords}
+            isThumb={this.props.isThumb}
           />
         </div>);
     }
@@ -90,6 +93,7 @@ class ContextListener extends React.Component <SingleChartProps, any> {
         selected={this.context.selected}
         startTime={this.context.startTime}
         trackWords={this.context.trackWords}
+        isThumb={this.props.isThumb}
       />
     );
   }

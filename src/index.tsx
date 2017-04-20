@@ -18,6 +18,7 @@ interface GioProps {
   groupCol?: string;
   sourceUrl?: string;
   cacheOptions?: any;
+  isThumb: boolean;
 }
 const timeWeekRange = (timeRange: string) => {
   if (!timeRange) {
@@ -67,6 +68,7 @@ class ChartV4 extends React.Component <GioProps, any> {
         groupCol={props.groupCol}
         range={timeWeekRange(props.params.timeRange)}
         sortHandler={this.sortHandler.bind(this)}
+        isThumb={props.isThumb}
       />
     </DataSource>;
   }
@@ -184,6 +186,7 @@ const GioChart = (props: GioProps) => {
       groupCol={props.groupCol}
       {...convertV4}
       cacheOptions={props.cacheOptions}
+      isThumb={props.isThumb}
     />
   );
 };
