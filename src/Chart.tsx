@@ -439,7 +439,7 @@ class Chart extends React.Component <ChartProps, any> {
       }
 
       // 横向图需要设label
-      if (chartCfg.label) {
+      if (chartCfg.label && chartParams.aggregates) {
         const sum = chartParams.aggregates[0];
         if (sum) {
           geom.label(metricCols[0], {
@@ -592,12 +592,13 @@ class Chart extends React.Component <ChartProps, any> {
     chartParams.columns.forEach((m: Metric) => {
       sourceDef[m.id] = {
         alias: m.name,
-        type: (m.isDim) ? "cat" : "linear"
+        type: (m.isDim) ? "cat" : "linear",
       };
       if (m.isRate) {
         sourceDef[m.id].min = 0;
         sourceDef[m.id].formatter = formatPercent;
-      } else {
+      } else if (!m.isDim) {
+        sourceDef[m.id].min = 0;
         sourceDef[m.id].formatter = formatNumber;
       }
     });

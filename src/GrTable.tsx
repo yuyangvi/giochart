@@ -52,7 +52,7 @@ class GrTable extends React.Component <ChartProps, any> {
   private static getRowKey(r: any, i: number) {
     return `${i}`;
   }
-  private lastSorter: null;
+  private lastSorter = {};
   private checkDate(m: Metric) {
     if (m.id === "tm") {
       const gra = find(this.props.chartParams.granularities, {id: "tm"});
@@ -161,7 +161,7 @@ class GrTable extends React.Component <ChartProps, any> {
           report_load_time: Date.now() - this.props.startTime,
           channel_name: this.props.trackWords.channel_name
         });
-      } catch (e) { }
+      } catch (e) { void(0); }
     } catch (e) {
       try {
         const vds = window._vds;
@@ -172,7 +172,7 @@ class GrTable extends React.Component <ChartProps, any> {
           report_load_time: Date.now() - this.props.startTime,
           channel_name: this.props.trackWords.channel_name
         });
-      } catch (e) { }
+      } catch (e) { void(0); }
     }
 
     // TODO: 增加selected处理
@@ -190,6 +190,7 @@ class GrTable extends React.Component <ChartProps, any> {
   }
   private onChange(pagination: any, filters: any, sorter: any) {
     if (!isEqual(this.lastSorter, sorter)) {
+      console.log(this.lastSorter, sorter);
       this.props.sortHandler(sorter);
       this.lastSorter = sorter;
     }

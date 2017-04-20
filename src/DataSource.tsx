@@ -103,7 +103,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
   }
   private componentWillReceiveProps(nextProps: DataLoaderProps) {
     // TODO status改变也会触发，所以多了一层判断
-    if (JSON.stringify(this.props.params) !== JSON.stringify(nextProps.params)) {
+    if (!isEqual(this.props.params, nextProps.params)) {
       if (nextProps.hasOwnProperty("cacheOptions")) {
         const chartDataInCache = DataCache.getChartData(nextProps.params, nextProps.hashKeys);
         if (chartDataInCache) {
@@ -112,6 +112,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
         }
       }
       this.startTime = Date.now();
+      this.setState({ loading: true });
       this.defaultRequest(nextProps.params, this.afterFetch.bind(this));
     }
   }
@@ -126,7 +127,6 @@ class DataSource extends React.Component <DataLoaderProps, any> {
    return result;
   } */
   private defaultRequest(chartParams: DataRequestProps, callback: any) {
-    const vds = window._vds;
 
     let fetchObj;
     // Todo 检查是否是DEV环境
@@ -153,7 +153,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
           error: true,
           loading: false
         });
-
+        const vds = window._vds;
         vds.track("report_load_fail", {
           project_id: window.project.id,
           chart_name: chartParams.name,
@@ -190,16 +190,15 @@ class DataSource extends React.Component <DataLoaderProps, any> {
   private afterFetch(chartData: ResponseParams) {
     let columns = chartData.meta.columns;
     chartData.meta.columns.forEach((n: any) => {
-      if (!n.isDim) {
+      if (!n.isDim && n.metricId && n.metricId.action) {
         n.id += (n.metricId.action || "");
       }
     });
-    // console.log(chartData.meta.columns);
+
     let colIds = map(chartData.meta.columns, "id");
     const offset = chartData.meta.offset;
     // any是因为下面的zipWith返回的schema有bug
     let sourceData: any = chartData.data;
-
     // 为了支持周期对比图，这里需要meta的offset 转化
     if (chartData.meta.offset !== undefined) {
       // 寻找粒度
@@ -222,7 +221,6 @@ class DataSource extends React.Component <DataLoaderProps, any> {
       ));
     }
     let source: Source = map(sourceData, (n: number[]) => zipObject(colIds, n));
-
     // 强行添加转化率
     if (this.props.params.attrs && this.props.params.attrs.isAddFakeMetric) {
       const lastCol = columns[columns.length - 1];
@@ -249,11 +247,10 @@ class DataSource extends React.Component <DataLoaderProps, any> {
           report_load_time: Date.now() - this.startTime,
           channel_name: this.trackWords.channel_name
         });
-      } catch (e) { }
+      } catch (e) { void(0); }
     }
-
     const state = {
-      aggregates: chartData.meta.aggregates,
+      aggregates: chartData.meta.aggregates || null ,
       columns,
       error: false,
       loading: false,
