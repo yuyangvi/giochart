@@ -1,6 +1,7 @@
 // 拉取数据的请求配置
 export interface DataRequestProps {
-  id?: string;
+  id?: string; // 打点必备
+  name?: string; // 打点必备
   type?: string; // Enum: funnel, retention
   metrics: Metric[]; // 指标
   dimensions: string[]; // 维度
@@ -87,6 +88,9 @@ export interface ChartProps {
   selected?: any;
   extraColumns?: any;
   style?: any;
+  startTime?: number;
+  trackWords?: any;
+  isThumb?: boolean;
 }
 // 字段是从数据源取得的Chart的格式
 export interface SingleChartProps {
@@ -99,4 +103,20 @@ export interface SingleChartProps {
   select?: (evt: any, unselect: any) => any;
   groupCol?: string;
   range?: boolean;
+  sortHandler?: (evt: any) => any;
+  isThumb?: boolean;
+}
+
+interface LinearScale {
+  nice?: boolean; // 默认为 true，用于优化数值范围，使绘制的坐标轴刻度线均匀分布。例如原始数据的范围为 [3, 97]，如果 nice 为 true，那么就会将数值范围调整为 [0, 100]
+  min?: number; // 定义数值范围的最小值
+  max?: number; // 定义数值范围的最大值
+  tickCount?: number; // 定义坐标轴刻度线的条数，默认为 5
+  tickInterval?: number; // 用于指定坐标轴各个刻度点的间距，为原始数据值的差值，tickCount 和 tickInterval 不可以同时声明
+}
+interface TimeScale {
+  mask: string;
+}
+interface CatScale {
+  values: string[];
 }
