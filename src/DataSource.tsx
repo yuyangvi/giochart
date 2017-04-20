@@ -52,6 +52,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
       aggregates: null,
       columns: null,
       error: false,
+      loading: true,
       selected: null,
       source: null
     };
@@ -77,7 +78,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
           <div style={wordStyle}>加载失败</div>
         </div>
       );
-    } else if (!this.state.source) {
+    } else if (this.state.loading) {
       return (
         <div className="gr-loading-mask">
           <div className="loading-gif" />
@@ -149,7 +150,8 @@ class DataSource extends React.Component <DataLoaderProps, any> {
         setTimeout(this.defaultRequest.bind(this, chartParams, callback), 200);
       } else {
         this.setState({
-          error: true
+          error: true,
+          loading: false
         });
 
         vds.track("report_load_fail", {
@@ -187,6 +189,12 @@ class DataSource extends React.Component <DataLoaderProps, any> {
 
   private afterFetch(chartData: ResponseParams) {
     let columns = chartData.meta.columns;
+    chartData.meta.columns.forEach((n: any) => {
+      if (!n.isDim) {
+        n.id += (n.metricId.action || "");
+      }
+    });
+    // console.log(chartData.meta.columns);
     let colIds = map(chartData.meta.columns, "id");
     const offset = chartData.meta.offset;
     // any是因为下面的zipWith返回的schema有bug
@@ -241,19 +249,19 @@ class DataSource extends React.Component <DataLoaderProps, any> {
           report_load_time: Date.now() - this.startTime,
           channel_name: this.trackWords.channel_name
         });
-      } catch (e) { return; }
+      } catch (e) { }
     }
 
     const state = {
       aggregates: chartData.meta.aggregates,
       columns,
       error: false,
+      loading: false,
       source
     };
     if (this.props.hasOwnProperty("cacheOptions")) {
       DataCache.setChartData(this.props.params, state, this.props.hashKeys, this.props.cacheOptions);
     }
-
     this.setState(state);
     if (this.props.onLoad) {
       this.props.onLoad(this.state);

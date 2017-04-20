@@ -161,7 +161,7 @@ class GrTable extends React.Component <ChartProps, any> {
           report_load_time: Date.now() - this.props.startTime,
           channel_name: this.props.trackWords.channel_name
         });
-      } catch (e) { return ;}
+      } catch (e) { }
     } catch (e) {
       try {
         const vds = window._vds;
@@ -172,9 +172,8 @@ class GrTable extends React.Component <ChartProps, any> {
           report_load_time: Date.now() - this.props.startTime,
           channel_name: this.props.trackWords.channel_name
         });
-      } catch (e) { return ;}
+      } catch (e) { }
     }
-
 
     // TODO: 增加selected处理
     return (
