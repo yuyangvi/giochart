@@ -25,8 +25,10 @@ export const formatPercent = (n: number): string => {
   if (!n) { // 如果n是0
     return "0%";
   }
-  if (n < 0.001) {
+  if (0 < n && n < 0.001) {
     return "< 0.1%";
+  } else if (0 > n && n > 0.001){
+    return "> -0.1%";
   }
   return `${parseFloat((100 * n).toPrecision(3))}%`;
 }
