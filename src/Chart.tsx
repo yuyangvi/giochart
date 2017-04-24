@@ -112,7 +112,7 @@ class Chart extends React.Component <ChartProps, any> {
       defaultColor,
       legend: {
         bottom: {
-          dy: 20
+          dy: 15
         }
       },
       shape: {
@@ -321,11 +321,11 @@ class Chart extends React.Component <ChartProps, any> {
       // 补丁: tm的值不仅跟interval有关，也跟timeRange有关，但是取不到timeRange,就以source为准
       if (sourceDef.tm) {
         const range = G2.Frame.range(frame, "tm");
-        if (range.length > 1) {
+        /* if (range.length > 1) {
           sourceDef.tm.mask = (range[1] - range[0] >= 864e5) ? "mm-dd" : "HH:MM";
-        }
+        } */
         const tmLength = G2.Frame.group(frame, ["tm"]).length;
-        sourceDef.tm.tickCount = countTick(parseInt(canvasRect.width / 80), tmLength - 1);
+        sourceDef.tm.tickCount = countTick(parseInt((canvasRect.width - 90) / 80), tmLength - 1);
       }
       if (chartParams.adjust === "percent") {
         sourceDef['..percent'] = {
@@ -352,8 +352,9 @@ class Chart extends React.Component <ChartProps, any> {
           margin: isThumb ? [0, 0, 0, 0] : chartCfg.margin
         }
       });
+
       chart.source(frame, sourceDef);
-      if (!isThumb) { //如果是Thumb，禁止显示
+      if (!isThumb) { // 如果是Thumb，禁止显示
         if (chartCfg.pos !== "MMD") {
           metricCols.forEach((s: string) => {
             if (s !== "val") {
@@ -642,6 +643,6 @@ class Chart extends React.Component <ChartProps, any> {
 
 const getTooltipName = (item: any, key: string, isHour: boolean) => {
   const point: any = item.point._origin[key];
-  return moment.unix(point / 1000).format("YYYY-MM-DD ddd" + (isHour ? " hh:mm" : ""));
+  return moment.unix(point / 1000).format("YYYY-MM-DD ddd" + (isHour ? " HH:mm" : ""));
 }
 export default Chart;
