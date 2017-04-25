@@ -1,7 +1,7 @@
 /***
  * 文档
  */
-import { assign, flatten, isEqual, map, zipObject, zipWith } from "lodash";
+import { assign, flatten, isEqual, map, uniqBy, zipObject, zipWith } from "lodash";
 import * as React from "react";
 import * as DataCache from "./DataCache";
 import {DataLoaderProps, DataRequestProps, Metric, ResponseParams, Source} from "./ChartProps";
@@ -189,13 +189,17 @@ class DataSource extends React.Component <DataLoaderProps, any> {
 
   private afterFetch(chartData: ResponseParams) {
     let columns = chartData.meta.columns;
-    chartData.meta.columns.forEach((n: any) => {
+    columns.forEach((n: any) => {
       if (!n.isDim && n.metricId && n.metricId.action) {
         n.id += (n.metricId.action || "");
       }
     });
+    // 清洗columns
+    console.log(columns);
+    columns = uniqBy(columns, "id");
+    console.log(columns);
 
-    let colIds = map(chartData.meta.columns, "id");
+    let colIds = map(columns, "id");
     const offset = chartData.meta.offset;
     // any是因为下面的zipWith返回的schema有bug
     let sourceData: any = chartData.data;
