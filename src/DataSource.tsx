@@ -195,9 +195,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
       }
     });
     // 清洗columns
-    console.log(columns);
     columns = uniqBy(columns, "id");
-    console.log(columns);
 
     let colIds = map(columns, "id");
     const offset = chartData.meta.offset;

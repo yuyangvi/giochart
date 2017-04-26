@@ -535,7 +535,15 @@ class Chart extends React.Component <ChartProps, any> {
       }
       chart.render();
       this.chart = chart;
-      //
+      console.log("report_render_success", {
+        project_id: window.project.id,
+        chart_name: this.props.trackWords.name,
+        board_name: this.props.trackWords.board_name,
+        report_load_time: Date.now() - this.props.startTime,
+        channel_name: this.props.trackWords.channel_name
+      });
+
+
       try {
         const vds = window._vds;
         vds.track("report_render_success", {
@@ -545,8 +553,9 @@ class Chart extends React.Component <ChartProps, any> {
           report_load_time: Date.now() - this.props.startTime,
           channel_name: this.props.trackWords.channel_name
         });
-      } catch(e) { return ;}
-    } catch(e) {
+      } catch (e) { return ;}
+
+    } catch (e) {
       // render error
       try {
         const vds = window._vds;
@@ -557,7 +566,7 @@ class Chart extends React.Component <ChartProps, any> {
           report_load_time: Date.now() - this.props.startTime,
           channel_name: this.props.trackWords.channel_name
         });
-      } catch(e) { return ;}
+      } catch (e) { return ; }
     }
   }
 

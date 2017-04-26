@@ -154,14 +154,14 @@ class GrTable extends React.Component <ChartProps, any> {
       // 这步就是成功
       try {
         const vds = window._vds;
-        vds.track("report_render_fail", {
+        vds.track("report_render_success", {
           project_id: window.project.id,
           chart_name: this.props.trackWords.name,
           board_name: this.props.trackWords.board_name,
           report_load_time: Date.now() - this.props.startTime,
           channel_name: this.props.trackWords.channel_name
         });
-      } catch (e) { void(0); }
+      } catch (e) { return; }
     } catch (e) {
       try {
         const vds = window._vds;
@@ -172,7 +172,7 @@ class GrTable extends React.Component <ChartProps, any> {
           report_load_time: Date.now() - this.props.startTime,
           channel_name: this.props.trackWords.channel_name
         });
-      } catch (e) { void(0); }
+      } catch (e) { return; }
     }
 
     // TODO: 增加selected处理
@@ -190,7 +190,6 @@ class GrTable extends React.Component <ChartProps, any> {
   }
   private onChange(pagination: any, filters: any, sorter: any) {
     if (!isEqual(this.lastSorter, sorter)) {
-      console.log(this.lastSorter, sorter);
       this.props.sortHandler(sorter);
       this.lastSorter = sorter;
     }
