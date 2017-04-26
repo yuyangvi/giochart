@@ -169,13 +169,13 @@ class Chart extends React.Component <ChartProps, any> {
       );
       this.changeData(filterSource || source);
     } else { // 不需要筛选数据，或者取消筛选
-      if (!isEqual(this.props.chartParams, nextProps.chartParams)) { // 配置修改了，重新绘制
+      if (JSON.stringify(this.props.chartParams) !== JSON.stringify(nextProps.chartParams)) { // 配置修改了，重新绘制
         if (this.chart) {
           this.chart.destroy();
           ReactDOM.findDOMNode(this).innerHTML = "";
         }
         this.drawChart(nextProps.chartParams, source, nextProps.isThumb);
-      } else if (!isEqual(source, this.props.source)) {
+      } else if (JSON.stringify(source) !== JSON.stringify(this.props.source)) {
         // this.changeData(source);
         if (this.chart) {
           this.chart.destroy();
@@ -535,15 +535,6 @@ class Chart extends React.Component <ChartProps, any> {
       }
       chart.render();
       this.chart = chart;
-      console.log("report_render_success", {
-        project_id: window.project.id,
-        chart_name: this.props.trackWords.name,
-        board_name: this.props.trackWords.board_name,
-        report_load_time: Date.now() - this.props.startTime,
-        channel_name: this.props.trackWords.channel_name
-      });
-
-
       try {
         const vds = window._vds;
         vds.track("report_render_success", {
