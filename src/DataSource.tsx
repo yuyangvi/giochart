@@ -107,12 +107,14 @@ class DataSource extends React.Component <DataLoaderProps, any> {
       if (nextProps.hasOwnProperty("cacheOptions")) {
         const chartDataInCache = DataCache.getChartData(nextProps.params, nextProps.hashKeys);
         if (chartDataInCache) {
-          this.setState(chartDataInCache);
+          // chartDataCache有诡异的问题，cache会错乱，setTimeout可以解决，诡异
+          setTimeout(() => this.setState(chartDataInCache), 10);
           return;
         }
       }
       this.startTime = Date.now();
       this.setState({ loading: true });
+
       this.defaultRequest(nextProps.params, this.afterFetch.bind(this));
     }
   }
@@ -127,7 +129,6 @@ class DataSource extends React.Component <DataLoaderProps, any> {
    return result;
   } */
   private defaultRequest(chartParams: DataRequestProps, callback: any) {
-
     let fetchObj;
     // Todo 检查是否是DEV环境
     if (this.props.hasOwnProperty("sourceUrl")) {
@@ -184,10 +185,12 @@ class DataSource extends React.Component <DataLoaderProps, any> {
       }
     }
     this.startTime = Date.now();
-    this.defaultRequest(params, this.afterFetch.bind(this));
+    this.defaultRequest(params, (chartData: ResponseParams) => {
+      this.afterFetch(chartData, params);
+    });
   }
 
-  private afterFetch(chartData: ResponseParams) {
+  private afterFetch(chartData: ResponseParams, params: DataRequestProps) {
     let columns = chartData.meta.columns;
     columns.forEach((n: any) => {
       if (!n.isDim && n.metricId && n.metricId.action) {
@@ -259,7 +262,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
       source
     };
     if (this.props.hasOwnProperty("cacheOptions")) {
-      DataCache.setChartData(this.props.params, state, this.props.hashKeys, this.props.cacheOptions);
+      DataCache.setChartData(params, state, this.props.hashKeys, this.props.cacheOptions);
     }
     this.setState(state);
     if (this.props.onLoad) {

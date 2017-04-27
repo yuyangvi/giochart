@@ -42,12 +42,11 @@ export function cleanCache(cacheKey: string) {
  * return
  */
 export function setChartData(params: DataRequestProps, chartData: any, hashKeys: string, cacheOptions: any) {
-  let cacheKey = "";
+  // 设置缓存key
+  const cacheKey = _generateCacheKey(params, hashKeys);
   let ttl = -1;
   const cacheObj: any = {};
 
-  // 设置缓存key
-  cacheKey = _generateCacheKey(params, hashKeys);
   // 加上过期时间戳
   if (cacheOptions
     && !isNaN(cacheOptions.ttl)
