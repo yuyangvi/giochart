@@ -152,41 +152,42 @@ class GrTable extends React.Component <ChartProps, any> {
        ));
        }*/
       // 这步就是成功
-      try {
-        const vds = window._vds;
-        vds.track("report_render_success", {
-          project_id: window.project.id,
-          chart_name: this.props.trackWords.name,
-          board_name: this.props.trackWords.board_name,
-          report_load_time: Date.now() - this.props.startTime,
-          channel_name: this.props.trackWords.channel_name
-        });
-      } catch (e) { return; }
+      return (
+        <Table
+          bordered
+          columns={cols}
+          dataSource={source}
+          emptyText={ () => "" }
+          pagination={source.length > 10 ? { current: 1, pageSize: 10 } : false}
+          rowKey={GrTable.getRowKey}
+          onChange={this.onChange.bind(this)}
+          ref={this.onLoad.bind(this)}
+        />
+      );
     } catch (e) {
-      try {
-        const vds = window._vds;
-        vds.track("report_render_fail", {
-          project_id: window.project.id,
-          chart_name: this.props.trackWords.name,
-          board_name: this.props.trackWords.board_name,
-          report_load_time: Date.now() - this.props.startTime,
-          channel_name: this.props.trackWords.channel_name
-        });
-      } catch (e) { return; }
+      this.track("report_render_fail");
+      return null;
     }
 
     // TODO: 增加selected处理
-    return (
-      <Table
-        bordered
-        columns={cols}
-        dataSource={source}
-        emptyText={ () => "" }
-        pagination={source.length > 10 ? { current: 1, pageSize: 10 } : false}
-        rowKey={GrTable.getRowKey}
-        onChange={this.onChange.bind(this)}
-      />
-    );
+  }
+  private onLoad(e: any) {
+    if (e) {
+      this.track("report_render_success");
+    }
+  }
+  private track(trackKey: string) {
+    try {
+      const vds = window._vds;
+      vds.track(trackKey, {
+        project_id: window.project.id,
+        chart_name: this.props.trackWords.name,
+        board_name: this.props.trackWords.board_name,
+        report_load_time: Date.now() - this.props.startTime,
+        channel_name: this.props.trackWords.channel_name
+      });
+    } catch (e) { return; }
+
   }
   private onChange(pagination: any, filters: any, sorter: any) {
     if (!isEqual(this.lastSorter, sorter)) {

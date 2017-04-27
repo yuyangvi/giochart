@@ -191,7 +191,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
     let columns = chartData.meta.columns;
     columns.forEach((n: any) => {
       if (!n.isDim && n.metricId && n.metricId.action) {
-        n.id += (n.metricId.action || "");
+        n.id += ("_" + n.metricId.action || "");
       }
     });
     // 清洗columns
