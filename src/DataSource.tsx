@@ -162,7 +162,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
           channel_name: this.trackWords.channel_name
         });
       }
-    }).then((data: ResponseParams) => callback(data)).catch((e: any) => void(0));
+    }).then((data: ResponseParams) => callback(data, chartParams)).catch((e: any) => void(0));
   }
 
   private componentWillMount() {
@@ -187,7 +187,11 @@ class DataSource extends React.Component <DataLoaderProps, any> {
     this.defaultRequest(params, this.afterFetch.bind(this));
   }
 
-  private afterFetch(chartData: ResponseParams) {
+  private afterFetch(chartData: ResponseParams, params: DataRequestProps) {
+    if (!isEqual(params, this.props.params)) {
+      // 说明这个请求已经废弃了
+      return;
+    }
     let columns = chartData.meta.columns;
     columns.forEach((n: any) => {
       if (!n.isDim && n.metricId && n.metricId.action) {
@@ -224,7 +228,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
     }
     let source: Source = map(sourceData, (n: number[]) => zipObject(colIds, n));
     // 强行添加转化率
-    if (this.props.params.attrs && this.props.params.attrs.isAddFakeMetric) {
+    if (params.attrs && params.attrs.isAddFakeMetric) {
       const lastCol = columns[columns.length - 1];
       lastCol.name += "转化率";
       lastCol.isRate = true;
@@ -244,7 +248,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
         const vds = window._vds;
         vds.track("report_no_data", {
           project_id: window.project.id,
-          chart_name: this.props.params.name,
+          chart_name: params.name,
           board_name: this.trackWords.board_name,
           report_load_time: Date.now() - this.startTime,
           channel_name: this.trackWords.channel_name
@@ -259,7 +263,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
       source
     };
     if (this.props.hasOwnProperty("cacheOptions")) {
-      DataCache.setChartData(this.props.params, state, this.props.hashKeys, this.props.cacheOptions);
+      DataCache.setChartData(params, state, this.props.hashKeys, this.props.cacheOptions);
     }
     this.setState(state);
     if (this.props.onLoad) {
