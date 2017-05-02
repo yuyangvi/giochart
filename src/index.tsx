@@ -52,11 +52,15 @@ class ChartV4 extends React.Component <GioProps, any> {
     }
     if (this.state.field) {
       const m = find(params.metrics, { id: this.state.field });
-      params.orders = [{
-        id: this.state.field,
-        isDim: !m,
-        orderType: this.state.order === "descend" ? "desc" : "asc"
-      }];
+      if (this.state.field) {
+        const [id, action] = this.state.field.split("_");
+        params.orders = [{
+          action,
+          id,
+          isDim: !m,
+          orderType: this.state.order === "descend" ? "desc" : "asc"
+        }];
+      }
     }
     return <DataSource params={params} cacheOptions={props.cacheOptions}>
       <ContextListener
@@ -138,6 +142,9 @@ const convertChartParams = (v3Params: any): GioProps => {
     userTag: v3Params.userTag // 用户分群ID
   };
   let chartType: string = v3Params.chartType;
+  if (chartType !== "table" && params.attrs.rateChange) {
+    params.attrs.rateChange = undefined;
+  }
   if (chartType === "line" && v3Params.metrics.length < 2) {
     chartType = "area";
   }

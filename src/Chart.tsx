@@ -538,9 +538,11 @@ class Chart extends React.Component <ChartProps, any> {
       try {
         const vds = window._vds;
         vds.track("report_render_success", {
-          project_id: window.project.id,
+          project_id: window.accountId,
+          project_name: window.project.name,
           chart_name: this.props.trackWords.name,
           board_name: this.props.trackWords.board_name,
+          chart_type: chartParams.chartType,
           report_load_time: Date.now() - this.props.startTime,
           channel_name: this.props.trackWords.channel_name
         });
@@ -551,9 +553,11 @@ class Chart extends React.Component <ChartProps, any> {
       try {
         const vds = window._vds;
         vds.track("report_render_fail", {
-          project_id: window.project.id,
+          project_id: window.accountId,
+          project_name: window.project.name,
           chart_name: this.props.trackWords.name,
           board_name: this.props.trackWords.board_name,
+          chart_type: chartParams.chartType
           report_load_time: Date.now() - this.props.startTime,
           channel_name: this.props.trackWords.channel_name
         });

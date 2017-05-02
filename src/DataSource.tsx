@@ -126,6 +126,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
    }
    return result;
   } */
+  /*
   private defaultRequest(chartParams: DataRequestProps, callback: any) {
 
     let fetchObj;
@@ -136,7 +137,6 @@ class DataSource extends React.Component <DataLoaderProps, any> {
       fetchObj = fetch(`/v4/projects/${project.id}/chartdata`, {
         body: JSON.stringify(chartParams),
         credentials: "same-origin",
-        /*contentType: "application/json",*/
         method: "post",
       });
     }
@@ -155,14 +155,58 @@ class DataSource extends React.Component <DataLoaderProps, any> {
         });
         const vds = window._vds;
         vds.track("report_load_fail", {
-          project_id: window.project.id,
+          project_id: window.accountId,
+          project_name: window.project.name,
           chart_name: chartParams.name,
           board_name: this.trackWords.board_name,
           report_load_time: Date.now() - this.startTime,
-          channel_name: this.trackWords.channel_name
+          channel_name: this.trackWords.channel_name,
+          params: JSON.stringify(chartParams)
         });
       }
     }).then((data: ResponseParams) => callback(data, chartParams)).catch((e: any) => void(0));
+  }
+  */
+  private defaultRequest(chartParams: DataRequestProps, callback: any) {
+    if (this.xhr) {
+      xhr.abort();
+    }
+    const xhr = new XMLHttpRequest();
+    // Todo 检查是否是DEV环境
+    if (this.props.hasOwnProperty("sourceUrl")) {
+      xhr.open("get", this.props.sourceUrl, true);
+      xhr.send(null);
+    } else {
+      xhr.open("post", `${window.gateway}/_private/v4/projects/${project.id}/chartdata`, true);
+      xhr.withCredentials = true;
+      xhr.setRequestHeader("credentials", "include");
+      xhr.setRequestHeader("accept", "application/json");
+      xhr.setRequestHeader("Content-Type", "application/json");
+      xhr.send(JSON.stringify(chartParams));
+    }
+    xhr.onreadystatechange = () => {
+      if (xhr.readyState === 4) {
+        if (xhr.status === HttpStatus.Ok) {
+          const data = JSON.parse(xhr.responseText);
+          callback(data, chartParams);
+        } else if (xhr.status === HttpStatus.RequestTimeout && this.tryTimes < 2) {
+          this.tryTimes++;
+          setTimeout(this.defaultRequest.bind(this, chartParams, callback), 200);
+        } else {
+          this.setState({ error: true, loading: false });
+          const vds = window._vds;
+          vds.track("report_load_fail", {
+            project_id: window.accountId,
+            project_name: window.project.name,
+            chart_name: chartParams.name,
+            board_name: this.trackWords.board_name,
+            report_load_time: Date.now() - this.startTime,
+            channel_name: this.trackWords.channel_name,
+            params: JSON.stringify(chartParams)
+          });
+        }
+      }
+    };
   }
 
   private componentWillMount() {
@@ -188,6 +232,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
   }
 
   private afterFetch(chartData: ResponseParams, params: DataRequestProps) {
+    this.xhr = null;
     if (!isEqual(params, this.props.params)) {
       // 说明这个请求已经废弃了
       return;
@@ -247,11 +292,13 @@ class DataSource extends React.Component <DataLoaderProps, any> {
       try {
         const vds = window._vds;
         vds.track("report_no_data", {
-          project_id: window.project.id,
+          project_id: window.accountId,
+          project_name: window.project.name,
           chart_name: params.name,
           board_name: this.trackWords.board_name,
           report_load_time: Date.now() - this.startTime,
-          channel_name: this.trackWords.channel_name
+          channel_name: this.trackWords.channel_name,
+          params: JSON.stringify(params)
         });
       } catch (e) { void(0); }
     }
