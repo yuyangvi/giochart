@@ -25,7 +25,7 @@ const AggregatePercent = (props: any) => (
       <span>{formatPercent(Math.abs(props.percent)).slice(0, -1)}</span>
       <span style={{ fontSize: 12 }}>%</span>
     </div>
-    <span className="gr-chart-trend-desc">{props.period ? "在最近7天" : "相比上周期"}</span>
+    <span className="gr-chart-trend-desc">{props.period ? "相比上周期" : "相比7天前"}</span>
   </div>
 );
 
