@@ -129,6 +129,7 @@ class Chart extends React.Component <ChartProps, any> {
       }
     });
     // G2.track(false);
+    G2.Global.animate = navigator.hardwareConcurrency && navigator.hardwareConcurrency > 7;
     G2.Global.setTheme(theme);
   }
   public render() {
