@@ -121,13 +121,13 @@ class GrTable extends React.Component <ChartProps, any> {
         cols = cols.concat(metricCols);
       } else {
         const frame = new G2.Frame(source);
-        cols = chartParams.columns.map((m: Metric) => ({
+        cols = chartParams.columns.map((m: Metric, i: number) => ({
           className: m.isDim ? undefined : "metric",
           dataIndex: m.id,
-          key: m.id,
+          key: `${m.id}_${i}`,
           render: (m.isDim ?
-              this.checkDate(m) :
-              generateColRender(calculateWeight(G2.Frame.range(frame, m.id), G2.Frame.median(frame, m.id)), m)
+            this.checkDate(m) :
+            generateColRender(calculateWeight(G2.Frame.range(frame, m.id), G2.Frame.median(frame, m.id)), m)
           ),
           sorter: sorterDecorator(m.id),
           title: m.name,

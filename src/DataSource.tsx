@@ -169,7 +169,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
   */
   private defaultRequest(chartParams: DataRequestProps, callback: any) {
     if (this.xhr) {
-      xhr.abort();
+      this.xhr.abort();
     }
     const xhr = new XMLHttpRequest();
     // Todo 检查是否是DEV环境
@@ -230,6 +230,11 @@ class DataSource extends React.Component <DataLoaderProps, any> {
     this.startTime = Date.now();
     this.defaultRequest(params, this.afterFetch.bind(this));
   }
+  private componentWillUnmount() {
+    if (this.xhr) {
+      this.xhr.abort();
+    }
+  }
 
   private afterFetch(chartData: ResponseParams, params: DataRequestProps) {
     this.xhr = null;
@@ -244,7 +249,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
       }
     });
     // 清洗columns
-    columns = uniqBy(columns, "id");
+    // columns = uniqBy(columns, "id");
 
     let colIds = map(columns, "id");
     const offset = chartData.meta.offset;
