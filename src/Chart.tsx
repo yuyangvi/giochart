@@ -233,6 +233,9 @@ class Chart extends React.Component <ChartProps, any> {
       ReactDOM.findDOMNode(this).appendChild(dom);
 
       const canvasRect = dom.getBoundingClientRect();
+      if (canvasRect.width < 10) {
+        return;
+      }
       if (!chartParams.chartType) {
         // TODO invariant
         console.error("Error 101: 图表没有指定类型或类型不合法，请访问ChartParams.md获取类型定义的方案");
