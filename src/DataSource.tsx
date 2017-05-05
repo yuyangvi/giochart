@@ -29,6 +29,20 @@ export const HttpStatus = {
   NotImplemented      : 501
 };
 type NumberArray = Array<number|null>;
+const getErrorMsg = (data: string): string => {
+  let errorMsg = "";
+  try {
+    errorMsg = JSON.parse(data);
+    errorMsg = errorMsg.message;
+    if (typeof errorMsg !== "string") {
+      errorMsg = JSON.parse(errorMsg);
+      errorMsg = errorMsg.reason;
+    }
+  } catch (e) {
+    errorMsg = "网络错误";
+  }
+  return errorMsg;
+}
 class DataSource extends React.Component <DataLoaderProps, any> {
   private static childContextTypes: React.ValidationMap<any> = {
     aggregates: React.PropTypes.array,
@@ -195,7 +209,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
         } else {
           this.setState({ error: true, loading: false });
           const vds = window._vds;
-          let errorMsg = "";
+          /*let errorMsg = "";
           try {
             errorMsg = JSON.parse(xhr.responseText);
             errorMsg = errorMsg.message;
@@ -205,7 +219,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
             }
           } catch (e) {
             errorMsg = "网络错误";
-          }
+          }*/
           vds && vds.track("report_load_fail", {
             project_id: window.accountId,
             project_name: window.project.name,
@@ -213,7 +227,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
             board_name: this.trackWords.board_name,
             report_load_time: Date.now() - this.startTime,
             channel_name: this.trackWords.channel_name,
-            error_msg: errorMsg
+            error_msg: getErrorMsg(xhr.responseText)
           });
         }
       }
