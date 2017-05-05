@@ -195,14 +195,25 @@ class DataSource extends React.Component <DataLoaderProps, any> {
         } else {
           this.setState({ error: true, loading: false });
           const vds = window._vds;
-          vds.track("report_load_fail", {
+          let errorMsg = "";
+          try {
+            errorMsg = JSON.parse(xhr.responseText);
+            errorMsg = errorMsg.message;
+            if (typeof errorMsg !== "string") {
+              errorMsg = JSON.parse(errorMsg);
+              errorMsg = errorMsg.reason;
+            }
+          } catch (e) {
+            errorMsg = "网络错误";
+          }
+          vds && vds.track("report_load_fail", {
             project_id: window.accountId,
             project_name: window.project.name,
             chart_name: chartParams.name,
             board_name: this.trackWords.board_name,
             report_load_time: Date.now() - this.startTime,
             channel_name: this.trackWords.channel_name,
-            params: JSON.stringify(chartParams)
+            error_msg: errorMsg
           });
         }
       }
