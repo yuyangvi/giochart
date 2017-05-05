@@ -31,6 +31,7 @@ const timeWeekRange = (timeRange: string) => {
   } else if (cate === "abs") {
     return (parseInt(end, 10) - parseInt(start, 10)) > (86400000 * 7);
   }
+  return true;
 }
 
 // 表格的sorter，在ChartV4里处理，这样可以避免在其他地方用到。
