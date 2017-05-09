@@ -52,9 +52,9 @@ class ChartV4 extends React.Component <GioProps, any> {
       props.params.attrs.isAddFakeMetric = false;
     }
     if (this.state.field) {
-      const m = find(params.metrics, { id: this.state.field });
       if (this.state.field) {
         const [id, action] = this.state.field.split("_");
+        const m = find(params.metrics, { id });
         params.orders = [{
           action,
           id,
