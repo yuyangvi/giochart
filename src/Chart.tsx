@@ -5,7 +5,7 @@
 
 import G2 = require("g2");
 import { find, filter, fromPairs, isEmpty, isEqual,
-  isMatch, map, merge, pick, some, zip, zipObject } from "lodash";
+  isMatch, map, merge, pick, some, uniq, zip, zipObject } from "lodash";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import {ChartProps, DrawParamsProps, Granulariy, Metric, Source} from "./ChartProps";
@@ -37,7 +37,7 @@ const getChartConfig: any = (chartType: string) => {
   const defaultMetric = {
     combineMetrics: true,
     geom: "line",
-    margin: [10, 30, 55, 60]
+    margin: [10, 30, 30, 60]
   };
   // 将图表类型变成不同步骤的组合
   const chartTypeMap: any[string] = {
@@ -199,7 +199,6 @@ class Chart extends React.Component <ChartProps, any> {
       if (chartCfg.combineMetrics && metricCols.length > 1) {
         frame = G2.Frame.combinColumns(frame, metricCols, "val", "metric", dimCols);
         const metricNames = map(filter(chartParams.columns, { isDim: false }), "name");
-        // const metricDict = fromPairs(zip(metricCols, metricNames));
       }
       this.chart.changeData(frame);
     } else {
@@ -287,7 +286,7 @@ class Chart extends React.Component <ChartProps, any> {
         } else {
           dimCols.push("metric");
         }
-        const metricNames = map(filter(chartParams.columns, {isDim: false}), "name");
+        const metricNames = map(filter(chartParams.columns, { isDim: false }), "name");
         const metricDict = fromPairs(zip(metricCols, metricNames));
         sourceDef.metric = {
           type: "cat",
@@ -307,8 +306,9 @@ class Chart extends React.Component <ChartProps, any> {
           chartCfg.margin[3] += 10;
         }
       }
+
       // 针对分组的线图重新排序
-      if (dimCols.length > 1) {
+      if (dimCols.length > 1 && chartCfg.pos !== "MM") {
         const stat = G2.Stat.summary.sum(dimCols[1] + "*" + metricCols[0]);
         stat.init();
         const groupFrame = stat.execFrame(frame);
@@ -319,9 +319,18 @@ class Chart extends React.Component <ChartProps, any> {
       }
 
       // 计算legend的留空，tick的留空
-      // 存在legend的可能有
-      // 横向bar图， 需要计算左侧的距离
       let canvasHeight: number = canvasRect.height;
+
+      if (chartCfg.pos !== "MMD" && dimCols.length > 1) {
+        // 自动绘制底部的legend
+        const legendDom = this.drawLegend(dimCols[1], uniq(frame.colArray(dimCols[1])), sourceDef[dimCols[1]]);
+        // 确定Legend高度
+        const legendHeight = legendDom.getBoundingClientRect().height;
+        dom.style.height = `calc( 100% - ${legendHeight}px)`;
+        canvasHeight = canvasRect.height - legendHeight;
+      }
+        // 存在legend的可能有
+      // 横向bar图， 需要计算左侧的距离
       // 补丁: tm的值不仅跟interval有关，也跟timeRange有关，但是取不到timeRange,就以source为准
       if (sourceDef.tm) {
         const range = G2.Frame.range(frame, "tm");
@@ -414,6 +423,7 @@ class Chart extends React.Component <ChartProps, any> {
       if (chartCfg.pos === "MMD") { // 双轴,周期对比会有另一条线
         chart.line().size(2).position(dimCols[0] + "*" + metricCols[1]).color("#d6dce3").tooltip(metricCols[1]);
       }
+
       // position and colored
       if (dimCols.length < 2) {
         pos = G2.Stat.summary.sum(pos);
@@ -427,6 +437,8 @@ class Chart extends React.Component <ChartProps, any> {
         geom.position(chartParams.adjust === "percent" ? G2.Stat.summary.percent(pos) : pos);
         if (chartCfg.pos !== "MMD") {
           geom.color(dimCols[1]);
+          // 自动绘制底部的legend
+          // this.drawLegend(dimCols[1], uniq(frame.colArray(dimCols[1])), sourceDef[dimCols[1]]);
         } else if (chartParams.colorTheme) {
           geom.color(`rgb(${chartParams.colorTheme})`).size(2);
         }
@@ -468,7 +480,6 @@ class Chart extends React.Component <ChartProps, any> {
       if (chartCfg.shape) {
         geom.shape(chartCfg.shape);
       }
-
       if (chartCfg.geom === "area" && adjust !== "stack") { // 为了area 好看点,画线
         const styleGeom = chart.area();
         if (chartParams.colorTheme) {
@@ -490,11 +501,11 @@ class Chart extends React.Component <ChartProps, any> {
       }
       // legend
       if (chartCfg.pos !== "MM") {
-        chart.legend({
+        /* chart.legend({
           position: "bottom"
-        });
+        });*/
+        chart.legend(false);
       }
-
       // 针对周期对比图的tooltip
       if (!isThumb) {
         if (chartParams.chartType === "funnel") { // hard code
@@ -561,12 +572,87 @@ class Chart extends React.Component <ChartProps, any> {
           project_name: window.project.name,
           chart_name: this.props.trackWords.name,
           board_name: this.props.trackWords.board_name,
-          chart_type: chartParams.chartType
+          chart_type: chartParams.chartType,
           report_load_time: Date.now() - this.props.startTime,
           channel_name: this.props.trackWords.channel_name
         });
       } catch (e) { return ; }
     }
+  }
+  // 不能用state去绘制，因为时间顺序的问题
+  private drawLegend(dim: string, coloredDim: string[], scaleDef: G2Scale) {
+    const dom = document.createElement("div");
+    dom.className = "giochart-legends";
+    const colorArray = G2.Global.colors.default;
+    const ul = document.createElement("ul");
+    ul.innerHTML = coloredDim.map((n: string, i: number) => `<li data-val="${n}"><svg fill="${colorArray[i % colorArray.length]}"><rect width="11" height="11" zIndex="3"></rect></svg>${scaleDef.formatter ? scaleDef.formatter(n): n}</li>`).join("");
+    dom.appendChild(ul);
+    ReactDOM.findDOMNode(this).appendChild(dom);
+    this.legends = coloredDim.map((n: string, i: number) => ({
+      color: G2.Global.colors.default[i],
+      dotDom: dom.querySelector(`li:nth-child(${1 + i})`),
+      isChecked: true,
+      name: n
+    }));
+    // 绑定事件
+    ul.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const value = e.target.getAttribute("data-val");
+      if (value) {
+        this.filter(dim, value);
+      }
+    });
+
+    // 超出部分通过箭头scroll
+    const scroller = document.createElement("div");
+    scroller.className = "giochart-legend-scroller";
+    scroller.innerHTML = '<span><i class="anticon anticon-caret-up" data-action="up"></i></span><span><i class="anticon anticon-caret-down" data-action="down"></i></span>';
+    dom.appendChild(scroller);
+    let scrollTop = 0;
+    scroller.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const cHeight = ul.getBoundingClientRect().height;
+      const action = e.target.getAttribute("data-action");
+      if (action === "up" && scrollTop > 19) {
+        scrollTop -= 20;
+        ul.style.transform = `translate(0, ${-scrollTop}px)`;
+      } else if (action === "down" && cHeight > scrollTop + 60) {
+        scrollTop += 20;
+        ul.style.transform = `translate(0, ${-scrollTop}px)`;
+      }
+    });
+    document.body.addEventListener("resize", (e) => {
+      const domHeight = dom.getBoundingClientRect().height;
+      const cHeight = ul.getBoundingClientRect().height;
+      dom.style.textAlign = domHeight < 21 ? "center" : "left";
+      scroller.style.display = cHeight > 60 ? "block" : "none";
+    });
+    const domHeight = dom.getBoundingClientRect().height;
+    const cHeight = ul.getBoundingClientRect().height;
+    ul.style.textAlign = domHeight < 25 ? "center" : "left";
+    scroller.style.display = cHeight > 60 ? "block" : "none";
+
+    // document.body.dispatchEvent("resize");
+    // dom.onResize();
+
+    return dom;
+  }
+
+  private filter(dim, name) {
+    const obj = find(this.legends, { name });
+    const filterNames: string[] = [];
+    obj.isChecked = obj.isChecked ? false : true;
+    this.legends.forEach((v: any) => {
+      if (v.isChecked) {
+        v.dotDom.className = "";
+        filterNames.push(v.name);
+      } else {
+        // v.dotDom.querySelector('svg').style.fill = "#999";
+        v.dotDom.className = "disabled";
+      }
+    });
+    this.chart.filter(dim, filterNames)
+    this.chart.repaint();
   }
 
   private unselectHandler(ev: any, selectCols: string[]) {
