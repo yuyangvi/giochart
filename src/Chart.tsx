@@ -585,7 +585,7 @@ class Chart extends React.Component <ChartProps, any> {
     dom.className = "giochart-legends";
     const colorArray = G2.Global.colors.default;
     const ul = document.createElement("ul");
-    ul.innerHTML = coloredDim.map((n: string, i: number) => `<li data-val="${n}"><svg fill="${colorArray[i % colorArray.length]}"><rect width="11" height="11" zIndex="3"></rect></svg>${scaleDef.formatter ? scaleDef.formatter(n): n}</li>`).join("");
+    ul.innerHTML = coloredDim.map((n: string, i: number) => `<li data-val="${n}" title="${n}"><svg fill="${colorArray[i % colorArray.length]}"><rect width="11" height="11" zIndex="3"></rect></svg>${scaleDef.formatter ? scaleDef.formatter(n): n}</li>`).join("");
     dom.appendChild(ul);
     ReactDOM.findDOMNode(this).appendChild(dom);
     this.legends = coloredDim.map((n: string, i: number) => ({
