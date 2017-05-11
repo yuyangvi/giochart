@@ -475,7 +475,6 @@ class Chart extends React.Component <ChartProps, any> {
         geom.size(chartCfg.size);
       } else if (chartCfg.pos === "MM" && metricCols.length > 2) {
         geom.size(metricCols[2], 30, 5);
-        chart.legend(false);
       }
 
       if (chartCfg.shape) {
@@ -501,11 +500,12 @@ class Chart extends React.Component <ChartProps, any> {
         // }
       }
       // legend
-      if (chartCfg.pos === "MMD") {
+      if (chartCfg.pos === "MMD" && !isThumb) {
         chart.legend({
           position: "bottom"
         });
-        // chart.legend(false);
+      } else {
+        chart.legend(false);
       }
       // 针对周期对比图的tooltip
       if (!isThumb) {
@@ -545,9 +545,6 @@ class Chart extends React.Component <ChartProps, any> {
           chart.on("plotclick", (evt: any) => this.selectHandler(evt, selectCols));
           chart.on("itemunselected", (evt: any) => this.unselectHandler(evt, selectCols));
         }
-      }
-      if (isThumb) {
-        chart.legend(false);
       }
       chart.render();
       this.chart = chart;
@@ -597,10 +594,15 @@ class Chart extends React.Component <ChartProps, any> {
     }));
     // 绑定事件
     ul.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const value = e.target.getAttribute("data-val");
-      if (value) {
-        this.filter(dim, value);
+      let target = e.target;
+      while (e.currentTarget.contains(target)) {
+        const value = target.getAttribute("data-val");
+        if (value) {
+          e.stopPropagation();
+          this.filter(dim, value);
+          return;
+        }
+        target = target.parentNode;
       }
     });
 
@@ -617,21 +619,22 @@ class Chart extends React.Component <ChartProps, any> {
       if (action === "up" && scrollTop > 19) {
         scrollTop -= 20;
         ul.style.transform = `translate(0, ${-scrollTop}px)`;
-      } else if (action === "down" && cHeight > scrollTop + 60) {
+      } else if (action === "down" && cHeight > scrollTop + 70) {
         scrollTop += 20;
         ul.style.transform = `translate(0, ${-scrollTop}px)`;
       }
     });
+    // TODO: 这段好像没用
     document.body.addEventListener("resize", (e) => {
       const domHeight = dom.getBoundingClientRect().height;
       const cHeight = ul.getBoundingClientRect().height;
       dom.style.textAlign = domHeight < 21 ? "center" : "left";
-      scroller.style.display = cHeight > 60 ? "block" : "none";
+      scroller.style.display = cHeight > 70 ? "block" : "none";
     });
     const domHeight = dom.getBoundingClientRect().height;
     const cHeight = ul.getBoundingClientRect().height;
     ul.style.textAlign = domHeight < 25 ? "center" : "left";
-    scroller.style.display = cHeight > 60 ? "block" : "none";
+    scroller.style.display = cHeight > 70 ? "block" : "none";
 
     // document.body.dispatchEvent("resize");
     // dom.onResize();
