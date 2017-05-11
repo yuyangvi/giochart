@@ -6,3 +6,4 @@ example/*.js
 example/*.jsx
 dist/example/*
 dist/src/*
+*.d.ts
