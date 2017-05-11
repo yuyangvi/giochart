@@ -329,7 +329,7 @@ class Chart extends React.Component <ChartProps, any> {
         dom.style.height = `calc( 100% - ${legendHeight}px)`;
         canvasHeight = canvasRect.height - legendHeight;
       }
-        // 存在legend的可能有
+      // 存在legend的可能有
       // 横向bar图， 需要计算左侧的距离
       // 补丁: tm的值不仅跟interval有关，也跟timeRange有关，但是取不到timeRange,就以source为准
       if (sourceDef.tm) {
@@ -422,10 +422,11 @@ class Chart extends React.Component <ChartProps, any> {
       }
       if (chartCfg.pos === "MMD") { // 双轴,周期对比会有另一条线
         chart.line().size(2).position(dimCols[0] + "*" + metricCols[1]).color("#d6dce3").tooltip(metricCols[1]);
+        // drawLegend
       }
 
       // position and colored
-      if (dimCols.length < 2) {
+      if (dimCols.length < 2 && chartCfg.pos !== "MM") {
         pos = G2.Stat.summary.sum(pos);
         geom.position(pos);
         if (chartParams.colorTheme) {
@@ -500,11 +501,11 @@ class Chart extends React.Component <ChartProps, any> {
         // }
       }
       // legend
-      if (chartCfg.pos !== "MM") {
-        /* chart.legend({
+      if (chartCfg.pos === "MMD") {
+        chart.legend({
           position: "bottom"
-        });*/
-        chart.legend(false);
+        });
+        // chart.legend(false);
       }
       // 针对周期对比图的tooltip
       if (!isThumb) {
