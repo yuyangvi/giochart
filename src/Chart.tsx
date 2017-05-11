@@ -321,7 +321,7 @@ class Chart extends React.Component <ChartProps, any> {
       // 计算legend的留空，tick的留空
       let canvasHeight: number = canvasRect.height;
 
-      if (chartCfg.pos !== "MMD" && dimCols.length > 1) {
+      if (!isThumb && chartCfg.pos !== "MMD" && dimCols.length > 1) {
         // 自动绘制底部的legend
         const legendDom = this.drawLegend(dimCols[1], uniq(frame.colArray(dimCols[1])), sourceDef[dimCols[1]]);
         // 确定Legend高度
@@ -426,8 +426,10 @@ class Chart extends React.Component <ChartProps, any> {
       }
 
       // position and colored
-      if (dimCols.length < 2 && chartCfg.pos !== "MM") {
-        pos = G2.Stat.summary.sum(pos);
+      if (dimCols.length < 2) {
+        if (chartCfg.pos !== "MM") {
+          pos = G2.Stat.summary.sum(pos);
+        }
         geom.position(pos);
         if (chartParams.colorTheme) {
           geom.color(`rgb(${chartParams.colorTheme})`);
