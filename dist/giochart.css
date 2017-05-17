@@ -13,7 +13,7 @@
     margin: 0 10px 0;
     line-height: 16px;
     cursor: pointer;
-    max-width: 100px;
+    max-width: 90%;
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
