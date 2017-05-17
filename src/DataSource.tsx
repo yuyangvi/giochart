@@ -225,7 +225,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
 
   private componentWillMount() {
     const { params } = this.props;
-    const trackWords = location.pathname.match(/\/projects\/\w{8}\/([^\/]+)\/([^\/]+)/);
+    const trackWords = location.pathname.match(/\/projects\/\w{8}\/([^\/]+)(?:\/([^\/]+))?/);
     if (trackWords.length > 2) {
       this.trackWords = {
         channel_name: trackWords[1],

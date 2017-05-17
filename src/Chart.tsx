@@ -277,6 +277,12 @@ class Chart extends React.Component <ChartProps, any> {
         chartCfg.appendTip = [metricCols[0]];
         metricCols = [metricCols[1]];
       }
+      // wash record
+      if (chartCfg.pos === "MM") {
+        frame = G2.Frame.filter(frame, (obj: Source) => metricCols.every(
+          (col: string) => (typeof obj[col] === "number")
+        ));
+      }
 
       // 需要多值域合并
       if (chartCfg.combineMetrics && metricCols.length > 1) {
