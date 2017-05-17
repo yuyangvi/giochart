@@ -52,7 +52,13 @@ class ChartV4 extends React.Component <GioProps, any> {
       props.params.attrs.isAddFakeMetric = false;
     }
     if (this.state.field) {
-      if (this.state.field) {
+      if (/^dash_/.test(this.state.field)) {
+        params.orders = [{
+          id: this.state.field,
+          isDim: true,
+          orderType: this.state.order === "descend" ? "desc" : "asc"
+        }];
+      } else {
         const [id, action] = this.state.field.split("_");
         const m = find(params.metrics, { id });
         params.orders = [{

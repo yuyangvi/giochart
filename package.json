@@ -5,7 +5,7 @@
   "main": "dist/giochart.min.js",
   "scripts": {
     "build": "webpack --config webpack.prod.config.js",
-    "start": "webpack-dev-server --config webpack.config.js --hot --inline --display-modules --progress --colors --port=9090",
+    "start": "webpackreaev-server --config webpack.config.js --hot --inline --display-modules --progress --colors --port=9090",
     "test": "jest",
     "lint": "tslint \"src/index.tsx\""
   },
@@ -15,17 +15,29 @@
     "transform": {
       ".(ts|tsx)": "<rootDir>/node_modules/ts-jest/preprocessor.js"
     },
-    "testResultsProcessor": "<rootDir>/node_module s/ts-jest/coverageprocessor.js",
+    "testResultsProcessor": "<rootDir>/node_modules/ts-jest/coverageprocessor.js",
     "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$",
     "moduleFileExtensions": [
       "ts",
       "tsx",
       "js"
-    ]
+    ],
+    "globals": {
+      "__TS_CONFIG__": {
+        "module": "commonjs",
+        "jsx": "react"
+      }
+    },
+    "setupFiles": ["./test-setup.js"]
   },
   "dependencies": {
     "moment": "^2.17.1"
   },
+  "peerDependencies": {
+    "react": "^0.14.0 || ^15.0.1",
+    "react-dom": "^0.14.0 || ^15.0.1"
+  },
+
   "devDependencies": {
     "@types/antd": "^0.12.31",
     "@types/lodash": "^4.14.45",
@@ -44,7 +56,8 @@
     "object-hash": "^1.1.7",
     "react": "^15.4.2",
     "react-addons-update": "^15.4.2",
-    "react-dom": "^15.4.2",
+    "react-dom": "^15.5.4",
+    "react-test-renderer": "^15.5.4",
     "source-map-loader": "^0.1.5",
     "style-loader": "^0.13.1",
     "ts-jest": "^18.0.3",

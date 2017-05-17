@@ -5,11 +5,16 @@
     "noImplicitAny": true,
     "module": "commonjs",
     "jsx": "react",
-    "lib": ["es6","ES2016.Array.Include","DOM","DOM.Iterable","ScriptHost"],
+    "lib": [
+      "es6",
+      "ES2016.Array.Include",
+      "DOM",
+      "DOM.Iterable",
+      "ScriptHost"
+    ],
     "allowSyntheticDefaultImports": true,
     "declaration": true,
     "declarationDir": "./"
-
   },
   "include": [
     "./typings/index.d.ts",

@@ -92,7 +92,7 @@ class GrTable extends React.Component <ChartProps, any> {
         const metrics: Metric[] = filter(chartParams.columns, {isDim: false});
 
         const groupColValues: any[] = flatMap(unionBy(source, chartParams.groupCol), chartParams.groupCol);
-        // 按时间分组 TODO
+        // TODO 按时间分组
         const join = (row: any) => values(pick(row, dimNames)).join("");
         const groupSource = values(groupBy(source, join));
         source = map(groupSource, (n: any) => GrTable.groupFlatter(n, chartParams.groupCol, groupColValues, dimNames));
