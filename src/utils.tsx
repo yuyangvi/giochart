@@ -14,7 +14,7 @@ export const formatNumber = (n: number): string => {
     if (Number.isInteger(n)) {
       return `${n}`;
     }
-    return parseFloat(n.toPrecision(3));
+    return parseFloat(n.toPrecision(3)).toString();
   }
   return parseFloat((n * Math.pow(0.1, 4 * suffixIndex)).toPrecision(3)) + suffixArray[suffixIndex];
 };

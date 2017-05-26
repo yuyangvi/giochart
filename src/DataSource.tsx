@@ -34,7 +34,7 @@ const getErrorMsg = (data: string): string => {
   try {
     errorMsg = JSON.parse(data);
     errorMsg = errorMsg.message;
-    if (typeof errorMsg !== "string") {
+    if (typeof errorMsg === "string") {
       errorMsg = JSON.parse(errorMsg);
       errorMsg = errorMsg.reason;
     }
@@ -59,6 +59,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
     channel_name: "",
     board_name: ""
   };
+  private xhr = "";
   private constructor(props: DataLoaderProps) {
     super(props);
     // 加载状态
@@ -131,56 +132,6 @@ class DataSource extends React.Component <DataLoaderProps, any> {
     }
   }
 
-  // 动态变化Dimension
-  /* defaultRetryRequest() {
-   let {chartParams} = this.props;
-   let result = Promise.reject();
-   for (let i = 3; i > 0; i--) {
-   result = result.catch(this.defaultRequest.bind(this, chartParams, this.drawChart));
-   }
-   return result;
-  } */
-  /*
-  private defaultRequest(chartParams: DataRequestProps, callback: any) {
-
-    let fetchObj;
-    // Todo 检查是否是DEV环境
-    if (this.props.hasOwnProperty("sourceUrl")) {
-      fetchObj = fetch(this.props.sourceUrl);
-    } else {
-      fetchObj = fetch(`/v4/projects/${project.id}/chartdata`, {
-        body: JSON.stringify(chartParams),
-        credentials: "same-origin",
-        method: "post",
-      });
-    }
-    fetchObj.then((response: any) => {
-      const status = response.status;
-      if (status === HttpStatus.Ok) {
-        this.tryTimes = 0;
-        return response.json();
-      } else if (status === HttpStatus.RequestTimeout && this.tryTimes < 2) {
-        this.tryTimes++;
-        setTimeout(this.defaultRequest.bind(this, chartParams, callback), 200);
-      } else {
-        this.setState({
-          error: true,
-          loading: false
-        });
-        const vds = window._vds;
-        vds.track("report_load_fail", {
-          project_id: window.accountId,
-          project_name: window.project.name,
-          chart_name: chartParams.name,
-          board_name: this.trackWords.board_name,
-          report_load_time: Date.now() - this.startTime,
-          channel_name: this.trackWords.channel_name,
-          params: JSON.stringify(chartParams)
-        });
-      }
-    }).then((data: ResponseParams) => callback(data, chartParams)).catch((e: any) => void(0));
-  }
-  */
   private defaultRequest(chartParams: DataRequestProps, callback: any) {
     if (this.xhr) {
       this.xhr.abort();
@@ -225,13 +176,17 @@ class DataSource extends React.Component <DataLoaderProps, any> {
 
   private componentWillMount() {
     const { params } = this.props;
-    const trackWords = location.pathname.match(/\/projects\/\w{8}\/([^\/]+)(?:\/([^\/]+))?/);
-    if (trackWords.length > 2) {
-      this.trackWords = {
-        channel_name: trackWords[1],
-        board_name: trackWords[2],
-        name: params.name
-      };
+    try {
+      const trackWords = location.pathname.match(/\/projects\/\w{8}\/([^\/]+)(?:\/([^\/]+))?/);
+      if (trackWords && trackWords.length > 2) {
+        this.trackWords = {
+          channel_name: trackWords[1],
+          board_name: trackWords[2],
+          name: params.name
+        };
+      }
+    } catch (e) {
+      void(0);
     }
 
     if (this.props.hasOwnProperty("cacheOptions")) {
@@ -265,7 +220,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
     // 清洗columns
     // columns = uniqBy(columns, "id");
 
-    let colIds = map(columns, "id");
+    const colIds: string[] = map(columns, "id");
     const offset = chartData.meta.offset;
     // any是因为下面的zipWith返回的schema有bug
     let sourceData: any = chartData.data;

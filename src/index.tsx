@@ -18,7 +18,7 @@ interface GioProps {
   groupCol?: string;
   sourceUrl?: string;
   cacheOptions?: any;
-  isThumb: boolean;
+  isThumb?: boolean;
 }
 const timeWeekRange = (timeRange: string) => {
   if (!timeRange) {

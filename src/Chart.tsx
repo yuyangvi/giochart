@@ -48,7 +48,7 @@ const getChartConfig: any = (chartType: string) => {
     comparison: {geom: "area", pos: "MMD", combineMetrics: false, hideAxis: true, tooltipchange: "custom",
       colorTheme: "252, 95, 58", margin: [10, 30, 50, 50] },
     dualaxis: { geom: "interval", pos: "MMD", combineMetrics: false, margin: [10, 50, 50, 50] },
-    funnel: { geom: "line", size: 2 },
+    funnel: { geom: "line", size: 2, combineMetrics: false, legendPosition: "top", margin: [10, 30, 50, 40] },
     line: {geom: "line", size: 2},
     retention: { geom: "line", size: 2, counter: "day", margin: [10, 30, 50, 40] },
     singleNumber: { geom: "area", shape: "smooth", size: 2, combineMetrics: false, axis: false, tooltip: false,
@@ -60,6 +60,7 @@ const getChartConfig: any = (chartType: string) => {
 
 class Chart extends React.Component <ChartProps, any> {
   private chart: any;
+  private legends: any;
   // private selectMode: string = "multiple";
   private lastSelectedShape: any = null;
   private constructor(props: ChartProps) {
@@ -207,6 +208,7 @@ class Chart extends React.Component <ChartProps, any> {
   }
   private componentDidMount() {
     const { chartParams, isThumb, source } = this.props;
+
     if (!this.isValidParams(chartParams, source)) {
       return;
     }
@@ -249,8 +251,8 @@ class Chart extends React.Component <ChartProps, any> {
       const sourceDef = this.buildSourceConfig(chartParams);
 
       // 建立Frame
-      let metricCols: any[] = map(filter(chartParams.columns, {isDim: false}), "id");
-      let dimCols = map(filter(chartParams.columns, {isDim: true}), "id");
+      let metricCols: string[] = map(filter(chartParams.columns, {isDim: false}), (n: any) => n.id);
+      let dimCols: string[] = map(filter(chartParams.columns, {isDim: true}), (n: any) => n.id);
       let frame = new G2.Frame(source);
 
       // 周期对比图 的 hook
@@ -260,7 +262,8 @@ class Chart extends React.Component <ChartProps, any> {
           record[metricCols[1]] ? (record[metricCols[0]] / record[metricCols[1]] - 1) : 0
         ));
         sourceDef.rate = {
-          formatter: formatPercent
+          formatter: formatPercent,
+          type: "linear",
         };
 
         // 获取metricid, 计算最大值,统一两条线的区间范围
@@ -279,7 +282,7 @@ class Chart extends React.Component <ChartProps, any> {
       }
       // wash record
       if (chartCfg.pos === "MM") {
-        frame = G2.Frame.filter(frame, (obj: Source) => metricCols.every(
+        frame = G2.Frame.filter(frame, (obj: any) => metricCols.every(
           (col: string) => (typeof obj[col] === "number")
         ));
       }
@@ -314,26 +317,36 @@ class Chart extends React.Component <ChartProps, any> {
       }
 
       // 针对分组的线图重新排序
-      if (dimCols.length > 1 && chartCfg.pos !== "MM") {
+      if (dimCols.length > 1 && chartCfg.pos !== "MM" && chartParams.chartType !== "funnel") {
         const stat = G2.Stat.summary.sum(dimCols[1] + "*" + metricCols[0]);
         stat.init();
         const groupFrame = stat.execFrame(frame);
         const sortedDim = G2.Frame.sort(groupFrame, metricCols[0]).colArray(dimCols[1]);
         frame = G2.Frame.sortBy(frame, (a: any, b: any) => {
-          return sortedDim.indexOf(a[dimCols[1]]) < sortedDim.indexOf(b[dimCols[1]]) ? 1 : -1;
+          const legendDim: string = dimCols[1];
+          return sortedDim.indexOf(a[legendDim]) < sortedDim.indexOf(b[legendDim]) ? 1 : -1;
         });
       }
-
       // 计算legend的留空，tick的留空
       let canvasHeight: number = canvasRect.height;
 
       if (!isThumb && chartCfg.pos !== "MMD" && dimCols.length > 1) {
         // 自动绘制底部的legend
-        const legendDom = this.drawLegend(dimCols[1], uniq(frame.colArray(dimCols[1])), sourceDef[dimCols[1]]);
-        // 确定Legend高度
+        const legendDom = this.drawLegend(
+          dimCols[1],
+          uniq(frame.colArray(dimCols[1])),
+          sourceDef[dimCols[1]],
+          chartParams.aggregates
+        );
+        if (chartCfg.legendPosition === "top") {
+          ReactDOM.findDOMNode(this).insertBefore(legendDom, dom);
+        } else {
+          ReactDOM.findDOMNode(this).appendChild(legendDom);
+        }
         const legendHeight = legendDom.getBoundingClientRect().height;
         dom.style.height = `calc( 100% - ${legendHeight}px)`;
         canvasHeight = canvasRect.height - legendHeight;
+        // 确定Legend高度
       }
       // 存在legend的可能有
       // 横向bar图， 需要计算左侧的距离
@@ -374,7 +387,7 @@ class Chart extends React.Component <ChartProps, any> {
 
       chart.source(frame, sourceDef);
       if (!isThumb) { // 如果是Thumb，禁止显示
-        if (chartCfg.pos !== "MMD") {
+        if (chartCfg.pos !== "MMD" && !chartCfg.legendPosition) {
           metricCols.forEach((s: string) => {
             if (s !== "val") {
               if (chartCfg.transpose) {
@@ -447,7 +460,6 @@ class Chart extends React.Component <ChartProps, any> {
         if (chartCfg.pos !== "MMD") {
           geom.color(dimCols[1]);
           // 自动绘制底部的legend
-          // this.drawLegend(dimCols[1], uniq(frame.colArray(dimCols[1])), sourceDef[dimCols[1]]);
         } else if (chartParams.colorTheme) {
           geom.color(`rgb(${chartParams.colorTheme})`).size(2);
         }
@@ -470,10 +482,8 @@ class Chart extends React.Component <ChartProps, any> {
         if (sum) {
           geom.label(metricCols[0], {
             custom: true, // 使用自定义文本
-            renderer: function (text, item) {
-              return parseFloat((100 * item.point[metricCols[0]] / sum).toPrecision(3)) + "%";
-            },
-            offset: 5
+            offset: 5,
+            renderer:  (text: string, item: any) => `${parseFloat((100 * item.point[metricCols[0]] / sum).toPrecision(3))}%`
           });
         }
       }
@@ -541,6 +551,8 @@ class Chart extends React.Component <ChartProps, any> {
           });
         }
       }
+      // 针对funnel的分群
+
       // others
       if (this.props.hasOwnProperty("select") && this.props.select) {
         geom.selected(true, {
@@ -586,14 +598,19 @@ class Chart extends React.Component <ChartProps, any> {
     }
   }
   // 不能用state去绘制，因为时间顺序的问题
-  private drawLegend(dim: string, coloredDim: string[], scaleDef: G2Scale) {
+  private drawLegend(dim: string, coloredDim: string[], scaleDef: G2Scale, aggregates: number[]): HTMLElement {
     const dom = document.createElement("div");
     dom.className = "giochart-legends";
     const colorArray = G2.Global.colors.default;
-    const ul = document.createElement("ul");
-    ul.innerHTML = coloredDim.map((n: string, i: number) => `<li data-val="${n}" title="${scaleDef.formatter ? scaleDef.formatter(n) : n}"><svg fill="${colorArray[i % colorArray.length]}"><rect width="11" height="11" zIndex="3"></rect></svg>${scaleDef.formatter ? scaleDef.formatter(n) : n}</li>`).join("");
+    const ul: HTMLElement = document.createElement("ul");
+    ul.innerHTML = coloredDim.map((n: string, i: number): string => (
+      `<li data-val="${n}" title="${scaleDef.formatter ? scaleDef.formatter(n) : n}">` +
+        `<svg fill="${colorArray[i % colorArray.length]}"><rect width="11" height="11" zIndex="3"></rect></svg>` +
+        (scaleDef.formatter ? scaleDef.formatter(n) : n) +
+         (aggregates ? `：<span>${formatPercent(aggregates[i])}</span>` : "") +
+      `</li>`
+      )).join("");
     dom.appendChild(ul);
-    ReactDOM.findDOMNode(this).appendChild(dom);
     this.legends = coloredDim.map((n: string, i: number) => ({
       color: G2.Global.colors.default[i],
       dotDom: dom.querySelector(`li:nth-child(${1 + i})`),
@@ -602,7 +619,7 @@ class Chart extends React.Component <ChartProps, any> {
     }));
     // 绑定事件
     ul.addEventListener("click", (e) => {
-      let target = e.target;
+      let target: HTMLElement = e.target;
       while (e.currentTarget.contains(target)) {
         const value = target.getAttribute("data-val");
         if (value) {
@@ -613,7 +630,9 @@ class Chart extends React.Component <ChartProps, any> {
         target = target.parentNode;
       }
     });
-
+    if (aggregates) { // funnel，没有scroll
+      return dom;
+    }
     // 超出部分通过箭头scroll
     const scroller = document.createElement("div");
     scroller.className = "giochart-legend-scroller";
@@ -632,6 +651,7 @@ class Chart extends React.Component <ChartProps, any> {
         ul.style.transform = `translate(0, ${-scrollTop}px)`;
       }
     });
+
     // TODO: 这段好像没用
     document.body.addEventListener("resize", (e) => {
       const domHeight = dom.getBoundingClientRect().height;
@@ -717,19 +737,6 @@ class Chart extends React.Component <ChartProps, any> {
       };
     }
 
-    /*if (chartParams.granularities) {
-      chartParams.granularities.forEach((glt: Granulariy) => {
-        if (glt.interval) {
-          sourceDef[glt.id] = {
-            // mask: (glt.interval >= 864e5) ? "mm-dd" : "HH:MM",
-            tickCount: 4,
-            type: ( chartConfig.geom !== "interval" ? "time" : "timeCat" ),
-            formatter: (v: number) => moment.unix(v / 1000).format(v % 864e5 === 576e5 ? "MM-DD" : "HH:mm")
-          };
-        }
-      });
-    }*/
-
     // 针对留存的补丁， Fuck！
     if (chartConfig.counter === "day") {
       const tm = find(chartParams.columns, { id: "tm" });
@@ -740,9 +747,7 @@ class Chart extends React.Component <ChartProps, any> {
         type: "linear", // TODO 可能有其他case
       };
     }
-    /*sourceDef.metric = {
-      type: "cat"
-    };*/
+
     return sourceDef;
   }
 }

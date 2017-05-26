@@ -39,6 +39,7 @@ interface Granulariy {
 
 // 绘制接口
 export interface DrawParamsProps {
+  aggregates?: any;
   adjust?: string;
   chartType: string;
   colorTheme?: string;
@@ -65,7 +66,7 @@ export interface ResponseParams {
   data: number[][];
 }
 
-export type Source = Array<{[column: string]: number}>;
+export type Source = Array<{[column: string]: number|string}>;
 
 export interface DataLoaderProps {
   hashKeys?: string;
