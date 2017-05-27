@@ -332,9 +332,10 @@ class Chart extends React.Component <ChartProps, any> {
 
       if (!isThumb && chartCfg.pos !== "MMD" && dimCols.length > 1) {
         // 自动绘制底部的legend
+        const colNames: string[] = frame.colArray(dimCols[1]);
         const legendDom = this.drawLegend(
           dimCols[1],
-          uniq(frame.colArray(dimCols[1])),
+          uniq(colNames),
           sourceDef[dimCols[1]],
           chartParams.aggregates
         );
@@ -357,11 +358,12 @@ class Chart extends React.Component <ChartProps, any> {
           sourceDef.tm.mask = (range[1] - range[0] >= 864e5) ? "mm-dd" : "HH:MM";
         } */
         const tmLength = G2.Frame.group(frame, ["tm"]).length;
-        sourceDef.tm.tickCount = countTick(parseInt((canvasRect.width - 90) / 80), tmLength - 1);
+        sourceDef.tm.tickCount = countTick(Math.floor((canvasRect.width - 90) / 80), tmLength - 1);
       }
       if (chartParams.adjust === "percent") {
-        sourceDef['..percent'] = {
-          formatter: formatPercent
+        sourceDef["..percent"] = {
+          formatter: formatPercent,
+          type: "linear"
         };
       }
       if (chartParams.chartType === "bar") {
@@ -619,8 +621,9 @@ class Chart extends React.Component <ChartProps, any> {
     }));
     // 绑定事件
     ul.addEventListener("click", (e) => {
-      let target: HTMLElement = e.target;
-      while (e.currentTarget.contains(target)) {
+      let target = e.target;
+      const currentTarget = e.currentTarget;
+      while (currentTarget.contains(target)) {
         const value = target.getAttribute("data-val");
         if (value) {
           e.stopPropagation();

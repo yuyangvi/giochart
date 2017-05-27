@@ -1,11 +1,11 @@
 {
   "name": "giochart",
-  "version": "1.0.26",
+  "version": "1.0.27",
   "description": "",
   "main": "dist/giochart.min.js",
   "scripts": {
     "build": "webpack --config webpack.prod.config.js",
-    "start": "webpackreaev-server --config webpack.config.js --hot --inline --display-modules --progress --colors --port=9090",
+    "start": "webpack-dev-server --config webpack.config.js --hot --inline --display-modules --progress --colors --port=9090",
     "test": "jest",
     "lint": "tslint \"src/index.tsx\""
   },
@@ -54,9 +54,9 @@
     "lodash": "^4.17.4",
     "moment": "^2.17.1",
     "object-hash": "^1.1.7",
-    "react": "^15.4.2",
+    "react": "latest",
     "react-addons-update": "^15.4.2",
-    "react-dom": "^15.5.4",
+    "react-dom": "latest",
     "react-test-renderer": "^15.5.4",
     "source-map-loader": "^0.1.5",
     "style-loader": "^0.13.1",
