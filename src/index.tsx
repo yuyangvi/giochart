@@ -83,7 +83,7 @@ class ChartV4 extends React.Component <GioProps, any> {
       />
     </DataSource>;
   }
-  private sortHandler(sort) {
+  private sortHandler(sort: any) {
     this.setState(sort);
   }
 }

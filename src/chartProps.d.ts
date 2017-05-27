@@ -27,7 +27,9 @@ interface Filter {
 interface Order {
   id: string;
   isDim: boolean;
-  orderType: string; // Enum
+  orderType: "asc" | "desc"; // Enum
+  action?: any;
+
 }
 interface Granulariy {
   id: string;
@@ -54,6 +56,7 @@ export interface Metric {
   isDim?: boolean;
   interval?: number;
   isRate?: boolean;
+  counter?: "";
 }
 
 // ResponseParams
@@ -92,6 +95,7 @@ export interface ChartProps {
   startTime?: number;
   trackWords?: any;
   isThumb?: boolean;
+  sortHandler?: any;
 }
 // 字段是从数据源取得的Chart的格式
 export interface SingleChartProps {

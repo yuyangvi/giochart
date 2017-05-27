@@ -8,4 +8,5 @@ interface Window {
     id: string;
     name: string;
   };
+  gateway: string;
 }

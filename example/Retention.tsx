@@ -1,7 +1,7 @@
-import * as React from 'react';
-import {DataRequestProps, DrawParamsProps, Source} from '../src/ChartProps';
+import * as React from "react";
+import {DataRequestProps, DrawParamsProps, Source} from "../src/ChartProps";
 import SyntheticEvent = React.SyntheticEvent;
-import Chart from '../src/Chart';
+import Chart from "../src/Chart";
 // import DataSource from "../src/DataSource";
 // import GioChart from '../src/index';
 // import ContextListener from "../src/ContextListener";

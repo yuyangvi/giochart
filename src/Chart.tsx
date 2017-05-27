@@ -621,8 +621,8 @@ class Chart extends React.Component <ChartProps, any> {
     }));
     // 绑定事件
     ul.addEventListener("click", (e) => {
-      let target = e.target;
-      const currentTarget = e.currentTarget;
+      let target = e.target as HTMLElement;
+      const currentTarget = e.currentTarget as HTMLElement;
       while (currentTarget.contains(target)) {
         const value = target.getAttribute("data-val");
         if (value) {
@@ -630,7 +630,7 @@ class Chart extends React.Component <ChartProps, any> {
           this.filter(dim, value);
           return;
         }
-        target = target.parentNode;
+        target = target.parentNode as HTMLElement;
       }
     });
     if (aggregates) { // funnel，没有scroll
@@ -644,8 +644,9 @@ class Chart extends React.Component <ChartProps, any> {
     let scrollTop = 0;
     scroller.addEventListener("click", (e) => {
       e.stopPropagation();
+      const target = e.target as HTMLElement;
       const cHeight = ul.getBoundingClientRect().height;
-      const action = e.target.getAttribute("data-action");
+      const action = target.getAttribute("data-action");
       if (action === "up" && scrollTop > 19) {
         scrollTop -= 20;
         ul.style.transform = `translate(0, ${-scrollTop}px)`;
@@ -673,8 +674,8 @@ class Chart extends React.Component <ChartProps, any> {
     return dom;
   }
 
-  private filter(dim, name) {
-    const obj = find(this.legends, { name });
+  private filter(dim: any, name: string) {
+    const obj = find(this.legends, { name }) as any;
     const filterNames: string[] = [];
     obj.isChecked = obj.isChecked ? false : true;
     this.legends.forEach((v: any) => {
@@ -743,7 +744,7 @@ class Chart extends React.Component <ChartProps, any> {
     // 针对留存的补丁， Fuck！
     if (chartConfig.counter === "day") {
       const tm = find(chartParams.columns, { id: "tm" });
-      const dict = { day: "天", week: "周", month: "月" };
+      const dict: any = { day: "天", week: "周", month: "月" };
       sourceDef.tm = {
         formatter: (n: number): string => (n > 0 ? `${n}${dict[tm.counter]}后` : `当${dict[tm.counter]}`),
         tickCount: 4,

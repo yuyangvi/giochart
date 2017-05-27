@@ -30,7 +30,7 @@ export const HttpStatus = {
 };
 type NumberArray = Array<number|null>;
 const getErrorMsg = (data: string): string => {
-  let errorMsg = "";
+  let errorMsg: any = "";
   try {
     errorMsg = JSON.parse(data);
     errorMsg = errorMsg.message;
@@ -56,10 +56,11 @@ class DataSource extends React.Component <DataLoaderProps, any> {
   private tryTimes = 0;
   private startTime = 0;
   private trackWords = {
+    board_name: "",
     channel_name: "",
-    board_name: ""
+    name: ""
   };
-  private xhr = "";
+  private xhr: any = "";
   private constructor(props: DataLoaderProps) {
     super(props);
     // 加载状态
@@ -220,7 +221,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
     // 清洗columns
     // columns = uniqBy(columns, "id");
 
-    const colIds: string[] = map(columns, "id");
+    let colIds = map(columns, "id") as string[];
     const offset = chartData.meta.offset;
     // any是因为下面的zipWith返回的schema有bug
     let sourceData: any = chartData.data;
@@ -245,7 +246,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
         })
       ));
     }
-    let source: Source = map(sourceData, (n: number[]) => zipObject(colIds, n));
+    const source = map(sourceData, (n: number[]) => zipObject(colIds, n)) as Source;
     // 强行添加转化率
     if (params.attrs && params.attrs.isAddFakeMetric) {
       const lastCol = columns[columns.length - 1];

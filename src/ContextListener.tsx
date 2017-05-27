@@ -45,7 +45,7 @@ class ContextListener extends React.Component <SingleChartProps, any> {
       const wordStyle = {
         color: "#999999",
         fontSize: 16,
-        fontWeight: "bold",
+        fontWeight: 200,
         textAlign: "center"
       };
       return (
