@@ -48,7 +48,8 @@ const getChartConfig: any = (chartType: string) => {
     comparison: {geom: "area", pos: "MMD", combineMetrics: false, hideAxis: true, tooltipchange: "custom",
       colorTheme: "252, 95, 58", margin: [10, 30, 50, 50] },
     dualaxis: { geom: "interval", pos: "MMD", combineMetrics: false, margin: [10, 50, 50, 50] },
-    funnel: { geom: "line", size: 2, combineMetrics: false, legendPosition: "top", margin: [10, 30, 50, 40] },
+    funnel: { geom: "line", size: 2, combineMetrics: false, skipMetric: true, margin: [10, 30, 50, 40] },
+    funnelChart: { geom: "line", size: 2, combineMetrics: false, skipMetric: true, legendPosition: "top", margin: [10, 30, 50, 40] },
     line: {geom: "line", size: 2},
     retention: { geom: "line", size: 2, counter: "day", margin: [10, 30, 50, 40] },
     singleNumber: { geom: "area", shape: "smooth", size: 2, combineMetrics: false, axis: false, tooltip: false,
@@ -66,7 +67,7 @@ class Chart extends React.Component <ChartProps, any> {
   private constructor(props: ChartProps) {
     super();
     // 强制切换theme
-    /*const colors = [
+    /* const colors = [
       "#fc5f3a", "#fa9d1b",
       "#48a1f9", "#9ecefe",
       "#349a38", "#7fd182",
@@ -77,7 +78,7 @@ class Chart extends React.Component <ChartProps, any> {
       "#755920", "#dab873",
       "#8d49a4", "#da97f1",
       "#f5d360", "#ffbd9c"
-    ];*/
+    ]; */
     const colors = [
       "#5FB6C7", "#FFD159",
       "#C9C77C", "#FA7413",
@@ -275,7 +276,7 @@ class Chart extends React.Component <ChartProps, any> {
         });
       } else if (chartParams.chartType === "singleNumber") {
         dimCols = ["tm"];
-      } else if (chartParams.chartType === "funnel") {
+      } else if (chartCfg.skipMetric === true) {
         // 漏斗铲掉人数
         chartCfg.appendTip = [metricCols[0]];
         metricCols = [metricCols[1]];
@@ -290,11 +291,7 @@ class Chart extends React.Component <ChartProps, any> {
       // 需要多值域合并
       if (chartCfg.combineMetrics && metricCols.length > 1) {
         frame = G2.Frame.combinColumns(frame, metricCols, "val", "metric", dimCols);
-        if (chartCfg.shape === "funnel") {
-          dimCols = ["metric"];
-        } else {
-          dimCols.push("metric");
-        }
+        dimCols.push("metric");
         const metricNames = map(filter(chartParams.columns, { isDim: false }), "name");
         const metricDict = fromPairs(zip(metricCols, metricNames));
         sourceDef.metric = {
@@ -307,17 +304,13 @@ class Chart extends React.Component <ChartProps, any> {
         }
         metricCols = ["val"];
       } else {
-        /*metricCols.forEach((s: string) => {
-         console.log(s);
-         chart.axis(s, { title: { fill: "#999" } });
-         });*/
         if (chartCfg.pos !== "MMD") {
           chartCfg.margin[3] += 10;
         }
       }
 
       // 针对分组的线图重新排序
-      if (dimCols.length > 1 && chartCfg.pos !== "MM" && chartParams.chartType !== "funnel") {
+      if (dimCols.length > 1 && chartCfg.pos !== "MM" && chartCfg.skipMetric) {
         const stat = G2.Stat.summary.sum(dimCols[1] + "*" + metricCols[0]);
         stat.init();
         const groupFrame = stat.execFrame(frame);
@@ -337,9 +330,10 @@ class Chart extends React.Component <ChartProps, any> {
           dimCols[1],
           uniq(colNames),
           sourceDef[dimCols[1]],
-          chartParams.aggregates
+          chartCfg.legendPosition === "top" ? chartParams.aggregates : null
         );
         if (chartCfg.legendPosition === "top") {
+          legendDom.className = "giochart-legends top-legends";
           ReactDOM.findDOMNode(this).insertBefore(legendDom, dom);
         } else {
           ReactDOM.findDOMNode(this).appendChild(legendDom);
@@ -467,7 +461,7 @@ class Chart extends React.Component <ChartProps, any> {
         }
       }
 
-      if (chartCfg.counter || chartParams.chartType === "funnel") { // 留存点缀
+      if (chartCfg.counter || chartCfg.skipMetric) { // 留存点缀
         const pointGeom = chart.point().shape("circle").size(3).position(pos).tooltip(false);
         if (dimCols.length > 1) {
           pointGeom.color(dimCols[1]);
@@ -529,7 +523,7 @@ class Chart extends React.Component <ChartProps, any> {
       }
       // 针对周期对比图的tooltip
       if (!isThumb) {
-        if (chartParams.chartType === "funnel") { // hard code
+        if (chartCfg.appendTip) { // hard code
           geom.tooltip(metricCols + "*" + chartCfg.appendTip);
         } else if (chartCfg.tooltipchange) {
           // 前面把rate字段加上了
@@ -568,6 +562,10 @@ class Chart extends React.Component <ChartProps, any> {
           chart.on("itemunselected", (evt: any) => this.unselectHandler(evt, selectCols));
         }
       }
+
+      if (chart._attrs.scales.tm) {
+        chart._attrs.scales.tm.ticks = [];
+      }
       chart.render();
       this.chart = chart;
       try {
@@ -581,7 +579,7 @@ class Chart extends React.Component <ChartProps, any> {
           report_load_time: Date.now() - this.props.startTime,
           channel_name: this.props.trackWords.channel_name
         });
-      } catch (e) { return ;}
+      } catch (e) { return ; }
 
     } catch (e) {
       // render error

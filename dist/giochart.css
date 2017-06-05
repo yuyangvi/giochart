@@ -48,3 +48,17 @@
     color: #ea6947;
     transform: scale(.8) rotate(0deg);
 }
+.giochart-legends.top-legends ul{
+    text-align: left;
+    float:right;
+}
+.giochart-legends.top-legends  li {
+    display: block;
+    margin: 10px;
+    max-width: inherit;
+    font-size: 14px;
+    color: #999;
+}
+.giochart-legends.top-legends li span{
+    color:#000;
+}
