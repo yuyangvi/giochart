@@ -39,7 +39,7 @@ const getChartConfig: any = (chartType: string) => {
     geom: "line",
     margin: [10, 30, 30, 60]
   };
-  // 将图表类型变成不同步骤的组合
+  // TODO: 将图表类型变成不同步骤的组合
   const chartTypeMap: any[string] = {
     area: { geom: "area" },
     bar:    { combineMetrics: false, geom: "interval", label: true, margin: [40, 40, 10, 10], reflect: "y",
@@ -351,8 +351,15 @@ class Chart extends React.Component <ChartProps, any> {
         /* if (range.length > 1) {
           sourceDef.tm.mask = (range[1] - range[0] >= 864e5) ? "mm-dd" : "HH:MM";
         } */
-        const tmLength = G2.Frame.group(frame, ["tm"]).length;
-        sourceDef.tm.tickCount = countTick(Math.floor((canvasRect.width - 90) / 80), tmLength - 1);
+        const tmLength: number = G2.Frame.group(frame, ["tm"]).length;
+        // TODO: 计算tickInterval
+        const [startTime, endTime] = G2.Frame.range(frame, "tm");
+        const interval = (endTime - startTime)  / (canvasRect.width - 90) * 80;
+        if (interval > 86400000) {
+          sourceDef.tm.tickInterval = Math.ceil(interval / 86400000) * 86400000;
+        } else {
+          sourceDef.tm.tickInterval = Math.ceil(interval / 3600000) * 3600000;
+        }
       }
       if (chartParams.adjust === "percent") {
         sourceDef["..percent"] = {
@@ -563,9 +570,6 @@ class Chart extends React.Component <ChartProps, any> {
         }
       }
 
-      if (chart._attrs.scales.tm) {
-        chart._attrs.scales.tm.ticks = [];
-      }
       chart.render();
       this.chart = chart;
       try {
