@@ -88,7 +88,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
         fontSize: 16,
         fontWeight: "bold",
         textAlign: "center"
-      };
+      } as any;
       return (
         <div style={outerStyle}>
           <div style={wordStyle}>加载失败</div>

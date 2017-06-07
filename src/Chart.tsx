@@ -346,16 +346,13 @@ class Chart extends React.Component <ChartProps, any> {
       // 存在legend的可能有
       // 横向bar图， 需要计算左侧的距离
       // 补丁: tm的值不仅跟interval有关，也跟timeRange有关，但是取不到timeRange,就以source为准
-      if (sourceDef.tm) {
+      if (sourceDef.tm && sourceDef.tm.type === "time") {
         const range = G2.Frame.range(frame, "tm");
-        /* if (range.length > 1) {
-          sourceDef.tm.mask = (range[1] - range[0] >= 864e5) ? "mm-dd" : "HH:MM";
-        } */
         const tmLength: number = G2.Frame.group(frame, ["tm"]).length;
         // TODO: 计算tickInterval
         const [startTime, endTime] = G2.Frame.range(frame, "tm");
         const interval = (endTime - startTime)  / (canvasRect.width - 90) * 80;
-        if (interval > 86400000) {
+        if (endTime - startTime > 86400000) {
           sourceDef.tm.tickInterval = Math.ceil(interval / 86400000) * 86400000;
         } else {
           sourceDef.tm.tickInterval = Math.ceil(interval / 3600000) * 3600000;

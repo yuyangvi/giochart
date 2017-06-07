@@ -56,4 +56,23 @@ React.render(<Chart chartParams={chartParams} source={source} />, mountNode);
 | values  *[Optional]*  | `string[]`          | `false` |  用于分群等的条件.                          |
 | counter *[Optional]*  | `string`            | `null`  | 时间的表示方式,counter=day,tick显示为"X天后" |
 
-##License
+#### Chart Step #####
+画图分为几个步骤，不同的步骤配置决定了图表的区别
+
+| Property | Value | Desc |
+| :------- | :---- | :-------- |
+| geom     | line / area / interval | 描述视觉映射 |
+| shape    | `string` | 描述视觉形状 |
+| size     | `number` | 描述视觉的大小，主要是线的宽度 |
+| combineMetrics | `boolean` | 合并指标为一个新的指标维度 |
+| label    | `boolean` | 显示标签 |
+| skipMetric | `boolean` | 不可以画出来但是要在tooltip里出现 |
+| legendPosition | top / bottom | 描述Legend位置 |
+| axis | `boolean` | 显示轴 |
+| tooltip | `boolean` | 显示提示 |
+| hideAxis | `boolean` | 隐藏轴 |
+| tooltipchange | custom | 自定义的提示信息 |
+| colorTheme | `r,g,b` | 主题色 |
+| pos | MM/MD/MMD | MM：XY轴指标乘指标，MD:指标乘维度 MMD: 双指标乘维度 |
+
+#### License ####
