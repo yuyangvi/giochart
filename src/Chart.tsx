@@ -529,6 +529,17 @@ class Chart extends React.Component <ChartProps, any> {
       if (!isThumb) {
         if (chartCfg.appendTip) { // hard code
           geom.tooltip(metricCols + "*" + chartCfg.appendTip);
+          chart.on("tooltipchange", (ev: any) => {
+            const l = ev.items.length;
+            for (let i = 0; i * 2 < l; i += 1) {
+              const origin = ev.items[i * 2].point._origin;
+              const origin2 = ev.items[i * 2 + 1].point._origin;
+              ev.items[i] = ev.items[i * 2];
+              ev.items[i].value = `${ev.items[2 * i].name}: ${origin.conversion_rate}, ${ev.items[2 * i + 1].name}: ${origin2.conversion}`;
+              ev.items[i].name = origin.comparison_value;
+            }
+            ev.items.splice(l / 2, l / 2);
+          });
         } else if (chartCfg.tooltipchange) {
           // 前面把rate字段加上了
           geom.tooltip("rate*" + metricCols[0]);
