@@ -310,7 +310,7 @@ class Chart extends React.Component <ChartProps, any> {
       }
 
       // 针对分组的线图重新排序
-      if (dimCols.length > 1 && chartCfg.pos !== "MM" && chartCfg.skipMetric) {
+      if (dimCols.length > 1 && chartCfg.pos !== "MM" && !chartCfg.skipMetric) {
         const stat = G2.Stat.summary.sum(dimCols[1] + "*" + metricCols[0]);
         stat.init();
         const groupFrame = stat.execFrame(frame);
@@ -324,6 +324,9 @@ class Chart extends React.Component <ChartProps, any> {
       let canvasHeight: number = canvasRect.height;
 
       if (!isThumb && chartCfg.pos !== "MMD" && dimCols.length > 1) {
+        if (!chartParams.aggregates || chartParams.aggregates.length < 2) {
+          chartCfg.legendPosition = "bottom";
+        }
         // 自动绘制底部的legend
         const colNames: string[] = frame.colArray(dimCols[1]);
         const legendDom = this.drawLegend(
@@ -536,7 +539,7 @@ class Chart extends React.Component <ChartProps, any> {
               const origin2 = ev.items[i * 2 + 1].point._origin;
               ev.items[i] = ev.items[i * 2];
               ev.items[i].value = `${ev.items[2 * i].name}: ${origin.conversion_rate}, ${ev.items[2 * i + 1].name}: ${origin2.conversion}`;
-              ev.items[i].name = origin.comparison_value;
+              ev.items[i].name = origin.comparison_value || origin.metric_name;
             }
             ev.items.splice(l / 2, l / 2);
           });
