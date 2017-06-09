@@ -99,7 +99,9 @@ class Chart extends React.Component <ChartProps, any> {
           title: null
         },
         left: {
+          line: null,
           labels: { autoRotate: false },
+          tickLine: { lineWidth: 0, stroke: "#fcc" },
           title: null
         },
         right: {
@@ -486,7 +488,7 @@ class Chart extends React.Component <ChartProps, any> {
           geom.label(metricCols[0], {
             custom: true, // 使用自定义文本
             offset: 5,
-            renderer:  (text: string, item: any) => `${parseFloat((100 * item.point[metricCols[0]] / sum).toPrecision(3))}%`
+            renderer:  (text: string, item: any) => formatPercent(item.point[metricCols[0]] / sum)
           });
         }
       }
@@ -538,7 +540,7 @@ class Chart extends React.Component <ChartProps, any> {
               const origin = ev.items[i * 2].point._origin;
               const origin2 = ev.items[i * 2 + 1].point._origin;
               ev.items[i] = ev.items[i * 2];
-              ev.items[i].value = `${ev.items[2 * i].name}: ${origin.conversion_rate}, ${ev.items[2 * i + 1].name}: ${origin2.conversion}`;
+              ev.items[i].value = `${ev.items[2 * i].name}: ${formatPercent(origin.conversion_rate)}, ${ev.items[2 * i + 1].name}: ${origin2.conversion}`;
               ev.items[i].name = origin.comparison_value || origin.metric_name;
             }
             ev.items.splice(l / 2, l / 2);
