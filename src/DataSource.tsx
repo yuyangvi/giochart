@@ -77,21 +77,13 @@ class DataSource extends React.Component <DataLoaderProps, any> {
 
   public render() {
     if (this.state.error) {
-      const outerStyle = {
-        "-webkit-box-orient": "vertical",
-        "-webkit-box-pack": "center",
-        "display": "-webkit-box",
-        "height": "100%"
-      };
-      const wordStyle = {
-        color: "#999999",
-        fontSize: 16,
-        fontWeight: "bold",
-        textAlign: "center"
-      } as any;
+      const errorWord: any = {
+        101: "数据加载失败",
+        102: "业务计算超时"
+      }
       return (
-        <div style={outerStyle}>
-          <div style={wordStyle}>加载失败</div>
+        <div className="chart-error">
+          <div>抱歉，{errorWord[this.state.error]}<br />请稍后重试</div>
         </div>
       );
     } else if (this.state.loading) {
@@ -144,6 +136,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
       xhr.send(null);
     } else {
       xhr.open("post", `${window.gateway}/_private/v4/projects/${project.id}/chartdata`, true);
+      xhr.timeout = 6e4;
       xhr.withCredentials = true;
       xhr.setRequestHeader("credentials", "include");
       xhr.setRequestHeader("accept", "application/json");
@@ -159,7 +152,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
           this.tryTimes++;
           setTimeout(this.defaultRequest.bind(this, chartParams, callback), 200);
         } else {
-          this.setState({ error: true, loading: false });
+          this.setState({ error: 101, loading: false });
           const vds = window._vds;
           vds && vds.track("report_load_fail", {
             project_id: window.accountId,
@@ -173,6 +166,21 @@ class DataSource extends React.Component <DataLoaderProps, any> {
         }
       }
     };
+    xhr.ontimeout = (e) => {
+      xhr.abort && xhr.abort();
+      this.setState({ error: 102, loading: false });
+      const vds = window._vds;
+      vds && vds.track("report_load_fail", {
+        project_id: window.accountId,
+        project_name: window.project.name,
+        chart_name: chartParams.name,
+        board_name: this.trackWords.board_name,
+        report_load_time: Date.now() - this.startTime,
+        channel_name: this.trackWords.channel_name,
+        error_msg: getErrorMsg(xhr.responseText)
+      });
+
+    }
   }
 
   private componentWillMount() {
