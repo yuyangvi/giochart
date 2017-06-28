@@ -74,7 +74,6 @@
   width: 210px;
   margin: auto;
   padding-left: 50px;
-  background: url(../assets/images/error@1x.png) 10px center no-repeat;
-  background-image: -webkit-image-set(url('../assets/images/error@1x.png') 1x,url("../assets/images/error@2x.png") 2x);
+  background: url(../assets/images/error@2x.png) 10px center no-repeat;
   background-size: auto 50%;
 }

@@ -152,7 +152,10 @@ class DataSource extends React.Component <DataLoaderProps, any> {
           this.tryTimes++;
           setTimeout(this.defaultRequest.bind(this, chartParams, callback), 200);
         } else {
-          this.setState({ error: 101, loading: false });
+          this.setState({
+            error: xhr.status === HttpStatus.RequestTimeout ? 102 : 101,
+            loading: false
+          });
           const vds = window._vds;
           vds && vds.track("report_load_fail", {
             project_id: window.accountId,
