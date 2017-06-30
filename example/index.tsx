@@ -1,9 +1,9 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
-import Funnel from "./Funnel";
+import Retention from "./Retention";
 
 ReactDOM.render(
-  <Funnel />,
+  <Retention />,
   document.getElementById("example")
 );

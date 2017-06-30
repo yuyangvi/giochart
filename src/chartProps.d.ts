@@ -56,7 +56,7 @@ export interface Metric {
   isDim?: boolean;
   interval?: number;
   isRate?: boolean;
-  counter?: "";
+  counter?: string;
 }
 
 // ResponseParams

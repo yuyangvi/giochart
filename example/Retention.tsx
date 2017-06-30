@@ -1,49 +1,33 @@
 import * as React from "react";
-import {DataRequestProps, DrawParamsProps, Source} from "../src/ChartProps";
-import SyntheticEvent = React.SyntheticEvent;
+import { DrawParamsProps, Source} from "../src/ChartProps";
 import Chart from "../src/Chart";
-// import DataSource from "../src/DataSource";
-// import GioChart from '../src/index';
-// import ContextListener from "../src/ContextListener";
-interface EventSeletorTarget extends EventTarget {
-    value: string;
-}
-const retentionRequestParams: DataRequestProps = {
-  dimensions: ["tm"],
-  granularities: [{id: "rt", values: ["外部链接"]}],
-  metrics: [{id: "0gw432", action: "page"}, {id: "rate"}],
-  timeRange: "day:8,1",
-}
-const chartParams = {
-  adjust: "stack",
-  chartType: "vbar",
-  columns: [
-    { id: "tm", name: "时间", isDim: true, isRate: false },
-    { id: "kw", name: "搜索词", isDim: true, isRate: false },
-    { id: "98WL33gd", name: "每次会话浏览页数", isDim: false, isRate: false }
-  ],
-  granularities: [{ id: "tm", interval: 86400000 }]
-};
-const source: Source = [{ tm: 1400000000, kw: "哇哈哈", WL33gd98: 20}];
-const retentionDrawParams: DrawParamsProps = {
-  chartType: "line",
-  columns: [
-    {id: "tm", name: "时间", isDim: true, isRate: false},
-    {id: "kw", name: "搜索词", isDim: true, isRate: false},
-    {id: "WL33gd98", name: "每次会话浏览页数", isDim: false, isRate: false}
-  ],
-  granularities: [{id: "tm", interval: 86400000 }]
-};
 
-/* const Retention = (props) => (
-  <div>
-    <DataSource params={retentionRequestParams} sourceUrl="/assets/demo.json">
-      <ContextListener chartParams={retentionDrawParams} />
-    </DataSource>
-  </div>
-); */
+const retentionData: Source = [
+  { tm: 0, retention_rate: 1.0, retention: 1e4 },
+  { tm: 1, retention_rate: 0.16, retention: 1600 },
+  { tm: 2, retention_rate: 0.09279, retention: 928 },
+  { tm: 3, retention_rate: 0.08293, retention: 830 },
+  { tm: 4, retention_rate: 0.09262, retention: 926 },
+  { tm: 5, retention_rate: 0.08579, retention: 857 },
+  { tm: 6, retention_rate: 0.08449, retention: 844 },
+  { tm: 7, retention_rate: 0.06176, retention: 617 },
+  { tm: 8, retention_rate: 0.03571, retention: 346 },
+  { tm: 9, retention_rate: 0.06173, retention: 617 },
+  { tm: 10, retention_rate: 0.09349, retention: 934 },
+  { tm: 11, retention_rate: 0.09509, retention: 950 },
+  { tm: 12, retention_rate: 0.07534, retention: 753 },
+];
+
+const chartParams: DrawParamsProps = {
+  adjust: "stack",
+  chartType: "retention",
+  columns: [
+    { id: "tm", name: "时间", isDim: true, isRate: false, counter: "day" },
+    { id: "retention", name: "留存", isDim: false, isRate: false }
+  ],
+};
 
 const Retention = (props: any) => (
-  <Chart chartParams={chartParams} source={source} />
+  <Chart chartParams={chartParams} source={retentionData} />
 );
 export default Retention;

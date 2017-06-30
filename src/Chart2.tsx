@@ -4,12 +4,12 @@
  */
 
 import G2 = require("g2");
-import { find, filter, fromPairs, isEmpty, isEqual,
+import { find, filter, fromPairs, groupBy, invokeMap, isEmpty, isEqual,
   isMatch, map, merge, pick, some, uniq, zip, zipObject } from "lodash";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import {ChartProps, DrawParamsProps, Granulariy, Metric, Source} from "./ChartProps";
-import { formatNumber, formatPercent } from "./utils";
+import { formatNumber, formatPercent, countTickCount } from "./utils";
 import * as moment from "moment";
 moment.locale("zh-cn");
 
@@ -232,6 +232,78 @@ class Chart extends React.Component <ChartProps, any> {
     }
   }
 
+  private adjustFrame(frame, chartType) {
+    return frame;
+  }
+  private washRecord(frame, metricCols) {
+    return G2.Frame.filter(frame, (obj: any) => metricCols.every(
+      (col: string) => (typeof obj[col] === "number")
+    ));
+  }
+  private combineMetrics(frame, metricCols, dimCols) {
+    frame = G2.Frame.combinColumns(frame, metricCols, "val", "metric", dimCols);
+    dimCols.push("metric");
+    const metricNames = map(filter(chartParams.columns, { isDim: false }), "name");
+    const metricDict = fromPairs(zip(metricCols, metricNames));
+    scales.metric = {
+      type: "cat",
+      formatter: (n: string): string => metricDict[n]
+    };
+    scales.val = {
+      type: "linear",
+      formatter: metricCols.length > 1 ? formatNumber : sourceDef[metricCols[0]].formatter
+    }
+    metricCols = ["val"];
+    return { frame, metricCols, dimCols, scales };
+  }
+  private calculatePlot(frame) {
+    const maxWordLength = Math.max.apply(null, map(frame.colArray(dimCols[0]), "length"));
+    chartCfg.margin[3] = Math.min(120, 25 + 12 * maxWordLength);
+    canvasHeight = Math.max(15 * frame.rowCount(), canvasHeight);
+    // 横向柱图微图显示时，文字重叠
+    // if (canvasRect.width < 400) {
+    sourceDef[metricCols[0]].tickCount = 4;
+  }
+  private drawChart2(chartParams: DrawParamsProps, source: any[], isThumb: boolean = false) {
+    // 防止destroy删除父节点
+    const dom = document.createElement("div");
+    dom.style.height = "100%";
+    ReactDOM.findDOMNode(this).appendChild(dom);
+    const canvasRect = dom.getBoundingClientRect();
+    // 建立Frame, 并后期修正
+    let [dimCols, metricCols] = invokeMap(groupBy(chartParams.columns, "isDim"), "map", (n) => n.id) as string[][];
+    let frame = new G2.Frame(source);
+    frame = this.adjustFrame(frame, chartType);
+
+    // 清洗脏数据
+    frame = this.washRecord(frame, metricCols);
+    // 多值域合并,返回新的columns
+    { frame, metricCols, dimCols, scales } = this.combineMetrics(frame);
+    // legend重排序
+    // x轴tickCount
+    scales.tm.tickInterval = countTickCount(frame, plotCfg.width, "tm");
+    // 百分比
+    // 横轴图边距
+    // position
+    // color/shape
+    // 参考线
+
+    // render配置
+    const chart = new G2.Chart({
+      container: dom,
+      forceFit: true,
+      height: canvasHeight || 300,
+      plotCfg
+    });
+    chart.source(frame, scaleDef);
+    chart.axis(axis);
+    chart.coord("rect").transpose(transpose).reflect(reflect);
+    const geom = chart[chartCfg.geom](adjust);
+    geom.position(position).color(color).label(label).size(size).shape(shape).tooltip(tooltip);
+    // 参考线
+    chart.render();
+    this.chart = chart;
+  }
   private drawChart(chartParams: DrawParamsProps, source: any[], isThumb: boolean = false) {
     try {
       const dom = document.createElement("div");
