@@ -8,6 +8,7 @@ import * as React from "react";
 import {ChartProps, Metric, Source} from "./ChartProps";
 // import Table from 'antd/lib/table';
 import G2 = require("g2");
+const ATable: any = Table;
 const sorterDecorator = (column: string) => (a: any, b: any) => (a[column] >= b[column] ? 1 : -1);
 moment.locale("zh-cn");
 // 根据中位数计算颜色,这段难理解，自己斟酌
@@ -153,7 +154,7 @@ class GrTable extends React.Component <ChartProps, any> {
        }*/
       // 这步就是成功
       return (
-        <Table
+        <ATable
           bordered
           columns={cols}
           dataSource={source}

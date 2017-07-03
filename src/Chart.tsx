@@ -642,7 +642,10 @@ class Chart extends React.Component <ChartProps, any> {
         const value = target.getAttribute("data-val");
         if (value) {
           e.stopPropagation();
-          this.filter(dim, value);
+          const checkedLegend: any[] = filter(this.legends, { isChecked: true });
+          if (checkedLegend.length > 1 || checkedLegend[0].name !== value) {
+            this.filter(dim, value);
+          }
           return;
         }
         target = target.parentNode as HTMLElement;
