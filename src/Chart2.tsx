@@ -9,6 +9,7 @@ import { find, filter, fromPairs, groupBy, invokeMap, isEmpty, isEqual,
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import {ChartProps, DrawParamsProps, Granulariy, Metric, Source} from "./ChartProps";
+import { CHARTTHEME, CHARTTYPEMAP } from "./chartConfig";
 import { formatNumber, formatPercent, countTickCount } from "./utils";
 import * as moment from "moment";
 moment.locale("zh-cn");
@@ -67,75 +68,10 @@ class Chart extends React.Component <ChartProps, any> {
   private lastSelectedShape: any = null;
   private constructor(props: ChartProps) {
     super();
-    // 强制切换theme
-    /* const colors = [
-      "#fc5f3a", "#fa9d1b",
-      "#48a1f9", "#9ecefe",
-      "#349a38", "#7fd182",
-      "#d5375f", "#ff8ba8",
-      "#3e4a9c", "#8d9bf3",
-      "#525566", "#a1a4b3",
-      "#25ada1", "#8ae1d8",
-      "#755920", "#dab873",
-      "#8d49a4", "#da97f1",
-      "#f5d360", "#ffbd9c"
-    ]; */
-    const colors = [
-      "#5FB6C7", "#FFD159",
-      "#C9C77C", "#FA7413",
-      "#D6DCE3", "#6F5D45",
-      "#FDF0A1", "#bf1f41",
-      "#A1EBDE", "#CBBD8C",
-      "#B96285", "#8a73c9",
-      "#005a03", "#320096",
-      "#673000", "#2d396b"
-    ];
-    const defaultColor = "#5FB6C7";
     // G2 的主题有bug，legend读的是G2.Theme的颜色，因此直接覆盖Theme更合适
-    const theme = G2.Util.mix(true, G2.Theme, {
-      animate: false,
-      axis: {
-        bottom: {
-          labels: { autoRotate: false },
-          title: null
-        },
-        left: {
-          line: null,
-          labels: { autoRotate: false },
-          tickLine: { lineWidth: 0, stroke: "#fcc" },
-          title: null
-        },
-        right: {
-          labels: { autoRotate: false },
-          title: null
-        }
-      },
-      colors: {
-        default: colors,
-        intervalStack: colors
-      },
-      defaultColor,
-      legend: {
-        bottom: {
-          dy: 15
-        }
-      },
-      shape: {
-        area: { fill: "#5FB6C7" },
-        hollowPoint: {fill: "#5FB6C7" },
-        interval: { fill: "#abce5b", fillOpacity: 1, stroke: "#5FB6C7" },
-        line: { stroke: "#5FB6C7" },
-        point: {fill: "#5FB6C7", fillOpacity: .5 }
-      },
-      tooltip: {
-        tooltipMarker: {
-          stroke: "#5FB6C7"
-        }
-      }
-    });
-    // G2.track(false);
-    G2.Global.animate = navigator.hardwareConcurrency && navigator.hardwareConcurrency > 7;
+    const theme = G2.Util.mix(true, G2.Theme, CHARTTHEME);
     G2.Global.setTheme(theme);
+    G2.Global.animate = navigator.hardwareConcurrency && navigator.hardwareConcurrency > 7;
   }
   public render() {
     return <div className="giochart" style={this.props.style} />;
@@ -240,11 +176,20 @@ class Chart extends React.Component <ChartProps, any> {
       (col: string) => (typeof obj[col] === "number")
     ));
   }
-  private combineMetrics(frame, metricCols, dimCols) {
-    frame = G2.Frame.combinColumns(frame, metricCols, "val", "metric", dimCols);
-    dimCols.push("metric");
-    const metricNames = map(filter(chartParams.columns, { isDim: false }), "name");
+  private combineMetrics(frame, cfg, columns) {
+    const [dimCols, metricCols] = invokeMap(groupBy(columns, "isDim"), "map", "id") as string[][];
+    const METRICDIM = "metric";
+    const METRICVAL = "val";
+    // make scales;
+    if (cfg.geom !== "point" || cfg.geom.length > 1 || cfg.withRate) {
+      return { frame, metricCols, dimCols };
+    }
+
+    const metricNames = map(filter(columns, { isDim: false }), "name");
     const metricDict = fromPairs(zip(metricCols, metricNames));
+    frame = G2.Frame.combinColumns(frame, metricCols, METRICVAL, METRICDIM, dimCols);
+    dimCols.push(METRICDIM);
+    /*
     scales.metric = {
       type: "cat",
       formatter: (n: string): string => metricDict[n]
@@ -252,9 +197,10 @@ class Chart extends React.Component <ChartProps, any> {
     scales.val = {
       type: "linear",
       formatter: metricCols.length > 1 ? formatNumber : sourceDef[metricCols[0]].formatter
-    }
-    metricCols = ["val"];
-    return { frame, metricCols, dimCols, scales };
+    }*/
+    // TODO: this.sortLegend();
+
+    return { frame, metricCols: [METRICDIM], dimCols };
   }
   private calculatePlot(frame) {
     const maxWordLength = Math.max.apply(null, map(frame.colArray(dimCols[0]), "length"));
@@ -271,19 +217,29 @@ class Chart extends React.Component <ChartProps, any> {
     ReactDOM.findDOMNode(this).appendChild(dom);
     const canvasRect = dom.getBoundingClientRect();
     // 建立Frame, 并后期修正
-    let [dimCols, metricCols] = invokeMap(groupBy(chartParams.columns, "isDim"), "map", (n) => n.id) as string[][];
+    const chartConfig = CHARTTYPEMAP[chartParams.chartType];
     let frame = new G2.Frame(source);
-    frame = this.adjustFrame(frame, chartType);
+    frame = this.adjustFrame(frame, chartParams.chartType);
+    // 多值域合并,并返回新的columns
+    const lastCombined = this.combineMetrics(frame, chartConfig, chartParams.columns);
+    const metricCols = lastCombined.metricCols;
+    const dimCols = lastCombined.dimCols;
 
     // 清洗脏数据
     frame = this.washRecord(frame, metricCols);
-    // 多值域合并,返回新的columns
-    { frame, metricCols, dimCols, scales } = this.combineMetrics(frame);
-    // legend重排序
+
     // x轴tickCount
-    scales.tm.tickInterval = countTickCount(frame, plotCfg.width, "tm");
+    scales.tm.tickInterval = countTickCount(frame, canvasRect.width);
     // 百分比
+    if (chartParams.adjust === "percent") {
+      scales["..percent"] = {
+        formatter: formatPercent,
+        type: "linear"
+      };
+    }
+
     // 横轴图边距
+    geom
     // position
     // color/shape
     // 参考线
@@ -306,114 +262,10 @@ class Chart extends React.Component <ChartProps, any> {
   }
   private drawChart(chartParams: DrawParamsProps, source: any[], isThumb: boolean = false) {
     try {
-      const dom = document.createElement("div");
-      dom.style.height = "100%";
-      ReactDOM.findDOMNode(this).appendChild(dom);
 
-      const canvasRect = dom.getBoundingClientRect();
-      if (canvasRect.width < 10) {
-        return;
-      }
-      if (!chartParams.chartType) {
-        // TODO invariant
-        console.error("Error 101: 图表没有指定类型或类型不合法，请访问ChartParams.md获取类型定义的方案");
-        return;
-        /*
-         } else if (canvasRect.height === 0) {
-         console.error("Error 103: 绘制图形取决于外框高度,而当前外框的高度为0,如果你已经设置了高度，那可能绘制发生在了样式生效前");
-         return;
-         */
-      }
-      const chartCfg = getChartConfig(chartParams.chartType);
       const sourceDef = this.buildSourceConfig(chartParams);
 
-      // 建立Frame
-      let metricCols: string[] = map(filter(chartParams.columns, {isDim: false}), (n: any) => n.id);
-      let dimCols: string[] = map(filter(chartParams.columns, {isDim: true}), (n: any) => n.id);
-      let frame = new G2.Frame(source);
 
-      // 周期对比图 的 hook
-      if (chartParams.chartType === "comparison") {
-        // 给frame增加字段， 用以显示tooltip的title
-        frame.addCol("rate", (record: any) => (
-          record[metricCols[1]] ? (record[metricCols[0]] / record[metricCols[1]] - 1) : 0
-        ));
-        sourceDef.rate = {
-          formatter: formatPercent,
-          type: "linear",
-        };
-
-        // 获取metricid, 计算最大值,统一两条线的区间范围
-        const mids = map(filter(chartParams.columns, {isDim: false}), "id");
-        const maxScale: number = Math.max.apply(null, map(mids, (col: string) => G2.Frame.max(frame, col)));
-        mids.forEach((id: string) => {
-          sourceDef[id].min = 0;
-          sourceDef[id].max = maxScale;
-        });
-      } else if (chartParams.chartType === "singleNumber") {
-        dimCols = ["tm"];
-      } else if (chartCfg.skipMetric === true) {
-        // 漏斗铲掉人数
-        chartCfg.appendTip = [metricCols[0]];
-        metricCols = [metricCols[1]];
-      } else if (chartParams.chartType === "retention") {
-        // 增加流失人数字段，并且计为负数
-        const lossWord = "loss";
-        const maxRetention = G2.Frame.max(frame, "retention");
-        frame.addCol(lossWord, (obj: any) => maxRetention - obj.retention);
-        chartParams.columns.push({ id: lossWord, name: "流失人数", isDim: false });
-        metricCols.push(lossWord);
-        sourceDef[lossWord] = {
-          alias: "流失人数",
-          type: "cat",
-          formatter: (n: number) => formatNumber(Math.abs(n))
-        };
-        sourceDef.tm.type = 'cat';
-      }
-      // wash record
-      if (chartCfg.pos === "MM") {
-        frame = G2.Frame.filter(frame, (obj: any) => metricCols.every(
-          (col: string) => (typeof obj[col] === "number")
-        ));
-      }
-
-      // 需要多值域合并
-      if (chartCfg.combineMetrics && metricCols.length > 1) {
-        frame = G2.Frame.combinColumns(frame, metricCols, "val", "metric", dimCols);
-        dimCols.push("metric");
-        const metricNames = map(filter(chartParams.columns, { isDim: false }), "name");
-        const metricDict = fromPairs(zip(metricCols, metricNames));
-        sourceDef.metric = {
-          type: "cat",
-          formatter: (n: string): string => metricDict[n]
-        };
-        sourceDef.val = {
-          type: "linear",
-          formatter: metricCols.length > 1 ? formatNumber : sourceDef[metricCols[0]].formatter
-        }
-        metricCols = ["val"];
-      } else {
-        if (chartCfg.pos !== "MMD") {
-          chartCfg.margin[3] += 10;
-        }
-      }
-      if (chartParams.chartType === "retention") {
-        let sortedDim = ['retention', 'loss'];
-        frame = G2.Frame.sortBy(frame, (a: any, b: any) => {
-          const legendDim: string = dimCols[1];
-          return sortedDim.indexOf(a[legendDim]) > sortedDim.indexOf(b[legendDim]) ? 1 : -1;
-        });
-      } else if (dimCols.length > 1 && chartCfg.pos !== "MM" && !chartCfg.skipMetric) {
-        // 针对分组的线图重新排序
-        const stat = G2.Stat.summary.sum(dimCols[1] + "*" + metricCols[0]);
-        stat.init();
-        const groupFrame = stat.execFrame(frame);
-        const sortedDim = G2.Frame.sort(groupFrame, metricCols[0]).colArray(dimCols[1]);
-        frame = G2.Frame.sortBy(frame, (a: any, b: any) => {
-          const legendDim: string = dimCols[1];
-          return sortedDim.indexOf(a[legendDim]) < sortedDim.indexOf(b[legendDim]) ? 1 : -1;
-        });
-      }
       // 计算legend的留空，tick的留空
       let canvasHeight: number = canvasRect.height;
 

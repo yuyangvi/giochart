@@ -1,4 +1,6 @@
 import G2 from "g2";
+import { assign, filter, flatten, map, reject, transform, pick } from "lodash";
+import { Source } from "./chartProps";
 /**
  * 数字格式
  * @param n
@@ -60,4 +62,37 @@ export const countTickCount = (frame: any, width: number) => {
   } else {
     return Math.ceil(interval / 3600000) * 3600000;
   }
+}
+
+// 根据留存的数据源图形进行处理
+export const retentionSourceSelector = (source: Source, dimCols: string[], overTime: boolean): Source => {
+  const filterSource = (overTime ? reject : filter)(source, { tm: 0 });
+  // 记录需要保留的字段
+  if (overTime) {
+    // 挑选里面的字段第1，7，14天
+    const results = map(filterSource, (n) => pick(n, dimCols.concat(
+      [
+        "retention_1", "retention_rate_1",
+        "retention_7", "retention_rate_7",
+        "retention_14", "retention_rate_14"
+      ]
+    ))) as Source;
+    return results;
+  }
+  const lastResult = map(filterSource, (s) => {
+    const reservedObj = pick(s, dimCols);
+
+    const combinedResults = transform(s, (result: any[], value, key: string) => {
+      const matches: string[] = key.match(/^(retention(?:_rate)?)_(\d+)$/);
+      if (matches) {
+        const retention = parseInt(matches[2], 10);
+        if (!result[retention]) {
+          result[retention] = {};
+        }
+        result[retention][matches[1]] = value;
+      }
+    }, []);
+    return map(combinedResults, (n, i) => assign(n, reservedObj, { tm: i }));
+  });
+  return flatten(lastResult);
 }
