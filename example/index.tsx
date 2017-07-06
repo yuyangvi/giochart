@@ -1,9 +1,9 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
-import Retention from "./Retention";
+import EasyChart from "./EasyChart";
 
 ReactDOM.render(
-  <Retention />,
+  <EasyChart />,
   document.getElementById("example")
 );

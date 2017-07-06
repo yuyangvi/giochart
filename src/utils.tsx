@@ -1,4 +1,4 @@
-import G2 from "g2";
+import * as G2 from "g2";
 import { assign, filter, flatten, map, reject, transform, pick } from "lodash";
 import { Source } from "./chartProps";
 /**

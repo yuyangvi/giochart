@@ -41,7 +41,7 @@ const COLORS = [
 ];
 
 // G2 的主题有bug，legend读的是G2.Theme的颜色，因此直接覆盖Theme更合适
-export const CHARTTHEME = {
+export const CHARTTHEME: any = {
   animate: false,
   axis: {
     bottom: {
@@ -64,16 +64,12 @@ export const CHARTTHEME = {
     intervalStack: COLORS
   },
   defaultColor: "#5FB6C7",
-  legend: {
-    bottom: {
-      dy: 15
-    }
-  },
+  legend: false,
   shape: {
     area: { fill: "#5FB6C7" },
     hollowPoint: {fill: "#5FB6C7" },
     interval: { fill: "#abce5b", fillOpacity: 1, stroke: "#5FB6C7" },
-    line: { stroke: "#5FB6C7" },
+    line: { stroke: "#5FB6C7", lineWidth: 2 },
     point: {fill: "#5FB6C7", fillOpacity: .5 }
   },
   tooltip: {
