@@ -16,7 +16,7 @@ interface SyntheticSeletorEvent extends SyntheticEvent<HTMLSelectElement> {
 
 const originParams: DataRequestProps = {
   dimensions: ["tm"],
-  filter: [{ op: "=", key: "b", value: "Web", name: "网站/手机应用" }],
+  filters: [{ op: "=", key: "b", value: "Web", name: "网站/手机应用" }],
   granularities: [{ id: "tm", interval: 3600000 }],
   metrics: [{ id: "9yGbpp8x" }],
   timeRange: "day:1,0"
