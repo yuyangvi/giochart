@@ -107,7 +107,7 @@ class Chart extends React.Component <ChartProps, any> {
   private changeData(source: Source) {
     if (this.chart) {
       const chartParams = this.props.chartParams;
-      const chartCfg = getChartConfig(chartParams.chartType);
+      const chartCfg = CHARTTYPEMAP[chartParams.chartType];
       // 检验是否需要合并对做处理
       let frame      = new G2.Frame(source);
       // 需要多值域合并
