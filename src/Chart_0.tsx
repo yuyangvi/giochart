@@ -326,7 +326,7 @@ class Chart extends React.Component <ChartProps, any> {
         }
       }
       if (chartParams.chartType === "retention") {
-        let sortedDim = ['retention', 'loss'];
+        let sortedDim = ["retention", "loss"];
         frame = G2.Frame.sortBy(frame, (a: any, b: any) => {
           const legendDim: string = dimCols[1];
           return sortedDim.indexOf(a[legendDim]) > sortedDim.indexOf(b[legendDim]) ? 1 : -1;

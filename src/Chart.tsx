@@ -4,8 +4,11 @@
  */
 
 import G2 = require("g2");
-import { find, filter, fromPairs, groupBy, invokeMap, isEmpty, isEqual,
-  isMatch, map, merge, pick, some, uniq, zip, zipObject } from "lodash";
+import {
+  defaultsDeep, find, filter, fromPairs, groupBy,
+  isArray, invokeMap, isEmpty, isEqual, isMatch,
+  map, merge, pick, some, uniq, zip, zipObject
+} from "lodash";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import {ChartProps, DrawParamsProps, Granulariy, Metric, Source} from "./ChartProps";
@@ -34,7 +37,44 @@ const countTick = (maxTick: number, total: number) => {
   const interval = Math.ceil(total / maxTick);
   return Math.ceil(total / interval);
 };
+const adjustFrame: any = {
+  // 周期对比图，需要给tooltip增加百分比,同时对齐数据
+  comparison: (frame: any, metricCols: string[]) => {
+    frame.addCol("rate", (record: any) => (
+      record[metricCols[1]] ? (record[metricCols[0]] / record[metricCols[1]] - 1) : 0
+    ));
+    const sourceDef: any = {
+      rate: {
+        formatter: formatPercent,
+        type: "linear"
+      }
+    };
 
+    // 获取metricid, 计算最大值,统一两条线的区间范围
+    const maxScale: number = Math.max.apply(null, map(metricCols, (col: string) => G2.Frame.max(frame, col)));
+    metricCols.forEach((id: string) => {
+      sourceDef[id] = { max: maxScale };
+    });
+    return { frame, sourceDef };
+  },
+  retention: (frame: any, metricCols: string[]) => {
+    // 增加流失人数字段，并且计为负数
+    const lossWord = "loss";
+    const maxRetention = G2.Frame.max(frame, "retention");
+    frame.addCol(lossWord, (obj: any) => maxRetention - obj.retention);
+    // chartParams.columns.push({ id: lossWord, name: "流失人数", isDim: false });
+    metricCols.push(lossWord);
+    const sourceDef = {
+      loss: {
+        alias: "流失人数",
+        type: "cat",
+        formatter: (n: number) => formatNumber(Math.abs(n))
+      },
+      tm: {type: "cat"}
+    };
+    return { frame, sourceDef };
+  }
+};
 class Chart extends React.Component <ChartProps, any> {
   private chart: any;
   private legends: any;
@@ -48,9 +88,7 @@ class Chart extends React.Component <ChartProps, any> {
     G2.Global.animate = navigator.hardwareConcurrency && navigator.hardwareConcurrency > 7;
   }
   public render() {
-    return <div className="giochart" style={this.props.style}>
-      <div>1r1041</div>
-    </div>;
+    return <div className="giochart" style={this.props.style} />;
   }
 
   // 按理不需要绘制对不上的图
@@ -144,9 +182,6 @@ class Chart extends React.Component <ChartProps, any> {
     }
   }
 
-  private adjustFrame(frame: any, chartType: string) {
-    return frame;
-  }
   private washRecord(frame: any, metricCols: string[]) {
     return G2.Frame.filter(frame, (obj: any) => metricCols.every(
       (col: string) => (typeof obj[col] === "number")
@@ -175,14 +210,6 @@ class Chart extends React.Component <ChartProps, any> {
 
     return { frame, metricCols: [METRICDIM], dimCols, scales: this.buildScales(columns, cfg.geom) };
   }
-  /* private calculatePlot(frame: any) {
-    const maxWordLength = Math.max.apply(null, map(frame.colArray(dimCols[0]), "length"));
-    chartCfg.margin[3] = Math.min(120, 25 + 12 * maxWordLength);
-    canvasHeight = Math.max(15 * frame.rowCount(), canvasHeight);
-    // 横向柱图微图显示时，文字重叠
-    // if (canvasRect.width < 400) {
-    sourceDef[metricCols[0]].tickCount = 4;
-  }*/
 
   private calculateAdjust(adjust: string, geom: string) {
     if (adjust === "percent") {
@@ -201,11 +228,25 @@ class Chart extends React.Component <ChartProps, any> {
   }
   private calculateColor(dimCols: string[], colorTheme: string) {
     if (colorTheme) {
-      return `rgb(${colorTheme})`;
+      return `l(90) 0:rgba(${colorTheme}, 0.8) 1:rgba(${colorTheme}, 0.1)`;
+      // return `rgb(${colorTheme})`;
     } else if (dimCols.length > 1) {
       return dimCols[1];
     }
     return;
+  }
+  private calculatePlot(frame: any, chartCfg: any, dimCols: string[]) {
+    const margin = [10, 30, 30, 50];
+    if (chartCfg.transpost) {
+      const maxWordLength = Math.max.apply(null, map(frame.colArray(dimCols[0]), "length"));
+      margin[3] = Math.min(145, 25 + 12 * maxWordLength);
+    }
+    if (!chartCfg.periodOverPeriod && isArray(chartCfg.geom)) { // 双轴图
+      margin[1] = 50;
+    }
+    // 如果没有legend, 通常左边会有标题显示
+    console.log(margin);
+    return margin;
   }
   private drawChart(chartParams: DrawParamsProps, source: any[], isThumb: boolean = false) {
     // 防止destroy删除父节点
@@ -216,12 +257,18 @@ class Chart extends React.Component <ChartProps, any> {
     // 建立Frame, 并后期修正
     const chartConfig = CHARTTYPEMAP[chartParams.chartType];
     let frame = new G2.Frame(source);
-    frame = this.adjustFrame(frame, chartParams.chartType);
     // 多值域合并,并返回新的columns
     const lastCombined = this.combineMetrics(frame, chartConfig, chartParams.columns);
     const metricCols = lastCombined.metricCols;
     const dimCols = lastCombined.dimCols;
-    const scales = lastCombined.scales;
+    let scales: any = lastCombined.scales;
+    const chartType: string = chartParams.chartType;
+    // adjustFrame
+    if (adjustFrame[chartType]) {
+      const { frame: adFrame, sourceDef } = adjustFrame[chartType](frame, metricCols);
+      frame = adFrame;
+      scales = defaultsDeep(sourceDef, scales);
+    }
 
     // 清洗脏数据
     frame = this.washRecord(frame, metricCols);
@@ -237,7 +284,7 @@ class Chart extends React.Component <ChartProps, any> {
 
     // legend
     let legendHeight = 0;
-    if (dimCols.length > 1) {
+    if (dimCols.length > 1 && !isArray(chartConfig.geom)) {
       const colNames: string[] = frame.colArray(dimCols[1]);
       const legendDom = this.drawLegend(
         dimCols[1],
@@ -262,16 +309,25 @@ class Chart extends React.Component <ChartProps, any> {
     // position
     const position = this.calculatePosition(metricCols, dimCols, chartConfig);
     // color/shape
-    const color = this.calculateColor(dimCols, chartConfig.colorTheme);
+    const color = this.calculateColor(dimCols, chartParams.colorTheme || chartConfig.colorTheme);
     // 参考线
 
     // render配置
+    let canvasHeight = canvasRect.height - legendHeight;
+    if (chartConfig.transpose) {
+      canvasHeight = Math.max(15 * frame.rowCount(), canvasHeight);
+
+    }
+
     const chart = new G2.Chart({
       container: dom,
       forceFit: true,
-      height: (canvasRect.height - legendHeight) || 300,
-      // plotCfg
+      height: canvasHeight || 300,
+      plotCfg: {
+        margin: this.calculatePlot(frame, chartConfig, dimCols)
+      }
     });
+
     chart.source(frame, scales);
     chart.axis(chartConfig.axis);
     if (chartConfig.transpose) {
@@ -280,8 +336,19 @@ class Chart extends React.Component <ChartProps, any> {
         coord.reflect(chartConfig.reflect);
       }
     }
+    const geomType = isArray(chartConfig.geom) ? chartConfig.geom[0] : chartConfig.geom;
 
-    const geom = chart[chartConfig.geom](adjust);
+    // 参考线,周期对比图线在后
+    if (isArray(chartConfig.geom) && chartConfig.periodOverPeriod) {
+      chart[chartConfig.geom[1]]().position(dimCols[0] + "*" + metricCols[1]).color("#ccc");
+      chart.axis(metricCols[0], false);
+    }
+    const geom = chart[geomType](adjust);
+    // 参考线，双轴图线在后
+    if (isArray(chartConfig.geom) && !chartConfig.periodOverPeriod) {
+      chart[chartConfig.geom[1]]().position(dimCols[0] + "*" + metricCols[1]).color("#ccc");
+    }
+
     if (chartConfig.shape) {
       geom.shape(dimCols[1], chartConfig.shape);
     }
@@ -299,7 +366,7 @@ class Chart extends React.Component <ChartProps, any> {
     if (chartConfig.tooltip) {
       geom.tooltip(chartConfig.tooltip);
     }
-    chart.legend(false);
+    chart.legend(!isArray(chartConfig.geom));
 
     // 参考线
 
@@ -422,10 +489,9 @@ class Chart extends React.Component <ChartProps, any> {
         const metaSelected = pick(item._origin, selectCols);
           // this.props.select(metaSelected, this.lastSelectedShape);
           // this.lastSelectedShape = metaSelected;
-        console.log(item, metaSelected);
       } else {
         const item = shape.get("origin");
-        this.props.select(null, pick(item._origin, selectCols));
+        // this.props.select(null, pick(item._origin, selectCols));
       }
     }
   }
@@ -437,7 +503,7 @@ class Chart extends React.Component <ChartProps, any> {
       if (m.id === "tm") {
         scaleDef.tm = {
           tickCount: 4,
-          type: geom === "interval" ? "timeCat" : "time", // TODO 可能有其他case
+          type: geom === "line" ? "time" : "timeCat", // TODO 可能有其他case
           formatter: (v: number) => moment.unix(v / 1000).format(v % 864e5 === 576e5 ? "MM-DD ddd" : "HH:mm")
         };
       } else if (m.isDim) {

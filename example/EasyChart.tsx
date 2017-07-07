@@ -3,17 +3,17 @@ import { DrawParamsProps, Source} from "../src/ChartProps";
 import Chart from "../src/Chart";
 import { retentionSourceSelector } from "../src/utils";
 const retentionData: Source = [
-  { tm: 1499299200000 - 28800000, retention: 2045, type: "A" },
-  { tm: 1499212800000 - 28800000, retention: 1600, type: "A" },
-  { tm: 1499126400000 - 28800000, retention: 1582, type: "A" },
-  { tm: 1499040000000 - 28800000, retention: 1482, type: "A" },
-  { tm: 1498953600000 - 28800000, retention: 1251, type: "A" },
+  { tm: 1499270400000, retention: 2045, type: "A" },
+  { tm: 1499184000000, retention: 1600, type: "A" },
+  { tm: 1499097600000, retention: 1582, type: "A" },
+  { tm: 1499011200000, retention: 1482, type: "A" },
+  { tm: 1498924800000, retention: 1251, type: "A" },
 
-  { tm: 1499299200000 - 28800000, retention: 1045, type: "B" },
-  { tm: 1499212800000 - 28800000, retention: 600, type: "B" },
-  { tm: 1499126400000 - 28800000, retention: 582, type: "B" },
-  { tm: 1499040000000 - 28800000, retention: 482, type: "B" },
-  { tm: 1498953600000 - 28800000, retention: 251, type: "B" }
+  { tm: 1499270400000, retention: 1045, type: "B" },
+  { tm: 1499184000000, retention: 1060, type: "B" },
+  { tm: 1499097600000, retention: 1852, type: "B" },
+  { tm: 1499011200000, retention: 1418, type: "B" },
+  { tm: 1498924800000, retention: 1421, type: "B" }
 ];
 
 const chartParams: DrawParamsProps = {
