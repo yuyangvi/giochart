@@ -6,7 +6,7 @@ export interface DataRequestProps {
   metrics: Metric[]; // 指标
   dimensions: string[]; // 维度
   granularities: Granulariy[]; // 粒度
-  filter?: Filter[]; // 过滤
+  filters?: Filter[]; // 过滤
   timeRange: string; // 时间区域 day:8,1
   userTag?: string; // 用户分群ID
   limit?: number; // 数据行限制 10
@@ -124,4 +124,17 @@ interface TimeScale {
 }
 interface CatScale {
   values: string[];
+}
+
+
+export interface GioProps {
+  adjust?: string;
+  chartType: string;
+  colorTheme?: string;
+  params: DataRequestProps;
+  extraColumns?: any;
+  groupCol?: string;
+  sourceUrl?: string;
+  cacheOptions?: any;
+  isThumb?: boolean;
 }

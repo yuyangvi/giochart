@@ -5,21 +5,11 @@
 import { clone, find } from "lodash";
 import * as React from "react";
 import Chart from "./Chart";
-import {DataRequestProps, Granulariy} from "./ChartProps";
+import {DataRequestProps, Granulariy,GioProps} from "./ChartProps";
 import ContextListener from "./ContextListener";
 import DataSource from "./DataSource";
 import GrTable from "./GrTable";
-interface GioProps {
-  adjust?: string;
-  chartType: string;
-  colorTheme?: string;
-  params: DataRequestProps;
-  extraColumns?: any;
-  groupCol?: string;
-  sourceUrl?: string;
-  cacheOptions?: any;
-  isThumb?: boolean;
-}
+
 const timeWeekRange = (timeRange: string) => {
   if (!timeRange) {
     timeRange = "day:8,1";
