@@ -192,6 +192,9 @@ class Chart extends React.Component <ChartProps, any> {
     const METRICDIM = "metric";
     const METRICVAL = "val";
     // make scales;
+    if (cfg.emptyDim) {
+      dimCols.unshift(null);
+    }
     if (cfg.geom !== "point" || cfg.geom.length > 1 || cfg.withRate) {
       return { frame, metricCols, dimCols, scales: this.buildScales(columns, cfg.geom)};
     }
@@ -220,11 +223,22 @@ class Chart extends React.Component <ChartProps, any> {
     }
     return adjust;
   }
-  private calculatePosition(metricCols: string[], dimCols: string[], chartCfg: any) {
+  private calculatePosition(metricCols: string[], dimCols: string[], chartCfg: any, adjust: string) {
+    let pos;
     if (chartCfg.geom === "point") {
-      return metricCols[0] + "*" + metricCols[1];
+      pos = metricCols[0] + "*" + metricCols[1];
     }
-    return dimCols[0] + "*" + metricCols[0];
+    if (dimCols[0]) {
+      pos = dimCols[0] + "*" + metricCols[0];
+    } else {
+      pos = metricCols[0];
+    }
+
+    if (adjust === "percent") {
+      return G2.Stat.summary.percent(pos);
+    } else {
+      return pos;
+    }
   }
   private calculateColor(dimCols: string[], colorTheme: string) {
     if (colorTheme) {
@@ -245,7 +259,6 @@ class Chart extends React.Component <ChartProps, any> {
       margin[1] = 50;
     }
     // 如果没有legend, 通常左边会有标题显示
-    console.log(margin);
     return margin;
   }
   private drawChart(chartParams: DrawParamsProps, source: any[], isThumb: boolean = false) {
@@ -307,7 +320,8 @@ class Chart extends React.Component <ChartProps, any> {
     const adjust = this.calculateAdjust(chartParams.adjust, chartConfig.geom);
 
     // position
-    const position = this.calculatePosition(metricCols, dimCols, chartConfig);
+    const position = this.calculatePosition(metricCols, dimCols, chartConfig, chartParams.adjust);
+
     // color/shape
     const color = this.calculateColor(dimCols, chartParams.colorTheme || chartConfig.colorTheme);
     // 参考线
@@ -316,7 +330,6 @@ class Chart extends React.Component <ChartProps, any> {
     let canvasHeight = canvasRect.height - legendHeight;
     if (chartConfig.transpose) {
       canvasHeight = Math.max(15 * frame.rowCount(), canvasHeight);
-
     }
 
     const chart = new G2.Chart({
@@ -330,8 +343,17 @@ class Chart extends React.Component <ChartProps, any> {
 
     chart.source(frame, scales);
     chart.axis(chartConfig.axis);
+    let coord;
+    if (chartConfig.coord) {
+      coord = chart.coord(chartConfig.coord, {
+        radius: 1,
+        inner: 0.7
+      });
+    } else {
+      coord = chart.coord("rect");
+    }
     if (chartConfig.transpose) {
-      const coord = chart.coord("rect").transpose(chartConfig.transpose);
+      coord.transpose(chartConfig.transpose);
       if (chartConfig.reflect) {
         coord.reflect(chartConfig.reflect);
       }
@@ -366,10 +388,9 @@ class Chart extends React.Component <ChartProps, any> {
     if (chartConfig.tooltip) {
       geom.tooltip(chartConfig.tooltip);
     }
-    chart.legend(!isArray(chartConfig.geom));
-
+    chart.legend(isArray(chartConfig.geom));
     // 参考线
-
+    /*
     geom.selected(true, {
       selectedMode: "single", // "multiple" || "single"
       style: {fill: "#fe9929"}
@@ -377,7 +398,13 @@ class Chart extends React.Component <ChartProps, any> {
     const selectCols = (chartConfig.geom === "point" ? metricCols.slice(0, 2) : dimCols) as string[];
     chart.on("plotclick", (evt: any) => this.selectHandler(evt, selectCols));
     chart.on("itemunselected", (evt: any) => this.unselectHandler(evt, selectCols));
-
+    */
+    const aggScale = scales[metricCols[0]];
+    chart.guide().html(
+      [-5.5, 0],
+      "<div style=\"text-align:center;white-space: nowrap;\"><p style=\"color:#999;font-size:12px;\">总" + aggScale.alias + "</p>" +
+      "<p style=\"color:#333;font-size:22px;\">" + aggScale.formatter(chartParams.aggregates[0]) + "</p></div>"
+    );
     chart.render();
     this.chart = chart;
   }

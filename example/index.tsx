@@ -1,9 +1,9 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
-import DualChart from "./DualChart";
+import RingChart from "./RingChart";
 
 ReactDOM.render(
-  <DualChart />,
+  <RingChart />,
   document.getElementById("example")
 );

@@ -11,7 +11,8 @@ export const CHARTTYPEMAP: any[string] = {
   retention: { geom: "interval", shape: ["stroke", "hollowRect"], withRate: true },
   retentionTrend: { geom: "line", withRate: true },
   singleNumber: { geom: "area", shape: "smooth", isThumb: true },
-  vbar: { geom: "interval" }
+  vbar: { geom: "interval" }, // 329615792
+  donut: { geom: "interval", emptyDim: true, coord: "theta", aggregates: true }
 }
 
 // 根据字段取得不同的步骤
