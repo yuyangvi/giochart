@@ -28,6 +28,10 @@ const descValue = (value: number|undefined, isRate: boolean): string|undefined =
     if (isRate) {
       return (100 * value).toPrecision(3) + "%";
     } else if (!Number.isInteger(value)) {
+      const s = value.toString();
+      if (s.length - s.lastIndexOf(".") < 5) {
+        return s;
+      }
       return value.toPrecision(3);
     }
   }
