@@ -187,7 +187,7 @@ class Chart extends React.Component <ChartProps, any> {
       (col: string) => (typeof obj[col] === "number")
     ));
   }
-  private combineMetrics(frame: any, cfg: any, columns: any[]) {
+  private combineMetrics(frame: any, cfg: any, columns: any[], preRenderData: (n: any, m: string[]) => any) {
     const [dimCols, metricCols] = invokeMap(groupBy(columns, "isDim"), "map", (n: any) => n.id) as string[][];
     const METRICDIM = "metric";
     const METRICVAL = "val";
@@ -195,8 +195,16 @@ class Chart extends React.Component <ChartProps, any> {
     if (cfg.emptyDim) {
       dimCols.unshift(null);
     }
+    let sourceDef: any = null;
+    if (preRenderData) {
+      const preRenderSource = preRenderData(frame, metricCols);
+      frame = preRenderSource.frame;
+      sourceDef = preRenderSource.sourceDef;
+      // scales = defaultsDeep(sourceDef, scales);
+    }
+
     if (cfg.geom !== "point" || cfg.geom.length > 1 || cfg.withRate) {
-      return { frame, metricCols, dimCols, scales: this.buildScales(columns, cfg.geom)};
+      return { frame, metricCols, dimCols, scales: this.buildScales(columns, cfg.geom, sourceDef)};
     }
 
     const metricNames: string[] = map(filter(columns, { isDim: false }), "name") as string[];
@@ -208,10 +216,9 @@ class Chart extends React.Component <ChartProps, any> {
       { id: "metric", isRate, isDim: false, formatterMap: metricDict },
       { id: "value", isRate: true, isDim: false }
     ]);
-    this.buildScales(columns, cfg.geom);
     // TODO: this.sortLegend();
 
-    return { frame, metricCols: [METRICDIM], dimCols, scales: this.buildScales(columns, cfg.geom) };
+    return { frame, metricCols: [METRICDIM], dimCols, scales: this.buildScales(columns, cfg.geom, sourceDef) };
   }
 
   private calculateAdjust(adjust: string, geom: string) {
@@ -271,17 +278,20 @@ class Chart extends React.Component <ChartProps, any> {
     const chartConfig = CHARTTYPEMAP[chartParams.chartType];
     let frame = new G2.Frame(source);
     // 多值域合并,并返回新的columns
-    const lastCombined = this.combineMetrics(frame, chartConfig, chartParams.columns);
+    const chartType: string = chartParams.chartType;
+    const lastCombined = this.combineMetrics(frame, chartConfig, chartParams.columns, adjustFrame[chartType]);
     const metricCols = lastCombined.metricCols;
     const dimCols = lastCombined.dimCols;
-    let scales: any = lastCombined.scales;
+
+    /* let scales: any = lastCombined.scales;
     const chartType: string = chartParams.chartType;
     // adjustFrame
     if (adjustFrame[chartType]) {
-      const { frame: adFrame, sourceDef } = adjustFrame[chartType](frame, metricCols);
+      const { frame: adFrame, sourceDef, } = adjustFrame[chartType](frame, metricCols);
       frame = adFrame;
       scales = defaultsDeep(sourceDef, scales);
     }
+    */
 
     // 清洗脏数据
     frame = this.washRecord(frame, metricCols);
@@ -399,12 +409,14 @@ class Chart extends React.Component <ChartProps, any> {
     chart.on("plotclick", (evt: any) => this.selectHandler(evt, selectCols));
     chart.on("itemunselected", (evt: any) => this.unselectHandler(evt, selectCols));
     */
-    const aggScale = scales[metricCols[0]];
-    chart.guide().html(
-      [-5.5, 0],
-      "<div style=\"text-align:center;white-space: nowrap;\"><p style=\"color:#999;font-size:12px;\">总" + aggScale.alias + "</p>" +
-      "<p style=\"color:#333;font-size:22px;\">" + aggScale.formatter(chartParams.aggregates[0]) + "</p></div>"
-    );
+    if (chartConfig.aggregates) {
+      const aggScale = scales[metricCols[0]];
+      chart.guide().html(
+        [-5.5, 0],
+        "<div style=\"text-align:center;white-space: nowrap;\"><p style=\"color:#999;font-size:12px;\">总" + aggScale.alias + "</p>" +
+        "<p style=\"color:#333;font-size:22px;\">" + aggScale.formatter(chartParams.aggregates[0]) + "</p></div>"
+      );
+    }
     chart.render();
     this.chart = chart;
   }
@@ -502,7 +514,7 @@ class Chart extends React.Component <ChartProps, any> {
   }
 
   private unselectHandler(ev: any, selectCols: string[]) {
-    console.log('unselectHandler', ev, selectCols);
+    // console.log('unselectHandler', ev, selectCols);
     return;
   }
 

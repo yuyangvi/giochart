@@ -1,9 +1,9 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
-import RingChart from "./RingChart";
+import Retention from "./Retention";
 
 ReactDOM.render(
-  <RingChart />,
+  <Retention />,
   document.getElementById("example")
 );
