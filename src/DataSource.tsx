@@ -45,7 +45,7 @@ const getErrorMsg = (data: string): string => {
 }
 class DataSource extends React.Component <DataLoaderProps, any> {
   private static childContextTypes: React.ValidationMap<any> = {
-    aggregates: React.PropTypes.array,
+    aggregator: React.PropTypes.any,
     columns: React.PropTypes.array,
     selectHandler: React.PropTypes.func,
     selected: React.PropTypes.any,
@@ -65,7 +65,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
     super(props);
     // 加载状态
     this.state = {
-      aggregates: null,
+      aggregator: null,
       columns: null,
       error: false,
       loading: true,
@@ -98,7 +98,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
   // TODO: 用来给子孙节点中的GrChart自定义 Demo props state改变触发 DataSource取数据返回触发
   private getChildContext() {
     return {
-      aggregates: this.state.aggregates,
+      aggregator: this.state.aggregator,
       columns: this.state.columns,
       selected: this.state.selected,
       source: this.state.source,
@@ -170,20 +170,23 @@ class DataSource extends React.Component <DataLoaderProps, any> {
       }
     };
     xhr.ontimeout = (e) => {
-      xhr.abort && xhr.abort();
+      if (xhr.abort) {
+        xhr.abort();
+      }
       this.setState({ error: 102, loading: false });
       const vds = window._vds;
-      vds && vds.track("report_load_fail", {
-        project_id: window.accountId,
-        project_name: window.project.name,
-        chart_name: chartParams.name,
-        board_name: this.trackWords.board_name,
-        report_load_time: Date.now() - this.startTime,
-        channel_name: this.trackWords.channel_name,
-        error_msg: getErrorMsg(xhr.responseText)
-      });
-
-    }
+      if (vds && vds.track) {
+        vds.track("report_load_fail", {
+          project_id: window.accountId,
+          project_name: window.project.name,
+          chart_name: chartParams.name,
+          board_name: this.trackWords.board_name,
+          report_load_time: Date.now() - this.startTime,
+          channel_name: this.trackWords.channel_name,
+          error_msg: getErrorMsg(xhr.responseText)
+        });
+      }
+    };
   }
 
   private componentWillMount() {
@@ -198,7 +201,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
         };
       }
     } catch (e) {
-      void(0);
+      // void(0);
     }
 
     if (this.props.hasOwnProperty("cacheOptions")) {
@@ -289,7 +292,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
       } catch (e) { void(0); }
     }
     const state = {
-      aggregates: chartData.meta.aggregates || null ,
+      aggregator: chartData.meta.aggregator || null ,
       columns,
       error: false,
       loading: false,

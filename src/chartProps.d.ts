@@ -41,7 +41,7 @@ interface Granulariy {
 
 // 绘制接口
 export interface DrawParamsProps {
-  aggregates?: any;
+  aggregator?: any;
   adjust?: string;
   chartType: string;
   colorTheme?: string;
@@ -62,7 +62,7 @@ export interface Metric {
 // ResponseParams
 export interface ResponseParams {
   meta: {
-    aggregates?: any;
+    aggregator?: any;
     offset?: number;
     columns: Metric[];
   };
@@ -125,7 +125,6 @@ interface TimeScale {
 interface CatScale {
   values: string[];
 }
-
 
 export interface GioProps {
   adjust?: string;

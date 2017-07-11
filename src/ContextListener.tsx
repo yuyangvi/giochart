@@ -8,7 +8,7 @@ import {SingleChartProps} from "./ChartProps";
 import GrTable from "./GrTable";
 class ContextListener extends React.Component <SingleChartProps, any> {
   private static contextTypes: React.ValidationMap<any> = {
-    aggregates: React.PropTypes.array,
+    aggregator: React.PropTypes.any,
     columns: React.PropTypes.array,
     extraColumns: React.PropTypes.any,
     selectHandler: React.PropTypes.func,
@@ -57,7 +57,7 @@ class ContextListener extends React.Component <SingleChartProps, any> {
       const isRate = !!(this.context.columns && this.context.columns.length > 1 && this.context.columns[1].isRate);
       return (
         <div className={`gr-chart-wrapper ${chartParams.chartType}`}>
-          <Aggregate data={this.context.aggregates} period={this.props.range} isRate={isRate} />
+          <Aggregate data={this.context.aggregator.values} period={this.props.range} isRate={isRate} />
           <Chart
             chartParams={chartParams}
             colorTheme={this.props.colorTheme}
@@ -72,7 +72,7 @@ class ContextListener extends React.Component <SingleChartProps, any> {
     } else if (chartParams.chartType === "singleNumber") {
       return (
         <div className="gr-chart-wrapper">
-          <Aggregate data={this.context.aggregates} period={this.props.range} />
+          <Aggregate data={this.context.aggregator.values} period={this.props.range} />
           <Chart
             chartParams={chartParams}
             colorTheme={this.props.colorTheme}
@@ -104,7 +104,7 @@ class ContextListener extends React.Component <SingleChartProps, any> {
     }
     return {
       adjust: this.props.adjust,
-      aggregates: this.context.aggregates,
+      aggregator: this.context.aggregator,
       chartType: this.props.chartType,
       colorTheme: this.props.colorTheme,
       columns: this.context.columns,

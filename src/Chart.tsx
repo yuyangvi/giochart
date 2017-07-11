@@ -128,6 +128,7 @@ class Chart extends React.Component <ChartProps, any> {
       if (JSON.stringify(this.props.chartParams) !== JSON.stringify(nextProps.chartParams)) { // 配置修改了，重新绘制
         if (this.chart) {
           this.chart.destroy();
+          this.chart.get("container").innerHTML = "";
           // ReactDOM.findDOMNode(this).innerHTML = "";
         }
         this.drawChart(nextProps.chartParams, source, nextProps.isThumb);
@@ -135,7 +136,7 @@ class Chart extends React.Component <ChartProps, any> {
         // this.changeData(source);
         if (this.chart) {
           this.chart.destroy();
-          // ReactDOM.findDOMNode(this).innerHTML = "";
+          ReactDOM.findDOMNode(this).innerHTML = "";
         }
         this.drawChart(nextProps.chartParams, source, nextProps.isThumb);
       }
@@ -192,6 +193,7 @@ class Chart extends React.Component <ChartProps, any> {
     const METRICDIM = "metric";
     const METRICVAL = "val";
     // make scales;
+
     if (cfg.emptyDim) {
       dimCols.unshift(null);
     }
@@ -234,8 +236,7 @@ class Chart extends React.Component <ChartProps, any> {
     let pos;
     if (chartCfg.geom === "point") {
       pos = metricCols[0] + "*" + metricCols[1];
-    }
-    if (dimCols[0]) {
+    } else if (dimCols[0]) {
       pos = dimCols[0] + "*" + metricCols[0];
     } else {
       pos = metricCols[0];
@@ -243,9 +244,8 @@ class Chart extends React.Component <ChartProps, any> {
 
     if (adjust === "percent") {
       return G2.Stat.summary.percent(pos);
-    } else {
-      return pos;
     }
+    return pos;
   }
   private calculateColor(dimCols: string[], colorTheme: string) {
     if (colorTheme) {
@@ -258,6 +258,9 @@ class Chart extends React.Component <ChartProps, any> {
   }
   private calculatePlot(frame: any, chartCfg: any, dimCols: string[]) {
     const margin = [10, 30, 30, 50];
+    if (chartCfg.isThumb) {
+      return [0, 0, 0, 0];
+    }
     if (chartCfg.transpost) {
       const maxWordLength = Math.max.apply(null, map(frame.colArray(dimCols[0]), "length"));
       margin[3] = Math.min(145, 25 + 12 * maxWordLength);
@@ -283,15 +286,7 @@ class Chart extends React.Component <ChartProps, any> {
     const metricCols = lastCombined.metricCols;
     const dimCols = lastCombined.dimCols;
 
-    /* let scales: any = lastCombined.scales;
-    const chartType: string = chartParams.chartType;
-    // adjustFrame
-    if (adjustFrame[chartType]) {
-      const { frame: adFrame, sourceDef, } = adjustFrame[chartType](frame, metricCols);
-      frame = adFrame;
-      scales = defaultsDeep(sourceDef, scales);
-    }
-    */
+    const scales: any = lastCombined.scales;
 
     // 清洗脏数据
     frame = this.washRecord(frame, metricCols);
@@ -313,7 +308,8 @@ class Chart extends React.Component <ChartProps, any> {
         dimCols[1],
         uniq(colNames),
         scales[dimCols[1]],
-        chartConfig.legendPosition === "top" ? chartParams.aggregates : null
+        !!chartConfig.legendSingleMode,
+        chartConfig.legendPosition === "top" ? chartParams.aggregator.values : null
       );
       if (chartConfig.legendPosition === "top") {
         legendDom.className = "giochart-legends top-legends";
@@ -335,7 +331,7 @@ class Chart extends React.Component <ChartProps, any> {
     // color/shape
     const color = this.calculateColor(dimCols, chartParams.colorTheme || chartConfig.colorTheme);
     // 参考线
-
+    // console.info(chartConfig.colorTheme);
     // render配置
     let canvasHeight = canvasRect.height - legendHeight;
     if (chartConfig.transpose) {
@@ -352,7 +348,7 @@ class Chart extends React.Component <ChartProps, any> {
     });
 
     chart.source(frame, scales);
-    chart.axis(chartConfig.axis);
+    chart.axis(chartConfig.isThumb ? false : chartConfig.axis);
     let coord;
     if (chartConfig.coord) {
       coord = chart.coord(chartConfig.coord, {
@@ -375,28 +371,43 @@ class Chart extends React.Component <ChartProps, any> {
       chart[chartConfig.geom[1]]().position(dimCols[0] + "*" + metricCols[1]).color("#ccc");
       chart.axis(metricCols[0], false);
     }
+    // 本来应该画在legend里面的，但是需要chart.filter
+    if (chartConfig.legendSingleMode) {
+      const colNames: string[] = frame.colArray(dimCols[1]);
+      chart.filter(dimCols[1], [colNames[0]]);
+    }
+
     const geom = chart[geomType](adjust);
-    // 参考线，双轴图线在后
+    if (geomType === "area" && dimCols.length < 2) {
+      geom.size(2);
+
+    }    // 参考线，双轴图线在后
     if (isArray(chartConfig.geom) && !chartConfig.periodOverPeriod) {
       chart[chartConfig.geom[1]]().position(dimCols[0] + "*" + metricCols[1]).color("#ccc");
     }
 
     if (chartConfig.shape) {
-      geom.shape(dimCols[1], chartConfig.shape);
+      if (typeof chartConfig.shape === "string") {
+        geom.shape(chartConfig.shape);
+      } else {
+        geom.shape(dimCols[1], chartConfig.shape);
+      }
     }
     geom.position(position);
     if (color) {
       geom.color(color);
+    }
+    if (chartConfig.geom === "point" && metricCols.length > 2) {
+      geom.size(metricCols[2], 40, 2);
     }
     if (chartConfig.label) {
       // geom.label(chartConfig.label);
       geom.label(metricCols[0], {
         offset: -5
       });
-
     }
-    if (chartConfig.tooltip) {
-      geom.tooltip(chartConfig.tooltip);
+    if (chartConfig.isThumb && chartConfig.tooltip) {
+      geom.tooltip(chartConfig.isThumb ? false : chartConfig.tooltip);
     }
     chart.legend(isArray(chartConfig.geom));
     // 参考线
@@ -413,7 +424,8 @@ class Chart extends React.Component <ChartProps, any> {
       const aggScale = scales[metricCols[0]];
       chart.guide().html(
         [-5.5, 0],
-        "<div style=\"text-align:center;white-space: nowrap;\"><p style=\"color:#999;font-size:12px;\">总" + aggScale.alias + "</p>" +
+        "<div style=\"text-align:center;white-space: nowrap;\"><p style=\"color:#999;font-size:12px;\">总" +
+        aggScale.alias + "</p>" +
         "<p style=\"color:#333;font-size:22px;\">" + aggScale.formatter(chartParams.aggregates[0]) + "</p></div>"
       );
     }
@@ -422,13 +434,20 @@ class Chart extends React.Component <ChartProps, any> {
   }
 
   // 不能用state去绘制，因为时间顺序的问题
-  private drawLegend(dim: string, coloredDim: string[], scaleDef: G2Scale, aggregates: number[]): HTMLElement {
+  private drawLegend(
+    dim: string,
+    coloredDim: string[],
+    scaleDef: G2Scale,
+    isSingle: boolean,
+    aggregates: number[]
+  ): HTMLElement {
     const dom = document.createElement("div");
     dom.className = "giochart-legends";
     const colorArray = G2.Global.colors.default;
     const ul: HTMLElement = document.createElement("ul");
     ul.innerHTML = coloredDim.map((n: string, i: number): string => (
-      `<li data-val="${n}" title="${scaleDef.formatter ? scaleDef.formatter(n) : n}">` +
+      `<li data-val="${n}" ` +
+        `title="${scaleDef.formatter ? scaleDef.formatter(n) : n}" class="${isSingle && i > 0 ? "disabled" : ""}">` +
         `<svg fill="${colorArray[i % colorArray.length]}"><rect width="11" height="11" zIndex="3"></rect></svg>` +
         (scaleDef.formatter ? scaleDef.formatter(n) : n) +
          (aggregates ? `：<span>${formatPercent(aggregates[i])}</span>` : "") +
@@ -438,7 +457,7 @@ class Chart extends React.Component <ChartProps, any> {
     this.legends = coloredDim.map((n: string, i: number) => ({
       color: G2.Global.colors.default[i],
       dotDom: dom.querySelector(`li:nth-child(${1 + i})`),
-      isChecked: true,
+      isChecked: (isSingle && i > 0) ? false : true,
       name: n
     }));
     // 绑定事件
@@ -449,13 +468,14 @@ class Chart extends React.Component <ChartProps, any> {
         const value = target.getAttribute("data-val");
         if (value) {
           e.stopPropagation();
-          this.filter(dim, value);
+          this.filter(dim, value, isSingle);
           return;
         }
         target = target.parentNode as HTMLElement;
       }
     });
-    if (aggregates) { // funnel，没有scroll
+
+    if (aggregates) { // funnelChart，没有scroll
       return dom;
     }
     // 超出部分通过箭头scroll
@@ -482,7 +502,7 @@ class Chart extends React.Component <ChartProps, any> {
     document.body.addEventListener("resize", (e) => {
       const domHeight = dom.getBoundingClientRect().height;
       const cHeight = ul.getBoundingClientRect().height;
-      dom.style.textAlign = domHeight < 21 ? "center" : "left";
+      dom.style.textAlign = (!isSingle && domHeight < 21) ? "center" : "left";
       scroller.style.display = cHeight > 70 ? "block" : "none";
     });
     const domHeight = dom.getBoundingClientRect().height;
@@ -495,21 +515,25 @@ class Chart extends React.Component <ChartProps, any> {
 
     return dom;
   }
-
-  private filter(dim: any, name: string) {
+  private filter(dim: any, name: string, isSingle: boolean) {
     const obj = find(this.legends, { name }) as any;
     const filterNames: string[] = [];
-    obj.isChecked = obj.isChecked ? false : true;
+    if (obj.isChecked && isSingle) {
+      return;
+    }
+    obj.isChecked = !obj.isChecked;
     this.legends.forEach((v: any) => {
-      if (v.isChecked) {
+      if (isSingle ? v.name === obj.name : v.isChecked) {
+        v.isChecked = true;
         v.dotDom.className = "";
         filterNames.push(v.name);
       } else {
-        // v.dotDom.querySelector('svg').style.fill = "#999";
         v.dotDom.className = "disabled";
+        v.isChecked = false;
       }
     });
-    this.chart.filter(dim, filterNames)
+    this.chart.filter(dim, filterNames);
+    this.props.onFiltered && this.props.onFiltered(dim, filterNames);
     this.chart.repaint();
   }
 
@@ -535,14 +559,14 @@ class Chart extends React.Component <ChartProps, any> {
     }
   }
 
-  private buildScales(columns: any[], geom: string): SourceConfig {
+  private buildScales(columns: any[], geom: string, defaultScaleDef: SourceConfig): SourceConfig {
     const scaleDef: SourceConfig = {};
     // 日期在外面设置
     columns.forEach((m: Metric) => {
       if (m.id === "tm") {
         scaleDef.tm = {
           tickCount: 4,
-          type: geom === "line" ? "time" : "timeCat", // TODO 可能有其他case
+          type: geom === "interval" ? "timeCat" : "time", // TODO 可能有其他case
           formatter: (v: number) => moment.unix(v / 1000).format(v % 864e5 === 576e5 ? "MM-DD ddd" : "HH:mm")
         };
       } else if (m.isDim) {
@@ -560,6 +584,9 @@ class Chart extends React.Component <ChartProps, any> {
         };
       }
     });
+    if (defaultScaleDef) {
+      return defaultsDeep(defaultScaleDef, scaleDef) as SourceConfig;
+    }
     return scaleDef;
   }
 }
