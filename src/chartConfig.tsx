@@ -78,7 +78,7 @@ export const CHARTTHEME: any = {
       stroke: "#5FB6C7"
     }
   },
-  maxPlotLength: 130,
+  maxPlotLength: 200,
   fontSize: "12px",
   fontFamily: "Arial"
 };

@@ -253,7 +253,7 @@ class Chart extends React.Component <ChartProps, any> {
       pixels = frame.colArray(dimCols[0]).map((col:string)=>{return ctx.measureText(col).width});
       console.log(pixels);
 
-      margin[3] = 5 + CHARTTHEME["axis"].labelOffset + Math.min(CHARTTHEME.maxPlotLength, Math.ceil(Math.max(...pixels)));
+      margin[3] = 10 + CHARTTHEME["axis"].labelOffset + Math.min(CHARTTHEME.maxPlotLength, Math.ceil(Math.max(...pixels)));
       console.log(margin);
       //no max plot
       //margin[3] = 5 + CHARTTHEME["axis"].labelOffset + Math.ceil(Math.max.apply(null, pixels));
@@ -354,9 +354,18 @@ class Chart extends React.Component <ChartProps, any> {
          if(plot.colPixels[val] <= CHARTTHEME.maxPlotLength){
            return val;
          }else{
-           let wordLength= Math.floor(CHARTTHEME.maxPlotLength * val.length / plot.colPixels[val])-1;
-           console.log(val.substring(0,wordLength));
-           return val.substring(0, wordLength) + '...';
+           let c = document.createElement('canvas');
+           let ctx = c.getContext('2d');
+           ctx.font = CHARTTHEME.fontSize + " "+ CHARTTHEME.fontFamily;
+           let ellipsis = ctx.measureText("...").width;
+           let chars = val.split("").map((char:string)=>{return ctx.measureText(char).width});
+           let plotLength: number = 0; let i: number = 0;
+           while (plotLength + ellipsis <= CHARTTHEME.maxPlotLength){
+             plotLength += chars[i];
+             i++;
+           }
+           console.log("i="+(i-1)+"val="+val.substring(0, i));
+           return val.substring(0, i)+"...";
          }
         }else{
           return val;
