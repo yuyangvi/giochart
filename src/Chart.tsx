@@ -372,7 +372,7 @@ class Chart extends React.Component <ChartProps, any> {
       chart.axis(metricCols[0], false);
     }
     // 本来应该画在legend里面的，但是需要chart.filter
-    if (chartConfig.legendSingleMode) {
+    if (chartConfig.legendSingleMode && dimCols.length > 1) {
       const colNames: string[] = frame.colArray(dimCols[1]);
       chart.filter(dimCols[1], [colNames[0]]);
     }
