@@ -370,11 +370,6 @@ class Chart extends React.Component <ChartProps, any> {
           return val;
         }
       },
-      // labels: {
-      //   label: {
-      //     fontSize: '12' // 文本大小
-      //   }, // 设置坐标轴文本的显示样式，如果值为 null，则不显示坐标轴文本
-      // },
       labelOffset: CHARTTHEME["axis"].labelOffset
     });
     if (chartConfig.transpose) {
