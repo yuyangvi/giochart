@@ -243,6 +243,7 @@ class Chart extends React.Component <ChartProps, any> {
     let pixels:number[] = null;
     if (chartCfg.transpose) {
       const maxWordLength = Math.max.apply(null, map(frame.colArray(dimCols[0]), "length"));
+      console.log(maxWordLength);
       let c = document.createElement('canvas');
       // Get the context of the dummy canvas
       let ctx = c.getContext('2d');
@@ -250,7 +251,10 @@ class Chart extends React.Component <ChartProps, any> {
       ctx.font = CHARTTHEME.fontSize + " "+ CHARTTHEME.fontFamily;
       // Measure the string
       pixels = frame.colArray(dimCols[0]).map((col:string)=>{return ctx.measureText(col).width});
-      margin[3] = 5 + CHARTTHEME["axis"].labelOffset + Math.min(CHARTTHEME.maxPlotLength, Math.ceil(Math.max.apply(null, pixels)));
+      console.log(pixels);
+
+      margin[3] = 5 + CHARTTHEME["axis"].labelOffset + Math.min(CHARTTHEME.maxPlotLength, Math.ceil(Math.max(...pixels)));
+      console.log(margin);
       //no max plot
       //margin[3] = 5 + CHARTTHEME["axis"].labelOffset + Math.ceil(Math.max.apply(null, pixels));
       colPixels= Object.assign({}, ...frame.colArray(dimCols[0]).map((k:string, i:number) => {return {[k]: pixels[i]}}))
@@ -350,7 +354,7 @@ class Chart extends React.Component <ChartProps, any> {
          if(plot.colPixels[val] <= CHARTTHEME.maxPlotLength){
            return val;
          }else{
-           let wordLength= Math.floor(CHARTTHEME.maxPlotLength * val.length / plot.colPixels[val]) -3;
+           let wordLength= Math.floor(CHARTTHEME.maxPlotLength * val.length / plot.colPixels[val])-1;
            console.log(val.substring(0,wordLength));
            return val.substring(0, wordLength) + '...';
          }
