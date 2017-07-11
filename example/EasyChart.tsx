@@ -4,7 +4,7 @@ import Chart from "../src/Chart";
 import { retentionSourceSelector } from "../src/utils";
 const retentionData: Source = [
   { retention: 2045, type: "ww"}, //23
-  { retention: 1045, type: "hagsdjhagsdjhg奥斯卡就哈会计师卡机和卡sjdkajsdh kahs j"},
+  { retention: 1045, type: "dssdsajskdhka/askjd askjd/会计师打开家伙/akjsh斯柯达dk/skjdh "},
   { retention: 1421, type: "ss"}
 ];
 

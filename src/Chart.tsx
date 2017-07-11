@@ -253,7 +253,7 @@ class Chart extends React.Component <ChartProps, any> {
       pixels = frame.colArray(dimCols[0]).map((col:string)=>{return ctx.measureText(col).width});
       console.log(pixels);
 
-      margin[3] = 10 + CHARTTHEME["axis"].labelOffset + Math.min(CHARTTHEME.maxPlotLength, Math.ceil(Math.max(...pixels)));
+      margin[3] = 5 + CHARTTHEME["axis"].labelOffset + Math.min(CHARTTHEME.maxPlotLength, Math.max(...pixels));
       console.log(margin);
       //no max plot
       //margin[3] = 5 + CHARTTHEME["axis"].labelOffset + Math.ceil(Math.max.apply(null, pixels));
@@ -364,13 +364,17 @@ class Chart extends React.Component <ChartProps, any> {
              plotLength += chars[i];
              i++;
            }
-           console.log("i="+(i-1)+"val="+val.substring(0, i));
-           return val.substring(0, i)+"...";
+           return val.substring(0, i-1)+"...";
          }
         }else{
           return val;
         }
       },
+      // labels: {
+      //   label: {
+      //     fontSize: '12' // 文本大小
+      //   }, // 设置坐标轴文本的显示样式，如果值为 null，则不显示坐标轴文本
+      // },
       labelOffset: CHARTTHEME["axis"].labelOffset
     });
     if (chartConfig.transpose) {
