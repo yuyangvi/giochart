@@ -4,7 +4,7 @@ import Chart from "../src/Chart";
 
 const chartParams: DrawParamsProps =  {
   adjust: "percent",
-  aggregates: [400570],
+  aggregator: [400570],
   chartType: "donut",
   columns: [
     { id: "rt", name: "一级访问来源", isDim: true, isRate: false },

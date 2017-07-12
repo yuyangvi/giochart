@@ -58,7 +58,8 @@ export const CHARTTHEME: any = {
     right: {
       labels: { autoRotate: false },
       title: null
-    }
+    },
+    labelOffset: 15
   },
   colors: {
     default: COLORS,
@@ -77,5 +78,8 @@ export const CHARTTHEME: any = {
     tooltipMarker: {
       stroke: "#5FB6C7"
     }
-  }
+  },
+  maxPlotLength: 200,
+  fontSize: "12px",
+  fontFamily: "Arial"
 };
