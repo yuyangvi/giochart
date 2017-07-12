@@ -11,7 +11,7 @@ import {
 } from "lodash";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import {ChartProps, DrawParamsProps, Granulariy, Metric, Source} from "./ChartProps";
+import { ChartProps, DrawParamsProps, Granulariy, Metric, Source } from "./ChartProps";
 import { CHARTTHEME, CHARTTYPEMAP } from "./chartConfig";
 import { formatNumber, formatPercent, countTickCount } from "./utils";
 import * as moment from "moment";
@@ -420,13 +420,13 @@ class Chart extends React.Component <ChartProps, any> {
     chart.on("plotclick", (evt: any) => this.selectHandler(evt, selectCols));
     chart.on("itemunselected", (evt: any) => this.unselectHandler(evt, selectCols));
     */
-    if (chartConfig.aggregates) {
+    if (chartConfig.aggregator) {
       const aggScale = scales[metricCols[0]];
       chart.guide().html(
         [-5.5, 0],
         "<div style=\"text-align:center;white-space: nowrap;\"><p style=\"color:#999;font-size:12px;\">总" +
         aggScale.alias + "</p>" +
-        "<p style=\"color:#333;font-size:22px;\">" + aggScale.formatter(chartParams.aggregates[0]) + "</p></div>"
+        "<p style=\"color:#333;font-size:22px;\">" + aggScale.formatter(chartParams.aggregator.values[0]) + "</p></div>"
       );
     }
     chart.render();

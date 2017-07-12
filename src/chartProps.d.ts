@@ -48,6 +48,7 @@ export interface DrawParamsProps {
   columns: Metric[];
   granularities?: Granulariy[];
   groupCol?: string;
+  onFiltered?: (dim: string, filterNames: string[]) => void;
 }
 export interface Metric {
   id: string;
