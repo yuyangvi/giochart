@@ -267,7 +267,6 @@ class Chart extends React.Component <ChartProps, any> {
     }
     if (chartCfg.transpose) {
       const maxWordLength = Math.max.apply(null, map(frame.colArray(dimCols[0]), "length"));
-      console.log(maxWordLength);
       let c = document.createElement('canvas');
       // Get the context of the dummy canvas
       let ctx = c.getContext('2d');
@@ -275,12 +274,7 @@ class Chart extends React.Component <ChartProps, any> {
       ctx.font = CHARTTHEME.fontSize + " "+ CHARTTHEME.fontFamily;
       // Measure the string
       pixels = frame.colArray(dimCols[0]).map((col:string)=>{return ctx.measureText(col).width});
-      console.log(pixels);
-
       margin[3] = 5 + CHARTTHEME["axis"].labelOffset + Math.min(CHARTTHEME.maxPlotLength, Math.max(...pixels));
-      console.log(margin);
-      //no max plot
-      //margin[3] = 5 + CHARTTHEME["axis"].labelOffset + Math.ceil(Math.max.apply(null, pixels));
       colPixels= Object.assign({}, ...frame.colArray(dimCols[0]).map((k:string, i:number) => {return {[k]: pixels[i]}}))
     }
     if (!chartCfg.periodOverPeriod && isArray(chartCfg.geom)) { // 双轴图
@@ -326,7 +320,7 @@ class Chart extends React.Component <ChartProps, any> {
         dimCols[1],
         uniq(colNames),
         scales[dimCols[1]],
-        !!chartConfig.legendSingleMode,
+        chartConfig.legendSingleMode,
         chartConfig.legendPosition === "top" ? chartParams.aggregator.values : null
       );
       if (chartConfig.legendPosition === "top") {

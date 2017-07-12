@@ -5,6 +5,6 @@ import DualChart from "./DualChart";
 import Retention from "./Retention";
 
 ReactDOM.render(
-  <Retention />,
+  <EasyChart />,
   document.getElementById("example")
 );
