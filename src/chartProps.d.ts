@@ -48,7 +48,6 @@ export interface DrawParamsProps {
   columns: Metric[];
   granularities?: Granulariy[];
   groupCol?: string;
-  onFiltered?: (dim: string, filterNames: string[]) => void;
 }
 export interface Metric {
   id: string;
@@ -97,6 +96,7 @@ export interface ChartProps {
   trackWords?: any;
   isThumb?: boolean;
   sortHandler?: any;
+  onFiltered?: (dim: string, filterNames: string[]) => void;
 }
 // 字段是从数据源取得的Chart的格式
 export interface SingleChartProps {
