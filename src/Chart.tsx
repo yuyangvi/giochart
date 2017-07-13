@@ -276,9 +276,9 @@ class Chart extends React.Component <ChartProps, any> {
     }
     return pos;
   }
-  private calculateColor(dimCols: string[], colorTheme: string) {
+  private calculateColor(dimCols: string[], colorTheme: string, gradual: boolean) {
     if (colorTheme) {
-      return `l(90) 0:rgba(${colorTheme}, 0.8) 1:rgba(${colorTheme}, 0.1)`;
+      return gradual ? `l(90) 0:rgba(${colorTheme}, 0.8) 1:rgba(${colorTheme}, 0.1)` : `rgb(${colorTheme})`;
       // return `rgb(${colorTheme})`;
     } else if (dimCols.length > 1) {
       return dimCols[1];
@@ -358,7 +358,11 @@ class Chart extends React.Component <ChartProps, any> {
     const position = this.calculatePosition(metricCols, dimCols, chartConfig, chartParams.adjust);
 
     // color/shape
-    const color = this.calculateColor(dimCols, chartParams.colorTheme || chartConfig.colorTheme);
+    const color = this.calculateColor(
+      dimCols,
+      chartConfig.colorTheme ? (chartParams.colorTheme || chartConfig.colorTheme) : null,
+      (chartType === "singleNum")
+    )
     // 参考线
     // console.info(chartConfig.colorTheme);
     // render配置
