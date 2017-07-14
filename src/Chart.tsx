@@ -392,7 +392,7 @@ class Chart extends React.Component <ChartProps, any> {
 
       chart.source(frame, sourceDef);
       if (!isThumb) { // 如果是Thumb，禁止显示
-        if (chartCfg.pos !== "MMD" && !chartCfg.legendPosition) {
+        if (chartCfg.pos !== "MMD" && !chartCfg.legendPosition && !chartCfg.skipMetric) {
           metricCols.forEach((s: string) => {
             if (s !== "val") {
               if (chartCfg.transpose) {
