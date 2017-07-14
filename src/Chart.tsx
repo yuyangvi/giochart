@@ -192,8 +192,8 @@ class Chart extends React.Component <ChartProps, any> {
   }
   private combineMetrics(frame: any, cfg: any, columns: any[], preRenderData: (n: any, m: string[]) => any) {
     const [dimCols, metricCols] = invokeMap(groupBy(columns, "isDim"), "map", (n: any) => n.id) as string[][];
-    const METRICDIM = "metric";
-    const METRICVAL = "val";
+    const METRICDIM: string = "metric";
+    const METRICVAL: string = "val";
     // make scales;
 
     if (cfg.emptyDim) {
@@ -271,9 +271,9 @@ class Chart extends React.Component <ChartProps, any> {
       // Get the context of the dummy canvas
       let ctx = c.getContext('2d');
       // Set the context.font to the font
-      ctx.font = CHARTTHEME.fontSize + " "+ CHARTTHEME.fontFamily;
+      ctx.font = CHARTTHEME.fontSize + " " + CHARTTHEME.fontFamily;
       // Measure the string
-      pixels = frame.colArray(dimCols[0]).map((col:string)=>{return ctx.measureText(col).width});
+      pixels = frame.colArray(dimCols[0]).map((col:string) => {return ctx.measureText(col).width});
       margin[3] = 5 + CHARTTHEME["axis"].labelOffset + Math.min(CHARTTHEME.maxPlotLength, Math.max(...pixels));
       colPixels= Object.assign({}, ...frame.colArray(dimCols[0]).map((k:string, i:number) => {return {[k]: pixels[i]}}))
     }
@@ -285,10 +285,10 @@ class Chart extends React.Component <ChartProps, any> {
   }
   private drawChart(chartParams: DrawParamsProps, source: any[], isThumb: boolean = false) {
     // 防止destroy删除父节点
-    const dom = document.createElement("div");
+    const dom: HTMLElement = document.createElement("div");
     dom.style.height = "100%";
     ReactDOM.findDOMNode(this).appendChild(dom);
-    const canvasRect = dom.getBoundingClientRect();
+    const canvasRect: ClientRect = dom.getBoundingClientRect();
     // 建立Frame, 并后期修正
     const chartConfig = CHARTTYPEMAP[chartParams.chartType];
     let frame = new G2.Frame(source);
@@ -363,7 +363,7 @@ class Chart extends React.Component <ChartProps, any> {
     chart.source(frame, scales);
 
     chart.axis(chartConfig.isThumb ? false : chartConfig.axis);
-    let coord;
+    let coord:any = null;
     if (chartConfig.coord) {
       coord = chart.coord(chartConfig.coord, {
         radius: 1,
@@ -383,19 +383,25 @@ class Chart extends React.Component <ChartProps, any> {
                let ctx = c.getContext('2d');
                ctx.font = CHARTTHEME.fontSize + " "+ CHARTTHEME.fontFamily;
                let ellipsis = ctx.measureText("...").width;
-               let chars = val.split("").map((char:string)=>{return ctx.measureText(char).width});
+               let chars = val.split("").map((char:string) => {return ctx.measureText(char).width});
                let plotLength: number = 0; let i: number = 0;
                while (plotLength + ellipsis <= CHARTTHEME.maxPlotLength){
                  plotLength += chars[i];
                  i++;
                }
-               return val.substring(0, i-1)+"...";
+               return val.substring(0, i - 1) + "...";
              }
             }else{
               return val;
             }
           },
+          //titleOffset: CHARTTHEME["axis"].labelOffset + CHARTTHEME.maxPlotLength,
           labelOffset: CHARTTHEME["axis"].labelOffset
+          // title: {
+          //   fontSize: '12',
+          //   textAlign: 'center',
+          //   fill: '#6f6f6f',
+          // }
         });
     }
     if (chartConfig.transpose) {
