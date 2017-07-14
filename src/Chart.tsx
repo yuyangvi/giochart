@@ -64,16 +64,15 @@ const adjustFrame: any = {
     const maxRetention = G2.Frame.max(frame, "retention");
     frame.addCol(lossWord, (obj: any) => maxRetention - obj.retention);
     // chartParams.columns.push({ id: lossWord, name: "流失人数", isDim: false });
-    metricCols.push(lossWord);
-    const sourceDef = {
+    metricCols = [lossWord, "retention"];
+    /* const sourceDef = {
       loss: {
         alias: "流失人数",
         type: "cat",
         formatter: (n: number) => formatNumber(Math.abs(n))
-      },
-      tm: {type: "cat"}
-    };
-    return { frame, sourceDef, metricCols };
+      }
+    };*/
+    return { frame, sourceDef: {}, metricCols };
   }
 };
 const tooltipMap: any = {
@@ -228,28 +227,28 @@ class Chart extends React.Component <ChartProps, any> {
       frame = preRenderSource.frame;
       sourceDef = preRenderSource.sourceDef;
       metricCols = preRenderSource.metricCols;
-      // scales = defaultsDeep(sourceDef, scales);
     }
     if (cfg.withRate) {
       // metricCols = metricCols.filter((n: string) => n.indexOf("_rate") > -1);
       metricCols = reverse(metricCols);
     }
-    if (cfg.geom !== "point" || cfg.geom.length > 1 || cfg.withRate) {
+    if (!cfg.combineMetrics && (cfg.geom !== "point" || cfg.geom.length > 1 || cfg.withRate)) {
       return { frame, metricCols, dimCols, scales: this.buildScales(columns, cfg.geom, sourceDef)};
     }
 
     const metricNames: string[] = map(filter(columns, { isDim: false }), "name") as string[];
     const metricDict = fromPairs(zip(metricCols, metricNames));
+
     frame = G2.Frame.combinColumns(frame, metricCols, METRICVAL, METRICDIM, dimCols);
     dimCols.push(METRICDIM);
-    const isRate = find(columns, { id: metricCols })[0].isRate;
+    const isRate = filter(columns, { isDim: false })[0].isRate;
     columns = filter(columns, { isDim: true }).concat([
-      { id: "metric", isRate, isDim: false, formatterMap: metricDict },
-      { id: "value", isRate: true, isDim: false }
+      { id: "metric", isDim: true, formatterMap: metricDict },
+      { id: "val", isRate, isDim: false }
     ]);
-    // TODO: this.sortLegend();
 
-    return { frame, metricCols: [METRICDIM], dimCols, scales: this.buildScales(columns, cfg.geom, sourceDef) };
+    // TODO: this.sortLegend();
+    return { frame, metricCols: [METRICVAL], dimCols, scales: this.buildScales(columns, cfg.geom, sourceDef) };
   }
 
   private calculateAdjust(adjust: string, geom: string) {
@@ -314,7 +313,7 @@ class Chart extends React.Component <ChartProps, any> {
     const lastCombined = this.combineMetrics(frame, chartConfig, chartParams.columns, adjustFrame[chartType]);
     const metricCols = lastCombined.metricCols;
     const dimCols = lastCombined.dimCols;
-
+    frame = lastCombined.frame;
     const scales: any = lastCombined.scales;
 
     // 清洗脏数据
@@ -331,7 +330,7 @@ class Chart extends React.Component <ChartProps, any> {
 
     // legend
     let legendHeight = 0;
-    if (dimCols.length > 1 && !isArray(chartConfig.geom)) {
+    /*if (dimCols.length > 1 && !isArray(chartConfig.geom)) {
       const colNames: string[] = frame.colArray(dimCols[1]);
       const legendDom = this.drawLegend(
         dimCols[1],
@@ -349,22 +348,23 @@ class Chart extends React.Component <ChartProps, any> {
       legendHeight = legendDom.getBoundingClientRect().height;
     }
     dom.style.height = `calc( 100% - ${legendHeight}px)`;
+    */
     // canvasHeight = canvasRect.height - legendHeight;
 
     // geom
     const adjust = this.calculateAdjust(chartParams.adjust, chartConfig.geom);
 
     // position
+    // console.log(frame.s());
     const position = this.calculatePosition(metricCols, dimCols, chartConfig, chartParams.adjust);
-
+    // position = G2.Stat.summary.sum(position);
     // color/shape
     const color = this.calculateColor(
       dimCols,
       chartConfig.colorTheme ? (chartParams.colorTheme || chartConfig.colorTheme) : null,
       (chartType === "singleNum")
-    )
-    // 参考线
-    // console.info(chartConfig.colorTheme);
+    );
+
     // render配置
     let canvasHeight = canvasRect.height - legendHeight;
     if (chartConfig.transpose) {
@@ -418,18 +418,19 @@ class Chart extends React.Component <ChartProps, any> {
     if (isArray(chartConfig.geom) && !chartConfig.periodOverPeriod) {
       chart[chartConfig.geom[1]]().position(dimCols[0] + "*" + metricCols[1]).color("#ccc");
     }
+    geom.position(position);
+    if (!chartConfig.shape && color) {
+      geom.color(color);
+    }
 
     if (chartConfig.shape) {
       if (typeof chartConfig.shape === "string") {
         geom.shape(chartConfig.shape);
       } else {
-        geom.shape(dimCols[1], chartConfig.shape);
+        geom.color("#5FB6C7").shape(dimCols[1], chartConfig.shape);
       }
     }
-    geom.position(position);
-    if (color) {
-      geom.color(color);
-    }
+
     if (chartConfig.geom === "point" && metricCols.length > 2) {
       geom.size(metricCols[2], 40, 2);
     }
@@ -638,5 +639,5 @@ class Chart extends React.Component <ChartProps, any> {
 const getTooltipName = (item: any, key: string, isHour: boolean) => {
   const point: any = item.point._origin[key];
   return moment.unix(point / 1000).format("YYYY-MM-DD ddd" + (isHour ? " HH:mm" : ""));
-}
+};
 export default Chart;

@@ -1,9 +1,9 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
-import ComparisonChart from "./ComparisonChart";
+import Retention from "./Retention";
 
 ReactDOM.render(
-  <ComparisonChart />,
+  <Retention />,
   document.getElementById("example")
 );

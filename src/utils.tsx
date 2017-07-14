@@ -92,7 +92,7 @@ export const retentionSourceSelector = (source: Source, dimCols: string[], overT
         result[retention][matches[1]] = value;
       }
     }, []);
-    return map(combinedResults, (n, i) => assign(n, reservedObj, { tm: i }));
+    return map(combinedResults, (n, i) => assign(n, reservedObj, { turn: i }));
   });
   return flatten(lastResult);
 }
