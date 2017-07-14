@@ -311,6 +311,10 @@ class Chart extends React.Component <ChartProps, any> {
     if (!chartCfg.periodOverPeriod && isArray(chartCfg.geom)) { // 双轴图
       margin[1] = 50;
     }
+
+    if(isArray(chartCfg.geom)){
+      margin[2] = 70;
+    }
     // 如果没有legend, 通常左边会有标题显示
     return {margin:margin, colPixels:colPixels};
   }
@@ -490,7 +494,8 @@ class Chart extends React.Component <ChartProps, any> {
     if (chartConfig.isThumb || chartConfig.tooltip) {
       geom.tooltip(chartConfig.isThumb ? false : chartConfig.tooltip);
     }
-    chart.legend(isArray(chartConfig.geom) ? { position: "bottom" } : false);
+    // legend bottom 默认距离canvas底部为30px x轴labe默认距离x轴约20px
+    chart.legend(isArray(chartConfig.geom) ? { position: "bottom", dy: 10} : false);
     if (tooltipMap[chartType]) {
       geom.tooltip(metricCols.join("*"));
       if (metricCols.includes("rate")) { // rate作为title必须放前面,不然有bug

@@ -4,8 +4,9 @@ import EasyChart from "./EasyChart";
 import DualChart from "./DualChart";
 import Retention from "./Retention";
 import ComparisonChart from "./ComparisonChart";
+import DonutChart from "./DonutChart"
 
 ReactDOM.render(
-  <ComparisonChart />,
+  <EasyChart />,
   document.getElementById("example")
 );
