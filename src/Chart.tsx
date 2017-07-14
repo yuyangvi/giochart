@@ -266,19 +266,19 @@ class Chart extends React.Component <ChartProps, any> {
     return adjust;
   }
   private calculatePosition(metricCols: string[], dimCols: string[], chartCfg: any, adjust: string) {
-    let pos;
+    let postion;
     if (chartCfg.geom === "point") {
-      pos = metricCols[0] + "*" + metricCols[1];
+      postion = {pos: metricCols[0] + "*" + metricCols[1], x: metricCols[0], y: metricCols[1]};
     } else if (dimCols[0]) {
-      pos = dimCols[0] + "*" + metricCols[0];
+      postion = {pos: dimCols[0] + "*" + metricCols[0], x: dimCols[0], y: metricCols[0]};
     } else {
-      pos = metricCols[0];
+      postion = {pos: metricCols[0], x: undefined, y: undefined};
     }
 
     if (adjust === "percent") {
-      return G2.Stat.summary.percent(pos);
+      return {pos: G2.Stat.summary.percent(postion.pos), x: postion.x, y: postion.y};
     }
-    return pos;
+    return postion;
   }
   private calculateColor(dimCols: string[], colorTheme: string, gradual: boolean) {
     if (colorTheme) {
@@ -289,7 +289,7 @@ class Chart extends React.Component <ChartProps, any> {
     }
     return;
   }
-  private calculatePlot(frame: any, chartCfg: any, dimCols: string[]) {
+  private calculatePlot(frame: any, chartCfg: any, dimCols: string[], chartType: string) {
     let colPixels:any = null;
     let pixels:number[] = null;
     const margin = [20, 30, 30, 50];
@@ -314,6 +314,10 @@ class Chart extends React.Component <ChartProps, any> {
 
     if(isArray(chartCfg.geom)){
       margin[2] = 70;
+    }
+
+    if(chartType == "area" || chartType == "bubble" || chartType == "line" || chartType == "vbar"){
+      margin[3] = 10 + CHARTTHEME["axis"].titleOffset;
     }
     // 如果没有legend, 通常左边会有标题显示
     return {margin:margin, colPixels:colPixels};
@@ -389,7 +393,7 @@ class Chart extends React.Component <ChartProps, any> {
       canvasHeight = Math.max(15 * frame.rowCount(), canvasHeight);
     }
 
-    const plot = this.calculatePlot(frame, chartConfig, dimCols);
+    const plot = this.calculatePlot(frame, chartConfig, dimCols, chartParams.chartType);
     const chart = new G2.Chart({
       container: dom,
       forceFit: true,
@@ -401,7 +405,8 @@ class Chart extends React.Component <ChartProps, any> {
 
     chart.source(frame, scales);
 
-    chart.axis(chartConfig.isThumb ? false : chartConfig.axis);
+    //chart.axis(chartConfig.isThumb ? false : chartConfig.axis);
+
     let coord:any = null;
     if (chartConfig.coord) {
       coord = chart.coord(chartConfig.coord, {
@@ -412,7 +417,7 @@ class Chart extends React.Component <ChartProps, any> {
       coord = chart.coord("rect");
     }
     if(chartConfig.transpose){
-        chart.axis(dimCols[0],{
+        chart.axis(position.x,{
           formatter: function(val:string) {
             if(plot.colPixels){
              if(plot.colPixels[val] <= CHARTTHEME.maxPlotLength){
@@ -435,7 +440,7 @@ class Chart extends React.Component <ChartProps, any> {
             }
           },
           //titleOffset: CHARTTHEME["axis"].labelOffset + CHARTTHEME.maxPlotLength,
-          labelOffset: CHARTTHEME["axis"].labelOffset
+          labelOffset: CHARTTHEME["axis"].labelOffset,
           // title: {
           //   fontSize: '12',
           //   textAlign: 'center',
@@ -443,6 +448,18 @@ class Chart extends React.Component <ChartProps, any> {
           // }
         });
     }
+
+    if(chartType == "area" || chartType == "bubble" || chartType == "line" || chartType == "vbar"){
+      chart.axis(position.y,{
+        titleOffset: CHARTTHEME["axis"].titleOffset,
+        title: {
+          fontSize: '12',
+          textAlign: 'center',
+          fill: '#8c8c8c',
+        }
+      });
+    }
+
     if (chartConfig.transpose) {
       coord.transpose(chartConfig.transpose);
       if (chartConfig.reflect) {
@@ -478,7 +495,7 @@ class Chart extends React.Component <ChartProps, any> {
         geom.shape(dimCols[1], chartConfig.shape);
       }
     }
-    geom.position(position);
+    geom.position(position.pos);
     if (color) {
       geom.color(color);
     }

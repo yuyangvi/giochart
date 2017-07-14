@@ -1,17 +1,17 @@
 // TODO: 将图表类型变成不同步骤的组合
 export const CHARTTYPEMAP: any[string] = {
-  area: { geom: "area", colorTheme: "252, 95, 58" },
+  area: { geom: "area", colorTheme: "252, 95, 58" }, //yes
   bar: { geom: "interval", reflect: "y", transpose: true, label: true },
-  bubble: { geom: "point", shape: "circle" }, // 默认为point的直接MM，不合并metric
+  bubble: { geom: "point", shape: "circle" }, // 默认为point的直接MM，不合并metric //yes
   comparison: { geom: ["area", "line"], periodOverPeriod: true, colorTheme: "252, 95, 58" }, // geom为数组，不combine
   dualaxis: { geom: ["interval", "line"] },
   funnel: { geom: "line", withRate: true },
   funnelChart: {geom: "line", withRate: true, legendPosition: "top"},
-  line: { geom: "line" },
+  line: { geom: "line" }, // yes
   retention: { geom: "interval", shape: ["stroke", "hollowRect"], withRate: true },
   retentionTrend: { geom: "line", withRate: true },
   singleNumber: { geom: "area", shape: "smooth", isThumb: true, colorTheme: "252, 95, 58" },
-  vbar: { geom: "interval" }, // 329615792
+  vbar: { geom: "interval" }, // 329615792 yes
   donut: { geom: "interval", emptyDim: true, coord: "theta", aggregator: true }
 }
 
@@ -59,7 +59,8 @@ export const CHARTTHEME: any = {
       labels: { autoRotate: false },
       title: null
     },
-    labelOffset: 15
+    labelOffset: 15,
+    titleOffset: 70
   },
   colors: {
     default: COLORS,
