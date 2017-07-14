@@ -3,8 +3,9 @@ import * as ReactDOM from "react-dom";
 import EasyChart from "./EasyChart";
 import DualChart from "./DualChart";
 import Retention from "./Retention";
+import ComparisonChart from "./ComparisonChart";
 
 ReactDOM.render(
-  <EasyChart />,
+  <ComparisonChart />,
   document.getElementById("example")
 );

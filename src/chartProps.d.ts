@@ -96,6 +96,7 @@ export interface ChartProps {
   trackWords?: any;
   isThumb?: boolean;
   sortHandler?: any;
+  onFiltered?: (dim: string, filterNames: string[]) => void;
 }
 // 字段是从数据源取得的Chart的格式
 export interface SingleChartProps {

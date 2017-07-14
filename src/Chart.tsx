@@ -7,11 +7,11 @@ import G2 = require("g2");
 import {
   defaultsDeep, find, filter, fromPairs, groupBy,
   isArray, invokeMap, isEmpty, isEqual, isMatch,
-  map, merge, pick, some, uniq, zip, zipObject
+  map, merge, pick, reverse, some, uniq, zip, zipObject
 } from "lodash";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import {ChartProps, DrawParamsProps, Granulariy, Metric, Source} from "./ChartProps";
+import { ChartProps, DrawParamsProps, Granulariy, Metric, Source } from "./ChartProps";
 import { CHARTTHEME, CHARTTYPEMAP } from "./chartConfig";
 import { formatNumber, formatPercent, countTickCount } from "./utils";
 import * as moment from "moment";
@@ -55,7 +55,8 @@ const adjustFrame: any = {
     metricCols.forEach((id: string) => {
       sourceDef[id] = { max: maxScale };
     });
-    return { frame, sourceDef };
+    metricCols.push("rate");
+    return { frame, sourceDef, metricCols };
   },
   retention: (frame: any, metricCols: string[]) => {
     // 增加流失人数字段，并且计为负数
@@ -72,7 +73,31 @@ const adjustFrame: any = {
       },
       tm: {type: "cat"}
     };
-    return { frame, sourceDef };
+    return { frame, sourceDef, metricCols };
+  }
+};
+const tooltipMap: any = {
+  funnel: (ev: any) => {
+    const l = ev.items.length;
+    for (let i = 0; i * 2 < l; i += 1) {
+      const origin = ev.items[i * 2].point._origin;
+      const origin2 = ev.items[i * 2 + 1].point._origin;
+      ev.items[i] = ev.items[i * 2];
+      ev.items[i].value = `${ev.items[2 * i].name}: ${formatPercent(origin.conversion_rate)}, ` +
+        `${ev.items[2 * i + 1].name}: ${origin2.conversion}`;
+      ev.items[i].name = origin.comparison_value || origin.metric_name;
+    }
+    ev.items.splice(l / 2, l / 2);
+  },
+  comparison: (ev: any) => {
+    // console.log(ev);
+    /*ev.items[0] = ev.items[1];
+    ev.items[0].name = getTooltipName(ev.items[0], "tm", false);
+    if (ev.items.length > 2) {
+      ev.items[1] = ev.items[2];
+      ev.items[1].name = getTooltipName(ev.items[1], "tm_", false);
+    }*/
+    ev.items.splice(ev.items.length - 1);
   }
 };
 class Chart extends React.Component <ChartProps, any> {
@@ -191,22 +216,28 @@ class Chart extends React.Component <ChartProps, any> {
     ));
   }
   private combineMetrics(frame: any, cfg: any, columns: any[], preRenderData: (n: any, m: string[]) => any) {
-    const [dimCols, metricCols] = invokeMap(groupBy(columns, "isDim"), "map", (n: any) => n.id) as string[][];
+
+    let [dimCols, metricCols] = invokeMap(groupBy(columns, "isDim"), "map", (n: any) => n.id) as string[][];
     const METRICDIM: string = "metric";
     const METRICVAL: string = "val";
+
     // make scales;
 
     if (cfg.emptyDim) {
-      dimCols.unshift(null);
+      dimCols = [null].concat(dimCols);
     }
     let sourceDef: any = null;
     if (preRenderData) {
       const preRenderSource = preRenderData(frame, metricCols);
       frame = preRenderSource.frame;
       sourceDef = preRenderSource.sourceDef;
+      metricCols = preRenderSource.metricCols;
       // scales = defaultsDeep(sourceDef, scales);
     }
-
+    if (cfg.withRate) {
+      // metricCols = metricCols.filter((n: string) => n.indexOf("_rate") > -1);
+      metricCols = reverse(metricCols);
+    }
     if (cfg.geom !== "point" || cfg.geom.length > 1 || cfg.withRate) {
       return { frame, metricCols, dimCols, scales: this.buildScales(columns, cfg.geom, sourceDef)};
     }
@@ -249,9 +280,9 @@ class Chart extends React.Component <ChartProps, any> {
     }
     return pos;
   }
-  private calculateColor(dimCols: string[], colorTheme: string) {
+  private calculateColor(dimCols: string[], colorTheme: string, gradual: boolean) {
     if (colorTheme) {
-      return `l(90) 0:rgba(${colorTheme}, 0.8) 1:rgba(${colorTheme}, 0.1)`;
+      return gradual ? `l(90) 0:rgba(${colorTheme}, 0.8) 1:rgba(${colorTheme}, 0.1)` : `rgb(${colorTheme})`;
       // return `rgb(${colorTheme})`;
     } else if (dimCols.length > 1) {
       return dimCols[1];
@@ -341,7 +372,11 @@ class Chart extends React.Component <ChartProps, any> {
     const position = this.calculatePosition(metricCols, dimCols, chartConfig, chartParams.adjust);
 
     // color/shape
-    const color = this.calculateColor(dimCols, chartParams.colorTheme || chartConfig.colorTheme);
+    const color = this.calculateColor(
+      dimCols,
+      chartConfig.colorTheme ? (chartParams.colorTheme || chartConfig.colorTheme) : null,
+      (chartType === "singleNum")
+    )
     // 参考线
     // console.info(chartConfig.colorTheme);
     // render配置
@@ -414,7 +449,7 @@ class Chart extends React.Component <ChartProps, any> {
 
     // 参考线,周期对比图线在后
     if (isArray(chartConfig.geom) && chartConfig.periodOverPeriod) {
-      chart[chartConfig.geom[1]]().position(dimCols[0] + "*" + metricCols[1]).color("#ccc");
+      chart[chartConfig.geom[1]]().position(dimCols[0] + "*" + metricCols[1]).color("#ccc").tooltip("");
       chart.axis(metricCols[0], false);
     }
     // 本来应该画在legend里面的，但是需要chart.filter
@@ -452,10 +487,18 @@ class Chart extends React.Component <ChartProps, any> {
         offset: -5
       });
     }
-    if (chartConfig.isThumb && chartConfig.tooltip) {
+    if (chartConfig.isThumb || chartConfig.tooltip) {
       geom.tooltip(chartConfig.isThumb ? false : chartConfig.tooltip);
     }
-    chart.legend(isArray(chartConfig.geom));
+    chart.legend(isArray(chartConfig.geom) ? { position: "bottom" } : false);
+    if (tooltipMap[chartType]) {
+      geom.tooltip(metricCols.join("*"));
+      if (metricCols.includes("rate")) { // rate作为title必须放前面,不然有bug
+      //  console.log("rate");
+        chart.tooltip(true, {map: {title: "rate"}});
+      }
+      chart.on("tooltipchange", tooltipMap[chartType]);
+    }
     // 参考线
 
     /*
@@ -468,13 +511,13 @@ class Chart extends React.Component <ChartProps, any> {
     chart.on("plotclick", (evt: any) => this.selectHandler(evt, selectCols));
     chart.on("itemunselected", (evt: any) => this.unselectHandler(evt, selectCols));
     */
-    if (chartConfig.aggregates) {
+    if (chartConfig.aggregator) {
       const aggScale = scales[metricCols[0]];
       chart.guide().html(
         [-5.5, 0],
         "<div style=\"text-align:center;white-space: nowrap;\"><p style=\"color:#999;font-size:12px;\">总" +
         aggScale.alias + "</p>" +
-        "<p style=\"color:#333;font-size:22px;\">" + aggScale.formatter(chartParams.aggregator[0]) + "</p></div>"
+        "<p style=\"color:#333;font-size:22px;\">" + aggScale.formatter(chartParams.aggregator.values[0]) + "</p></div>"
       );
     }
     chart.render();
@@ -607,8 +650,11 @@ class Chart extends React.Component <ChartProps, any> {
     }
   }
 
-  private buildScales(columns: any[], geom: string, defaultScaleDef: SourceConfig): SourceConfig {
+  private buildScales(columns: any[], geom: string | string[], defaultScaleDef: SourceConfig): SourceConfig {
     const scaleDef: SourceConfig = {};
+    if (typeof geom !== "string") {
+      geom = geom[0];
+    }
     // 日期在外面设置
     columns.forEach((m: Metric) => {
       if (m.id === "tm") {

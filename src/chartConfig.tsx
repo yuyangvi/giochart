@@ -5,14 +5,14 @@ export const CHARTTYPEMAP: any[string] = {
   bubble: { geom: "point", shape: "circle" }, // 默认为point的直接MM，不合并metric
   comparison: { geom: ["area", "line"], periodOverPeriod: true, colorTheme: "252, 95, 58" }, // geom为数组，不combine
   dualaxis: { geom: ["interval", "line"] },
-  funnel: { geom: "line", withRate: true, legendSingleMode: true },
+  funnel: { geom: "line", withRate: true },
   funnelChart: {geom: "line", withRate: true, legendPosition: "top"},
   line: { geom: "line" },
   retention: { geom: "interval", shape: ["stroke", "hollowRect"], withRate: true },
   retentionTrend: { geom: "line", withRate: true },
   singleNumber: { geom: "area", shape: "smooth", isThumb: true, colorTheme: "252, 95, 58" },
   vbar: { geom: "interval" }, // 329615792
-  donut: { geom: "interval", emptyDim: true, coord: "theta", aggregates: true }
+  donut: { geom: "interval", emptyDim: true, coord: "theta", aggregator: true }
 }
 
 // 根据字段取得不同的步骤

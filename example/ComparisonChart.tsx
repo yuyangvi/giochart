@@ -21,7 +21,7 @@ const cdata: Source = [
 
 const chartParams: DrawParamsProps = {
     adjust: "dodge",
-    aggregator: [13.078740157480315, 17.546332046332047],
+    aggregator: { values: [13.078740157480315, 17.546332046332047] },
     chartType: "comparison",
     colorTheme: "252, 95, 58",
     columns: [
