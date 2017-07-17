@@ -58,3 +58,4 @@ React.render(<div>
    * [GrTable](docs/GrTable.md) 表格文档
    * [DataSource](docs/DataSource.md) 通用数据源加载
    * [Interactive](docs/Interactive.md) 关于可视化交互
+   * [Gio Chart Cat](docs/ChartCat.md) GIO Chart类型与样式汇总

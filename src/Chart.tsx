@@ -112,7 +112,9 @@ class Chart extends React.Component <ChartProps, any> {
     G2.Global.animate = navigator.hardwareConcurrency && navigator.hardwareConcurrency > 7;
   }
   public render() {
-    return <div className="giochart" style={this.props.style} />;
+    return (
+        <div className="giochart" style={this.props.style} />
+    );
   }
 
   // 按理不需要绘制对不上的图
@@ -213,9 +215,11 @@ class Chart extends React.Component <ChartProps, any> {
     ));
   }
   private combineMetrics(frame: any, cfg: any, columns: any[], preRenderData: (n: any, m: string[]) => any) {
+
     let [dimCols, metricCols] = invokeMap(groupBy(columns, "isDim"), "map", (n: any) => n.id) as string[][];
-    const METRICDIM = "metric";
-    const METRICVAL = "val";
+    const METRICDIM: string = "metric";
+    const METRICVAL: string = "val";
+
     // make scales;
 
     if (cfg.emptyDim) {
@@ -261,19 +265,19 @@ class Chart extends React.Component <ChartProps, any> {
     return adjust;
   }
   private calculatePosition(metricCols: string[], dimCols: string[], chartCfg: any, adjust: string) {
-    let pos;
+    let postion;
     if (chartCfg.geom === "point") {
-      pos = metricCols[0] + "*" + metricCols[1];
+      postion = {pos: metricCols[0] + "*" + metricCols[1], x: metricCols[0], y: metricCols[1]};
     } else if (dimCols[0]) {
-      pos = dimCols[0] + "*" + metricCols[0];
+      postion = {pos: dimCols[0] + "*" + metricCols[0], x: dimCols[0], y: metricCols[0]};
     } else {
-      pos = metricCols[0];
+      postion = {pos: metricCols[0], x: undefined, y: undefined};
     }
 
     if (adjust === "percent") {
-      return G2.Stat.summary.percent(pos);
+      return {pos: G2.Stat.summary.percent(postion.pos), x: postion.x, y: postion.y};
     }
-    return pos;
+    return postion;
   }
   private calculateColor(dimCols: string[], colorTheme: string, gradual: boolean) {
     if (colorTheme) {
@@ -284,27 +288,45 @@ class Chart extends React.Component <ChartProps, any> {
     }
     return;
   }
-  private calculatePlot(frame: any, chartCfg: any, dimCols: string[]) {
-    const margin = [10, 30, 30, 50];
+  private calculatePlot(frame: any, chartCfg: any, dimCols: string[], chartType: string) {
+    let colPixels:any = null;
+    let pixels:number[] = null;
+    const margin = [20, 30, 30, 50];
     if (chartCfg.isThumb) {
-      return [0, 0, 0, 0];
+      return {margin:[0, 0, 0, 0], colPixels:null};
     }
-    if (chartCfg.transpost) {
+    if (chartCfg.transpose) {
       const maxWordLength = Math.max.apply(null, map(frame.colArray(dimCols[0]), "length"));
-      margin[3] = Math.min(145, 25 + 12 * maxWordLength);
+      let c = document.createElement('canvas');
+      // Get the context of the dummy canvas
+      let ctx = c.getContext('2d');
+      // Set the context.font to the font
+      ctx.font = CHARTTHEME.fontSize + " " + CHARTTHEME.fontFamily;
+      // Measure the string
+      pixels = frame.colArray(dimCols[0]).map((col:string) => {return ctx.measureText(col).width});
+      margin[3] = 5 + CHARTTHEME["axis"].labelOffset + Math.min(CHARTTHEME.maxPlotLength, Math.max(...pixels));
+      colPixels= Object.assign({}, ...frame.colArray(dimCols[0]).map((k:string, i:number) => {return {[k]: pixels[i]}}))
     }
     if (!chartCfg.periodOverPeriod && isArray(chartCfg.geom)) { // 双轴图
       margin[1] = 50;
     }
+
+    if(isArray(chartCfg.geom)){
+      margin[2] = 70;
+    }
+
+    if(chartType == "area" || chartType == "bubble" || chartType == "line" || chartType == "vbar"){
+      margin[3] = 10 + CHARTTHEME["axis"].titleOffset;
+    }
     // 如果没有legend, 通常左边会有标题显示
-    return margin;
+    return {margin:margin, colPixels:colPixels};
   }
   private drawChart(chartParams: DrawParamsProps, source: any[], isThumb: boolean = false) {
     // 防止destroy删除父节点
-    const dom = document.createElement("div");
+    const dom: HTMLElement = document.createElement("div");
     dom.style.height = "100%";
     ReactDOM.findDOMNode(this).appendChild(dom);
-    const canvasRect = dom.getBoundingClientRect();
+    const canvasRect: ClientRect = dom.getBoundingClientRect();
     // 建立Frame, 并后期修正
     const chartConfig = CHARTTYPEMAP[chartParams.chartType];
     let frame = new G2.Frame(source);
@@ -336,7 +358,7 @@ class Chart extends React.Component <ChartProps, any> {
         dimCols[1],
         uniq(colNames),
         scales[dimCols[1]],
-        !!chartConfig.legendSingleMode,
+        chartConfig.legendSingleMode,
         chartConfig.legendPosition === "top" ? chartParams.aggregator.values : null
       );
       if (chartConfig.legendPosition === "top") {
@@ -371,18 +393,21 @@ class Chart extends React.Component <ChartProps, any> {
       canvasHeight = Math.max(15 * frame.rowCount(), canvasHeight);
     }
 
+    const plot = this.calculatePlot(frame, chartConfig, dimCols, chartParams.chartType);
     const chart = new G2.Chart({
       container: dom,
       forceFit: true,
       height: canvasHeight || 300,
       plotCfg: {
-        margin: this.calculatePlot(frame, chartConfig, dimCols)
+        margin: plot.margin
       }
     });
 
     chart.source(frame, scales);
-    chart.axis(chartConfig.isThumb ? false : chartConfig.axis);
-    let coord;
+
+    //chart.axis(chartConfig.isThumb ? false : chartConfig.axis);
+
+    let coord:any = null;
     if (chartConfig.coord) {
       coord = chart.coord(chartConfig.coord, {
         radius: 1,
@@ -391,6 +416,50 @@ class Chart extends React.Component <ChartProps, any> {
     } else {
       coord = chart.coord("rect");
     }
+    if(chartConfig.transpose){
+        chart.axis(position.x,{
+          formatter: function(val:string) {
+            if(plot.colPixels){
+             if(plot.colPixels[val] <= CHARTTHEME.maxPlotLength){
+               return val;
+             }else{
+               let c = document.createElement('canvas');
+               let ctx = c.getContext('2d');
+               ctx.font = CHARTTHEME.fontSize + " "+ CHARTTHEME.fontFamily;
+               let ellipsis = ctx.measureText("...").width;
+               let chars = val.split("").map((char:string) => {return ctx.measureText(char).width});
+               let plotLength: number = 0; let i: number = 0;
+               while (plotLength + ellipsis <= CHARTTHEME.maxPlotLength){
+                 plotLength += chars[i];
+                 i++;
+               }
+               return val.substring(0, i - 1) + "...";
+             }
+            }else{
+              return val;
+            }
+          },
+          //titleOffset: CHARTTHEME["axis"].labelOffset + CHARTTHEME.maxPlotLength,
+          labelOffset: CHARTTHEME["axis"].labelOffset,
+          // title: {
+          //   fontSize: '12',
+          //   textAlign: 'center',
+          //   fill: '#6f6f6f',
+          // }
+        });
+    }
+
+    if(chartType == "area" || chartType == "bubble" || chartType == "line" || chartType == "vbar"){
+      chart.axis(position.y,{
+        titleOffset: CHARTTHEME["axis"].titleOffset,
+        title: {
+          fontSize: '12',
+          textAlign: 'center',
+          fill: '#8c8c8c',
+        }
+      });
+    }
+
     if (chartConfig.transpose) {
       coord.transpose(chartConfig.transpose);
       if (chartConfig.reflect) {
@@ -430,7 +499,6 @@ class Chart extends React.Component <ChartProps, any> {
         geom.color("#5FB6C7").shape(dimCols[1], chartConfig.shape);
       }
     }
-
     if (chartConfig.geom === "point" && metricCols.length > 2) {
       geom.size(metricCols[2], 40, 2);
     }
@@ -443,7 +511,8 @@ class Chart extends React.Component <ChartProps, any> {
     if (chartConfig.isThumb || chartConfig.tooltip) {
       geom.tooltip(chartConfig.isThumb ? false : chartConfig.tooltip);
     }
-    chart.legend(isArray(chartConfig.geom) ? { position: "bottom" } : false);
+    // legend bottom 默认距离canvas底部为30px x轴labe默认距离x轴约20px
+    chart.legend(isArray(chartConfig.geom) ? { position: "bottom", dy: 10} : false);
     if (tooltipMap[chartType]) {
       geom.tooltip(metricCols.join("*"));
       if (metricCols.includes("rate")) { // rate作为title必须放前面,不然有bug
@@ -453,11 +522,13 @@ class Chart extends React.Component <ChartProps, any> {
       chart.on("tooltipchange", tooltipMap[chartType]);
     }
     // 参考线
+
     /*
     geom.selected(true, {
       selectedMode: "single", // "multiple" || "single"
       style: {fill: "#fe9929"}
     });
+
     const selectCols = (chartConfig.geom === "point" ? metricCols.slice(0, 2) : dimCols) as string[];
     chart.on("plotclick", (evt: any) => this.selectHandler(evt, selectCols));
     chart.on("itemunselected", (evt: any) => this.unselectHandler(evt, selectCols));
@@ -575,7 +646,7 @@ class Chart extends React.Component <ChartProps, any> {
       }
     });
     this.chart.filter(dim, filterNames);
-    this.props.onFiltered && this.props.onFiltered(dim, filterNames);
+    //this.props.onFiltered && this.props.onFiltered(dim, filterNames);
     this.chart.repaint();
   }
 
