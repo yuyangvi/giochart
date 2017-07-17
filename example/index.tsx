@@ -8,6 +8,6 @@ import DonutChart from "./DonutChart"
 import Funnel from "./Funnel"
 
 ReactDOM.render(
-  <EasyChart />,
+  <Retention />,
   document.getElementById("example")
 );

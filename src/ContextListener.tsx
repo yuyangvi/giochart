@@ -4,8 +4,9 @@
 import * as React from "react";
 import Aggregate from "./Aggregate";
 import Chart from "./Chart";
-import {SingleChartProps} from "./ChartProps";
+import { SingleChartProps, DrawParamsProps } from "./ChartProps";
 import GrTable from "./GrTable";
+import { retentionSourceSelector } from "./utils";
 class ContextListener extends React.Component <SingleChartProps, any> {
   private static contextTypes: React.ValidationMap<any> = {
     aggregator: React.PropTypes.any,
@@ -85,6 +86,28 @@ class ContextListener extends React.Component <SingleChartProps, any> {
             isThumb={this.props.isThumb}
           />
         </div>);
+    } else if (["retention", "retentionTrend"].includes(chartParams.chartType)) {
+      const source = retentionSourceSelector(this.context.source, ["comparison_value"], false);
+      const retentionParams: DrawParamsProps = {
+        adjust: "stack",
+        chartType: chartParams.chartType,
+        columns: [
+          { id: "turn", name: "留存周期", isDim: true, isRate: false },
+          { id: "retention", name: "用户数", isDim: false, isRate: false },
+          { id: "retention_rate", name: "留存率", isDim: false, isRate: true }
+        ]
+      };
+
+      return (
+        <Chart
+          chartParams={retentionParams}
+          colorTheme={this.props.colorTheme}
+          source={source}
+          startTime={this.context.startTime}
+          trackWords={this.context.trackWords}
+          isThumb={this.props.isThumb}
+        />
+      );
     }
     return (
       <Chart

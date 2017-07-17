@@ -1,17 +1,17 @@
 // TODO: 将图表类型变成不同步骤的组合
 export const CHARTTYPEMAP: any[string] = {
-  area: { geom: "area", colorTheme: "252, 95, 58" }, //yes
+  area: { geom: "area", colorTheme: "252, 95, 58" },
   bar: { geom: "interval", reflect: "y", transpose: true, label: true },
-  bubble: { geom: "point", shape: "circle" }, // 默认为point的直接MM，不合并metric //yes
+  bubble: { geom: "point", shape: "circle" }, // 默认为point的直接MM，不合并metric
   comparison: { geom: ["area", "line"], periodOverPeriod: true, colorTheme: "252, 95, 58" }, // geom为数组，不combine
   dualaxis: { geom: ["interval", "line"] },
   funnel: { geom: "line", withRate: true },
   funnelChart: {geom: "line", withRate: true, legendPosition: "top"},
-  line: { geom: "line" }, // yes
-  retention: { geom: "interval", shape: ["stroke", "hollowRect"], withRate: true },
+  line: { geom: "line" },
+  retention: { geom: "interval", shape: ["stroke", "hollowRect"], withRate: true, combineMetrics: true },
   retentionTrend: { geom: "line", withRate: true },
   singleNumber: { geom: "area", shape: "smooth", isThumb: true, colorTheme: "252, 95, 58" },
-  vbar: { geom: "interval" }, // 329615792 yes
+  vbar: { geom: "interval" }, // 329615792
   donut: { geom: "interval", emptyDim: true, coord: "theta", aggregator: true }
 }
 
