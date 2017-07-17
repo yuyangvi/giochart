@@ -152,8 +152,8 @@ class Chart extends React.Component <ChartProps, any> {
       if (JSON.stringify(this.props.chartParams) !== JSON.stringify(nextProps.chartParams)) { // 配置修改了，重新绘制
         if (this.chart) {
           this.chart.destroy();
-          this.chart.get("container").innerHTML = "";
-          // ReactDOM.findDOMNode(this).innerHTML = "";
+          // this.chart.get("container").innerHTML = "";
+          ReactDOM.findDOMNode(this).innerHTML = "";
         }
         this.drawChart(nextProps.chartParams, source, nextProps.isThumb);
       } else if (JSON.stringify(source) !== JSON.stringify(this.props.source)) {
