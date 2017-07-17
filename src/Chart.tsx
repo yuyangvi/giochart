@@ -533,6 +533,7 @@ class Chart extends React.Component <ChartProps, any> {
     chart.on("plotclick", (evt: any) => this.selectHandler(evt, selectCols));
     chart.on("itemunselected", (evt: any) => this.unselectHandler(evt, selectCols));
     */
+
     if (chartConfig.aggregator) {
       const aggScale = scales[metricCols[0]];
       chart.guide().html(

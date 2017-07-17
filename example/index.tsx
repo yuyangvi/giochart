@@ -5,6 +5,7 @@ import DualChart from "./DualChart";
 import Retention from "./Retention";
 import ComparisonChart from "./ComparisonChart";
 import DonutChart from "./DonutChart"
+import Funnel from "./Funnel"
 
 ReactDOM.render(
   <EasyChart />,
