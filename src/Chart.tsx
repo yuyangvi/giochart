@@ -236,7 +236,8 @@ class Chart extends React.Component <ChartProps, any> {
       // metricCols = metricCols.filter((n: string) => n.indexOf("_rate") > -1);
       metricCols = reverse(metricCols);
     }
-    if (!cfg.combineMetrics && (cfg.geom !== "point" || cfg.geom.length > 1 || cfg.withRate)) {
+
+    if (!cfg.combineMetrics && (cfg.geom === "point" || isArray(cfg.geom) || cfg.withRate)) {
       return { frame, metricCols, dimCols, scales: this.buildScales(columns, cfg.geom, sourceDef)};
     }
 
@@ -352,7 +353,7 @@ class Chart extends React.Component <ChartProps, any> {
 
     // legend
     let legendHeight = 0;
-    /*if (dimCols.length > 1 && !isArray(chartConfig.geom)) {
+    if (dimCols.length > 1 && !isArray(chartConfig.geom)) {
       const colNames: string[] = frame.colArray(dimCols[1]);
       const legendDom = this.drawLegend(
         dimCols[1],
@@ -370,7 +371,6 @@ class Chart extends React.Component <ChartProps, any> {
       legendHeight = legendDom.getBoundingClientRect().height;
     }
     dom.style.height = `calc( 100% - ${legendHeight}px)`;
-    */
     // canvasHeight = canvasRect.height - legendHeight;
 
     // geom
@@ -405,9 +405,9 @@ class Chart extends React.Component <ChartProps, any> {
 
     chart.source(frame, scales);
 
-    //chart.axis(chartConfig.isThumb ? false : chartConfig.axis);
+    // chart.axis(chartConfig.isThumb ? false : chartConfig.axis);
 
-    let coord:any = null;
+    let coord: any = null;
     if (chartConfig.coord) {
       coord = chart.coord(chartConfig.coord, {
         radius: 1,
@@ -416,16 +416,16 @@ class Chart extends React.Component <ChartProps, any> {
     } else {
       coord = chart.coord("rect");
     }
-    if(chartConfig.transpose){
-        chart.axis(position.x,{
-          formatter: function(val:string) {
-            if(plot.colPixels){
-             if(plot.colPixels[val] <= CHARTTHEME.maxPlotLength){
+    if (chartConfig.transpose){
+        /*chart.axis(position.x,{
+          formatter: function(val: string) {
+            if (plot.colPixels){
+             if (plot.colPixels[val] <= CHARTTHEME.maxPlotLength){
                return val;
              }else{
                let c = document.createElement('canvas');
                let ctx = c.getContext('2d');
-               ctx.font = CHARTTHEME.fontSize + " "+ CHARTTHEME.fontFamily;
+               ctx.font = CHARTTHEME.fontSize + " " + CHARTTHEME.fontFamily;
                let ellipsis = ctx.measureText("...").width;
                let chars = val.split("").map((char:string) => {return ctx.measureText(char).width});
                let plotLength: number = 0; let i: number = 0;
@@ -446,10 +446,10 @@ class Chart extends React.Component <ChartProps, any> {
           //   textAlign: 'center',
           //   fill: '#6f6f6f',
           // }
-        });
+        });*/
     }
 
-    if(chartType == "area" || chartType == "bubble" || chartType == "line" || chartType == "vbar"){
+    /*if (chartType === "area" || chartType === "bubble" || chartType === "line" || chartType === "vbar "){
       chart.axis(position.y,{
         titleOffset: CHARTTHEME["axis"].titleOffset,
         title: {
@@ -458,7 +458,7 @@ class Chart extends React.Component <ChartProps, any> {
           fill: '#8c8c8c',
         }
       });
-    }
+    }*/
 
     if (chartConfig.transpose) {
       coord.transpose(chartConfig.transpose);
@@ -487,7 +487,7 @@ class Chart extends React.Component <ChartProps, any> {
     if (isArray(chartConfig.geom) && !chartConfig.periodOverPeriod) {
       chart[chartConfig.geom[1]]().position(dimCols[0] + "*" + metricCols[1]).color("#ccc");
     }
-    geom.position(position);
+    geom.position(position.pos);
     if (!chartConfig.shape && color) {
       geom.color(color);
     }
@@ -542,6 +542,7 @@ class Chart extends React.Component <ChartProps, any> {
         "<p style=\"color:#333;font-size:22px;\">" + aggScale.formatter(chartParams.aggregator.values[0]) + "</p></div>"
       );
     }
+    console.log(position);
     chart.render();
     this.chart = chart;
   }
