@@ -11,28 +11,12 @@ import {
 } from "lodash";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { ChartProps, DrawParamsProps, Granulariy, Metric, Source } from "./ChartProps";
+import { ChartProps, DrawParamsProps, Granulariy, Metric, Source, G2Scale, SourceConfig, ChartDimValues } from "./ChartProps";
 import { CHARTTHEME, CHARTTYPEMAP } from "./chartConfig";
 import { formatNumber, formatPercent, countTickCount } from "./utils";
 import * as moment from "moment";
 moment.locale("zh-cn");
 
-interface G2Scale {
-  type: string;
-  formatter?: (n: string|number) => string;
-  range?: [number, number];
-  alias?: string;
-  tickCount?: number;
-  tickInterval?: number;
-  ticks?: string[];
-  mask?: string;
-  nice?: boolean;
-  min?: number;
-  max?: number;
-}
-interface SourceConfig {
-  [colName: string]: G2Scale;
-}
 const countTick = (maxTick: number, total: number) => {
   const interval = Math.ceil(total / maxTick);
   return Math.ceil(total / interval);
@@ -75,6 +59,7 @@ const adjustFrame: any = {
     return { frame, sourceDef: {}, metricCols };
   }
 };
+
 const tooltipMap: any = {
   funnel: (ev: any) => {
     const l = ev.items.length;
@@ -212,7 +197,17 @@ class Chart extends React.Component <ChartProps, any> {
       (col: string) => (typeof obj[col] === "number")
     ));
   }
-  private combineMetrics(frame: any, cfg: any, columns: any[], preRenderData: (n: any, m: string[]) => any) {
+
+  private getDimValues(frame: any, columns: Metric[], id: string): ChartDimValues {
+    let dimValues: Array<string> = null;
+    dimValues = map(frame.data, (data: any) =>{
+        let col: any = columns.filter((c) => { return c['id'] === 'retention_' + data['turn']; });
+        return col[0]['name'];
+    });
+    return { id: id, dimValues: dimValues};
+  }
+
+  private combineMetrics(frame: any, cfg: any, columns: Metric[], preRenderData: (n: any, m: string[]) => any) {
     let [dimCols, metricCols] = invokeMap(groupBy(columns, "isDim"), "map", (n: any) => n.id) as string[][];
     const METRICDIM: string = "metric";
     const METRICVAL: string = "val";
@@ -234,22 +229,30 @@ class Chart extends React.Component <ChartProps, any> {
       metricCols = reverse(metricCols);
     }
     if (!cfg.combineMetrics && (cfg.geom !== "point" || cfg.geom.length > 1 || cfg.withRate)) {
-      return { frame, metricCols, dimCols, scales: this.buildScales(columns, cfg.geom, sourceDef)};
+      return { frame, metricCols, dimCols, scales: this.buildScales(columns, cfg.geom, sourceDef, null)};
     }
 
+    // retention 下 metricDict 对应不上 TODO: fix
     const metricNames: string[] = map(filter(columns, { isDim: false }), "name") as string[];
     const metricDict = fromPairs(zip(metricCols, metricNames));
+
+    let dimValues: ChartDimValues = null;
+    let dimColumn: Metric[] = filter(columns, { isDim: true });
+    if(dimColumn[0]['id'] === 'turn'){
+      dimValues = this.getDimValues(frame, columns, "turn")
+    }
 
     frame = G2.Frame.combinColumns(frame, metricCols, METRICVAL, METRICDIM, dimCols);
     dimCols.push(METRICDIM);
     const isRate = filter(columns, { isDim: false })[0].isRate;
-    columns = filter(columns, { isDim: true }).concat([
+
+    columns = dimColumn.concat([
       { id: "metric", isDim: true, formatterMap: metricDict },
       { id: "val", isRate, isDim: false }
     ]);
 
     // TODO: this.sortLegend();
-    return { frame, metricCols: [METRICVAL], dimCols, scales: this.buildScales(columns, cfg.geom, sourceDef) };
+    return { frame, metricCols: [METRICVAL], dimCols, scales: this.buildScales(columns, cfg.geom, sourceDef, dimValues) };
   }
 
   private calculateAdjust(adjust: string, geom: string) {
@@ -264,15 +267,15 @@ class Chart extends React.Component <ChartProps, any> {
   private calculatePosition(metricCols: string[], dimCols: string[], chartCfg: any, adjust: string) {
     let postion;
     if (chartCfg.geom === "point") {
-      postion = {pos: metricCols[0] + "*" + metricCols[1], x: metricCols[0], y: metricCols[1]};
+      postion = { pos: metricCols[0] + "*" + metricCols[1], x: metricCols[0], y: metricCols[1] };
     } else if (dimCols[0]) {
-      postion = {pos: dimCols[0] + "*" + metricCols[0], x: dimCols[0], y: metricCols[0]};
+      postion = { pos: dimCols[0] + "*" + metricCols[0], x: dimCols[0], y: metricCols[0] };
     } else {
-      postion = {pos: metricCols[0], x: undefined, y: undefined};
+      postion = { pos: metricCols[0], x: undefined, y: undefined };
     }
 
     if (adjust === "percent") {
-      return {pos: G2.Stat.summary.percent(postion.pos), x: postion.x, y: postion.y};
+      return { pos: G2.Stat.summary.percent(postion.pos), x: postion.x, y: postion.y };
     }
     return postion;
   }
@@ -290,7 +293,7 @@ class Chart extends React.Component <ChartProps, any> {
     let pixels:number[] = null;
     const margin = [20, 30, 30, 50];
     if (chartCfg.isThumb) {
-      return {margin:[0, 0, 0, 0], colPixels:null};
+      return { margin:[0, 0, 0, 0], colPixels:null };
     }
     if (chartCfg.transpose) {
       const maxWordLength = Math.max.apply(null, map(frame.colArray(dimCols[0]), "length"));
@@ -302,21 +305,25 @@ class Chart extends React.Component <ChartProps, any> {
       // Measure the string
       pixels = frame.colArray(dimCols[0]).map((col:string) => {return ctx.measureText(col).width});
       margin[3] = 5 + CHARTTHEME["axis"].labelOffset + Math.min(CHARTTHEME.maxPlotLength, Math.max(...pixels));
-      colPixels= Object.assign({}, ...frame.colArray(dimCols[0]).map((k:string, i:number) => {return {[k]: pixels[i]}}))
+      colPixels = Object.assign({}, ...frame.colArray(dimCols[0]).map((k:string, i:number) => { return {[k]: pixels[i]} }))
     }
     if (!chartCfg.periodOverPeriod && isArray(chartCfg.geom)) { // 双轴图
       margin[1] = 50;
     }
 
-    if(isArray(chartCfg.geom)){
+    if (isArray(chartCfg.geom)){
       margin[2] = 70;
     }
-
     if(chartType == "area" || chartType == "bubble" || chartType == "line" || chartType == "vbar"){
+    /*
+    drawLegend 判断条件
+    if (dimCols.length > 1 && !isArray(chartConfig.geom)){
+    */
+    //if (dimCols.length > 1 && !isArray(chartCfg.geom)){
       margin[3] = 10 + CHARTTHEME["axis"].titleOffset;
     }
     // 如果没有legend, 通常左边会有标题显示
-    return {margin:margin, colPixels:colPixels};
+    return { margin:margin, colPixels:colPixels };
   }
   private drawChart(chartParams: DrawParamsProps, source: any[], isThumb: boolean = false) {
     // 防止destroy删除父节点
@@ -400,6 +407,9 @@ class Chart extends React.Component <ChartProps, any> {
       }
     });
 
+    // TODO: scales add values
+
+    //scales["turn"]["values"] = ['当天', '1天后', '2天后','3天后','4天后','5天后','6天后','7天后','8天后','9天后','10天后','11天后','12天后','13天后'];
     chart.source(frame, scales);
 
     //chart.axis(chartConfig.isThumb ? false : chartConfig.axis);
@@ -436,12 +446,17 @@ class Chart extends React.Component <ChartProps, any> {
               return val;
             }
           },
-          //titleOffset: CHARTTHEME["axis"].labelOffset + CHARTTHEME.maxPlotLength,
           labelOffset: CHARTTHEME["axis"].labelOffset,
         });
     }
 
+    //draw title
     if(chartType == "area" || chartType == "bubble" || chartType == "line" || chartType == "vbar"){
+    /*
+     drawLegend 判断条件
+     if (dimCols.length > 1 && !isArray(chartConfig.geom))
+     */
+    //if(!(dimCols.length > 1 && !isArray(chartConfig.geom))){
       chart.axis(position.y,{
         titleOffset: CHARTTHEME["axis"].titleOffset,
         title: {
@@ -662,7 +677,7 @@ class Chart extends React.Component <ChartProps, any> {
     }
   }
 
-  private buildScales(columns: any[], geom: string | string[], defaultScaleDef: SourceConfig): SourceConfig {
+  private buildScales(columns: any[], geom: string | string[], defaultScaleDef: SourceConfig, chartDimValues: ChartDimValues): SourceConfig {
     const scaleDef: SourceConfig = {};
     if (typeof geom !== "string") {
       geom = geom[0];
@@ -680,6 +695,9 @@ class Chart extends React.Component <ChartProps, any> {
           alias: m.name,
           type: "cat",
         };
+        if(chartDimValues && m.id === chartDimValues.id){
+            scaleDef[m.id]["values"] = chartDimValues.dimValues;
+        }
       } else {
         scaleDef[m.id] = {
           alias: m.name,
