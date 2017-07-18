@@ -438,11 +438,6 @@ class Chart extends React.Component <ChartProps, any> {
           },
           //titleOffset: CHARTTHEME["axis"].labelOffset + CHARTTHEME.maxPlotLength,
           labelOffset: CHARTTHEME["axis"].labelOffset,
-          // title: {
-          //   fontSize: '12',
-          //   textAlign: 'center',
-          //   fill: '#6f6f6f',
-          // }
         });
     }
 
@@ -484,7 +479,7 @@ class Chart extends React.Component <ChartProps, any> {
     if (isArray(chartConfig.geom) && !chartConfig.periodOverPeriod) {
       chart[chartConfig.geom[1]]().position(dimCols[0] + "*" + metricCols[1]).color("#ccc");
     }
-    geom.position(position);
+    geom.position(position.pos);
     if (!chartConfig.shape && color) {
       geom.color(color);
     }
