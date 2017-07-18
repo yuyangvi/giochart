@@ -5,10 +5,11 @@
 import { clone, find } from "lodash";
 import * as React from "react";
 import Chart from "./Chart";
-import {DataRequestProps, Granulariy,GioProps} from "./ChartProps";
+import {DataRequestProps, Granulariy, GioProps} from "./ChartProps";
 import ContextListener from "./ContextListener";
 import DataSource from "./DataSource";
 import GrTable from "./GrTable";
+import { retentionSourceSelector } from "./utils";
 
 const timeWeekRange = (timeRange: string) => {
   if (!timeRange) {
@@ -22,7 +23,7 @@ const timeWeekRange = (timeRange: string) => {
     return (parseInt(end, 10) - parseInt(start, 10)) > (86400000 * 7);
   }
   return true;
-}
+};
 
 // 表格的sorter，在ChartV4里处理，这样可以避免在其他地方用到。
 class ChartV4 extends React.Component <GioProps, any> {
@@ -97,7 +98,7 @@ const convertChartParams = (v3Params: any): GioProps => {
     dimensions = ["tm"].concat(dimensions);
   }
   if (dimensions.length === 0) {
-      dimensions = [v3Params.chartType === "bar" ? "v" : "tm"].concat(dimensions);
+    dimensions = [v3Params.chartType === "bar" ? "v" : "tm"].concat(dimensions);
   }
   if (dimensions.includes("tm")) {
     // const interval = v3Params.chartType === "singleNumber" ? (v3Params.interval * 1000) : v3Params.interval
@@ -107,7 +108,7 @@ const convertChartParams = (v3Params: any): GioProps => {
       period: (v3Params.chartType === "comparison" ? "auto" : undefined)
     });
   }
-  if (dimensions.length < 1 || metrics.length < 1){
+  if (dimensions.length < 1 || metrics.length < 1) {
     return null;
   }
 
@@ -166,7 +167,7 @@ const convertChartParams = (v3Params: any): GioProps => {
 
   const colorTheme: string = v3Params.attrs.colorTheme;
   return { adjust, chartType, params, colorTheme };
-}
+};
 
 const GioChart = (props: GioProps) => {
   if (props.chartType) {
@@ -195,5 +196,12 @@ const GioChart = (props: GioProps) => {
   );
 };
 
-export { Chart, ContextListener, DataSource, GrTable, convertChartParams};
+export {
+  Chart,
+  ContextListener,
+  DataSource,
+  GrTable,
+  convertChartParams,
+  retentionSourceSelector
+};
 export default GioChart;
