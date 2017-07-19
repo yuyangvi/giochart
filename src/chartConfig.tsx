@@ -44,6 +44,8 @@ const COLORS = [
 // G2 的主题有bug，legend读的是G2.Theme的颜色，因此直接覆盖Theme更合适
 export const CHARTTHEME: any = {
   animate: false,
+  labelOffset: 15,
+  titleOffset: 70,
   axis: {
     bottom: {
       labels: { autoRotate: false },
@@ -58,9 +60,7 @@ export const CHARTTHEME: any = {
     right: {
       labels: { autoRotate: false },
       title: null
-    },
-    labelOffset: 15,
-    titleOffset: 70
+    }
   },
   colors: {
     default: COLORS,
