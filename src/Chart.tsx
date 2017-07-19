@@ -237,7 +237,7 @@ class Chart extends React.Component <ChartProps, any> {
       metricCols = reverse(metricCols);
     }
 
-    if (!cfg.combineMetrics && (cfg.geom === "point" || isArray(cfg.geom) || cfg.withRate)) {
+    if (!cfg.combineMetrics && (cfg.geom === "point" || isArray(cfg.geom) || cfg.withRate || metricCols.length < 2)) {
       return { frame, metricCols, dimCols, scales: this.buildScales(columns, cfg.geom, sourceDef)};
     }
 
@@ -505,7 +505,7 @@ class Chart extends React.Component <ChartProps, any> {
     if (chartConfig.label) {
       // geom.label(chartConfig.label);
       geom.label(metricCols[0], {
-        offset: -5
+        offset: 5
       });
     }
     if (chartConfig.isThumb || chartConfig.tooltip) {
@@ -542,7 +542,7 @@ class Chart extends React.Component <ChartProps, any> {
         "<p style=\"color:#333;font-size:22px;\">" + aggScale.formatter(chartParams.aggregator.values[0]) + "</p></div>"
       );
     }
-    console.log(position);
+
     chart.render();
     this.chart = chart;
   }

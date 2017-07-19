@@ -159,12 +159,14 @@ const convertChartParams = (v3Params: any): GioProps => {
     params.type = "funnel";
   }
   let adjust: string = v3Params.attrs.subChartType  || "dodge";
+  if (chartType === "donut") {
+    adjust = "percent";
+  }
   if (adjust === "seperate") {
     adjust = "dodge";
   } else if (adjust === "total") {
     adjust = "stack";
   }
-
   const colorTheme: string = v3Params.attrs.colorTheme;
   return { adjust, chartType, params, colorTheme };
 };
