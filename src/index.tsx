@@ -120,7 +120,7 @@ const convertChartParams = (v3Params: any): GioProps => {
   if (v3Params.chartType === "singleNumber") {
     aggregation = true;
     aggregator = v3Params.aggregateType || "sum";
-  } else if (["bar", "abar"].includes(v3Params.chartType)) {
+  } else if (["bar", "abar", "donut"].includes(v3Params.chartType)) {
     aggregator = "sum";
     aggregation = false;
   }

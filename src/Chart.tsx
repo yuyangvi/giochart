@@ -316,11 +316,11 @@ class Chart extends React.Component <ChartProps, any> {
       margin[2] = 70;
     }
 
-    if(chartType == "area" || chartType == "bubble" || chartType == "line" || chartType == "vbar"){
+    if(chartType === "area" || chartType === "bubble" || chartType === "line" || chartType === "vbar"){
       margin[3] = 10 + CHARTTHEME["axis"].titleOffset;
     }
     // 如果没有legend, 通常左边会有标题显示
-    return {margin:margin, colPixels:colPixels};
+    return { margin: margin, colPixels: colPixels };
   }
   private drawChart(chartParams: DrawParamsProps, source: any[], isThumb: boolean = false) {
     // 防止destroy删除父节点
