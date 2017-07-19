@@ -11,28 +11,12 @@ import {
 } from "lodash";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { ChartProps, DrawParamsProps, Granulariy, Metric, Source } from "./ChartProps";
+import { ChartProps, DrawParamsProps, Metric, Source, G2Scale, SourceConfig, ChartDimValues } from "./ChartProps";
 import { CHARTTHEME, CHARTTYPEMAP } from "./chartConfig";
 import { formatNumber, formatPercent, countTickCount } from "./utils";
 import * as moment from "moment";
 moment.locale("zh-cn");
 
-interface G2Scale {
-  type: string;
-  formatter?: (n: string|number) => string;
-  range?: [number, number];
-  alias?: string;
-  tickCount?: number;
-  tickInterval?: number;
-  ticks?: string[];
-  mask?: string;
-  nice?: boolean;
-  min?: number;
-  max?: number;
-}
-interface SourceConfig {
-  [colName: string]: G2Scale;
-}
 const countTick = (maxTick: number, total: number) => {
   const interval = Math.ceil(total / maxTick);
   return Math.ceil(total / interval);
@@ -112,9 +96,7 @@ class Chart extends React.Component <ChartProps, any> {
     G2.Global.animate = navigator.hardwareConcurrency && navigator.hardwareConcurrency > 7;
   }
   public render() {
-    return (
-        <div className="giochart" style={this.props.style} />
-    );
+    return <div className="giochart" style={this.props.style} />;
   }
 
   // 按理不需要绘制对不上的图
@@ -214,8 +196,17 @@ class Chart extends React.Component <ChartProps, any> {
       (col: string) => (typeof obj[col] === "number")
     ));
   }
-  private combineMetrics(frame: any, cfg: any, columns: any[], preRenderData: (n: any, m: string[]) => any) {
 
+  private getDimValues(frame: any, columns: Metric[], columnId: string): ChartDimValues {
+    let values: string[] = null;
+    values = map(frame.data, (data: any) => {
+        const col: any = columns.filter((c) => c.id === "retention_" + data.turn );
+        return col[0].name;
+    });
+    return { id: columnId, dimValues: values };
+  }
+
+  private combineMetrics(frame: any, cfg: any, columns: Metric[], preRenderData: (n: any, m: string[]) => any) {
     let [dimCols, metricCols] = invokeMap(groupBy(columns, "isDim"), "map", (n: any) => n.id) as string[][];
     const METRICDIM: string = "metric";
     const METRICVAL: string = "val";
@@ -241,17 +232,24 @@ class Chart extends React.Component <ChartProps, any> {
         frame,
         dimCols,
         metricCols,
-        scales: this.buildScales(columns, cfg.geom, sourceDef)
+        scales: this.buildScales(columns, cfg.geom, sourceDef, null)
       };
     }
-
+    // retention 下 metricDict 对应不上 TODO: fix
     const metricNames: string[] = map(filter(columns, { isDim: false }), "name") as string[];
     const metricDict = fromPairs(zip(metricCols, metricNames));
+
+    let dimValues: ChartDimValues = null;
+    const dimColumn: Metric[] = filter(columns, { isDim: true });
+    if (dimColumn[0].id === "turn") {
+      dimValues = this.getDimValues(frame, columns, "turn");
+    }
 
     frame = G2.Frame.combinColumns(frame, metricCols, METRICVAL, METRICDIM, dimCols);
     dimCols.push(METRICDIM);
     const isRate = filter(columns, { isDim: false })[0].isRate;
-    columns = filter(columns, { isDim: true }).concat([
+
+    columns = dimColumn.concat([
       { id: "metric", isDim: true, formatterMap: metricDict },
       { id: "val", isRate, isDim: false }
     ]);
@@ -261,7 +259,7 @@ class Chart extends React.Component <ChartProps, any> {
       frame,
       dimCols,
       metricCols: [METRICVAL],
-      scales: this.buildScales(columns, cfg.geom, sourceDef)
+      scales: this.buildScales(columns, cfg.geom, sourceDef, dimValues)
     };
   }
 
@@ -277,15 +275,15 @@ class Chart extends React.Component <ChartProps, any> {
   private calculatePosition(metricCols: string[], dimCols: string[], chartCfg: any, adjust: string) {
     let postion;
     if (chartCfg.geom === "point") {
-      postion = {pos: metricCols[0] + "*" + metricCols[1], x: metricCols[0], y: metricCols[1]};
+      postion = { pos: metricCols[0] + "*" + metricCols[1], x: metricCols[0], y: metricCols[1] };
     } else if (dimCols[0]) {
-      postion = {pos: dimCols[0] + "*" + metricCols[0], x: dimCols[0], y: metricCols[0]};
+      postion = { pos: dimCols[0] + "*" + metricCols[0], x: dimCols[0], y: metricCols[0] };
     } else {
-      postion = {pos: metricCols[0], x: undefined, y: undefined};
+      postion = { pos: metricCols[0], x: undefined, y: undefined };
     }
 
     if (adjust === "percent") {
-      return {pos: G2.Stat.summary.percent(postion.pos), x: postion.x, y: postion.y};
+      return { pos: G2.Stat.summary.percent(postion.pos), x: postion.x, y: postion.y };
     }
     return postion;
   }
@@ -320,16 +318,16 @@ class Chart extends React.Component <ChartProps, any> {
         ...frame.colArray(dimCols[0]).map((k: string, i: number) => ({[k]: pixels[i]}))
       );
     }
+
     if (!chartCfg.periodOverPeriod && isArray(chartCfg.geom)) { // 双轴图
       margin[1] = 50;
     }
 
-    if (isArray(chartCfg.geom)){
+    if (isArray(chartCfg.geom)) {
       margin[2] = 70;
     }
-
-    if (chartType === "area" || chartType === "bubble" || chartType === "line" || chartType === "vbar"){
-      margin[3] = 10 + CHARTTHEME.axis.titleOffset;
+    if (chartType === "area" || chartType === "bubble" || chartType === "line" || chartType === "vbar") {
+      margin[3] = 10 + CHARTTHEME.titleOffset;
     }
     // 如果没有legend, 通常左边会有标题显示
     return { margin, colPixels };
@@ -433,49 +431,43 @@ class Chart extends React.Component <ChartProps, any> {
     } else {
       coord = chart.coord("rect");
     }
-    if (chartConfig.transpose){
-        /*chart.axis(position.x,{
-          formatter: function(val: string) {
-            if (plot.colPixels){
-             if (plot.colPixels[val] <= CHARTTHEME.maxPlotLength){
+    if (chartConfig.transpose) {
+        chart.axis(position.x, {
+          formatter: (val: string) => {
+            if (plot.colPixels) {
+             if (plot.colPixels[val] <= CHARTTHEME.maxPlotLength) {
                return val;
-             }else{
-               let c = document.createElement('canvas');
-               let ctx = c.getContext('2d');
+             }else {
+               const c = document.createElement("canvas");
+               const ctx = c.getContext("2d");
                ctx.font = CHARTTHEME.fontSize + " " + CHARTTHEME.fontFamily;
-               let ellipsis = ctx.measureText("...").width;
-               let chars = val.split("").map((char:string) => {return ctx.measureText(char).width});
+               const ellipsis = ctx.measureText("...").width;
+               const chars = val.split("").map((char: string) => ctx.measureText(char).width);
                let plotLength: number = 0; let i: number = 0;
-               while (plotLength + ellipsis <= CHARTTHEME.maxPlotLength){
+               while (plotLength + ellipsis <= CHARTTHEME.maxPlotLength) {
                  plotLength += chars[i];
                  i++;
                }
                return val.substring(0, i - 1) + "...";
              }
-            }else{
+            }else {
               return val;
             }
           },
-          //titleOffset: CHARTTHEME["axis"].labelOffset + CHARTTHEME.maxPlotLength,
-          labelOffset: CHARTTHEME["axis"].labelOffset,
-          // title: {
-          //   fontSize: '12',
-          //   textAlign: 'center',
-          //   fill: '#6f6f6f',
-          // }
-        });*/
+          labelOffset: CHARTTHEME.labelOffset,
+        });
     }
 
-    /*if (chartType === "area" || chartType === "bubble" || chartType === "line" || chartType === "vbar "){
-      chart.axis(position.y,{
-        titleOffset: CHARTTHEME["axis"].titleOffset,
-        title: {
-          fontSize: '12',
-          textAlign: 'center',
-          fill: '#8c8c8c',
-        }
-      });
-    }*/
+    // if (chartType === "area" || chartType === "bubble" || chartType === "line" || chartType === "vbar "){
+    //   chart.axis(position.y,{
+    //     titleOffset: CHARTTHEME.titleOffset,
+    //     title: {
+    //       fontSize: '12',
+    //       textAlign: 'center',
+    //       fill: '#8c8c8c',
+    //     }
+    //   });
+    // }
 
     if (chartConfig.transpose) {
       coord.transpose(chartConfig.transpose);
@@ -529,7 +521,7 @@ class Chart extends React.Component <ChartProps, any> {
       geom.tooltip(chartConfig.isThumb ? false : chartConfig.tooltip);
     }
     // legend bottom 默认距离canvas底部为30px x轴labe默认距离x轴约20px
-    chart.legend(isArray(chartConfig.geom) ? { position: "bottom", dy: 10} : false);
+    chart.legend(isArray(chartConfig.geom) ? { position: "bottom" } : false);
     if (tooltipMap[chartType]) {
       geom.tooltip(metricCols.join("*"));
       if (metricCols.includes("rate")) { // rate作为title必须放前面,不然有bug
@@ -559,7 +551,6 @@ class Chart extends React.Component <ChartProps, any> {
         "<p style=\"color:#333;font-size:22px;\">" + aggScale.formatter(chartParams.aggregator.values[0]) + "</p></div>"
       );
     }
-
     chart.render();
     this.chart = chart;
   }
@@ -612,8 +603,9 @@ class Chart extends React.Component <ChartProps, any> {
     // 超出部分通过箭头scroll
     const scroller = document.createElement("div");
     scroller.className = "giochart-legend-scroller";
-    scroller.innerHTML = '<span><i class="anticon anticon-caret-up" data-action="up"></i>' +
-      '</span><span><i class="anticon anticon-caret-down" data-action="down"></i></span>';
+
+    scroller.innerHTML = '<span><i class="anticon anticon-caret-up" data-action="up"></i></span>' +
+      '<span><i class="anticon anticon-caret-down" data-action="down"></i></span>';
     dom.appendChild(scroller);
     let scrollTop = 0;
     scroller.addEventListener("click", (e) => {
@@ -665,7 +657,7 @@ class Chart extends React.Component <ChartProps, any> {
       }
     });
     this.chart.filter(dim, filterNames);
-    //this.props.onFiltered && this.props.onFiltered(dim, filterNames);
+    // this.props.onFiltered && this.props.onFiltered(dim, filterNames);
     this.chart.repaint();
   }
 
@@ -691,7 +683,11 @@ class Chart extends React.Component <ChartProps, any> {
     }
   }
 
-  private buildScales(columns: any[], geom: string | string[], defaultScaleDef: SourceConfig): SourceConfig {
+  private buildScales(
+      columns: any[],
+      geom: string | string[],
+      defaultScaleDef: SourceConfig,
+      chartDimValues: ChartDimValues): SourceConfig {
     const scaleDef: SourceConfig = {};
     if (typeof geom !== "string") {
       geom = geom[0];
@@ -711,6 +707,9 @@ class Chart extends React.Component <ChartProps, any> {
         };
         if (m.formatterMap) {
           scaleDef[m.id].formatter = (n: string): string => m.formatterMap[n];
+        }
+        if (chartDimValues && m.id === chartDimValues.id) {
+          scaleDef[m.id].values = chartDimValues.dimValues;
         }
       } else {
         scaleDef[m.id] = {

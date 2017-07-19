@@ -2,7 +2,7 @@
 export const CHARTTYPEMAP: any[string] = {
   area: { geom: "area", colorTheme: "252, 95, 58" }, // yes
   bar: { geom: "interval", reflect: "y", transpose: true, label: true },
-  bubble: { geom: "point", shape: "circle" }, // 默认为point的直接MM，不合并metric //yes
+  bubble: { geom: "point", shape: "circle" }, // 默认为point的直接MM，不合并metric
   comparison: { geom: ["area", "line"], periodOverPeriod: true, colorTheme: "252, 95, 58" }, // geom为数组，不combine
   dualaxis: { geom: ["interval", "line"] },
   funnel: { geom: "line", withRate: true },
@@ -11,7 +11,7 @@ export const CHARTTYPEMAP: any[string] = {
   retention: { geom: "interval", shape: ["stroke", "hollowRect"], withRate: true, combineMetrics: true },
   retentionTrend: { geom: "line", withRate: true },
   singleNumber: { geom: "area", shape: "smooth", isThumb: true, colorTheme: "252, 95, 58" },
-  vbar: { geom: "interval" }, // 329615792 yes
+  vbar: { geom: "interval" }, // 329615792
   donut: { geom: "interval", emptyDim: true, coord: "theta", aggregator: true }
 }
 
@@ -44,6 +44,8 @@ const COLORS = [
 // G2 的主题有bug，legend读的是G2.Theme的颜色，因此直接覆盖Theme更合适
 export const CHARTTHEME: any = {
   animate: false,
+  labelOffset: 15,
+  titleOffset: 70,
   axis: {
     bottom: {
       labels: { autoRotate: false },
@@ -58,9 +60,7 @@ export const CHARTTHEME: any = {
     right: {
       labels: { autoRotate: false },
       title: null
-    },
-    labelOffset: 15,
-    titleOffset: 70
+    }
   },
   colors: {
     default: COLORS,
