@@ -1,17 +1,16 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
+import Retention from "./Retention";
 import EasyChart from "./EasyChart";
 /*
-import DualChart from "./DualChart";
-import Retention from "./Retention";
+import DualChart from"./DualChart";
+import EasyChart from "./EasyChart";
 import ComparisonChart from "./ComparisonChart";
 import DonutChart from "./DonutChart"
- */
-import Retention from "./Retention";
-
+*/
 
 ReactDOM.render(
-  <Retention />,
+  <EasyChart />,
   document.getElementById("example")
 );
