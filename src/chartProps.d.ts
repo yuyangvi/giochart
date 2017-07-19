@@ -57,6 +57,7 @@ export interface Metric {
   interval?: number;
   isRate?: boolean;
   counter?: string;
+  formatterMap?: any;
 }
 
 // ResponseParams
@@ -137,4 +138,27 @@ export interface GioProps {
   sourceUrl?: string;
   cacheOptions?: any;
   isThumb?: boolean;
+}
+
+export interface G2Scale {
+  type: string;
+  formatter?: (n: string|number) => string;
+  range?: [number, number];
+  alias?: string;
+  tickCount?: number;
+  tickInterval?: number;
+  ticks?: string[];
+  mask?: string;
+  nice?: boolean;
+  min?: number;
+  max?: number;
+  values?: Array<string>;
+}
+export interface SourceConfig {
+  [colName: string]: G2Scale;
+}
+
+export interface ChartDimValues {
+  id: string;
+  dimValues: Array<string>;
 }

@@ -7,10 +7,11 @@ import DualChart from "./DualChart";
 import Retention from "./Retention";
 import ComparisonChart from "./ComparisonChart";
 import DonutChart from "./DonutChart"
+ */
 import Retention from "./Retention";
-*/
+
 
 ReactDOM.render(
-  <EasyChart />,
+  <Retention />,
   document.getElementById("example")
 );
