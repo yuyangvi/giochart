@@ -5,7 +5,7 @@
 
 import G2 = require("g2");
 import {
-  defaultsDeep, find, filter, fromPairs, groupBy,
+  assign, defaultsDeep, find, filter, fromPairs, groupBy,
   isArray, invokeMap, isEmpty, isEqual, isMatch,
   map, merge, pick, reverse, some, uniq, zip, zipObject
 } from "lodash";
@@ -221,7 +221,6 @@ class Chart extends React.Component <ChartProps, any> {
     const METRICVAL: string = "val";
 
     // make scales;
-
     if (cfg.emptyDim) {
       dimCols = [null].concat(dimCols);
     }
@@ -238,7 +237,12 @@ class Chart extends React.Component <ChartProps, any> {
     }
 
     if (!cfg.combineMetrics && (cfg.geom === "point" || isArray(cfg.geom) || cfg.withRate || metricCols.length < 2)) {
-      return { frame, metricCols, dimCols, scales: this.buildScales(columns, cfg.geom, sourceDef)};
+      return {
+        frame,
+        dimCols,
+        metricCols,
+        scales: this.buildScales(columns, cfg.geom, sourceDef)
+      };
     }
 
     const metricNames: string[] = map(filter(columns, { isDim: false }), "name") as string[];
@@ -253,7 +257,12 @@ class Chart extends React.Component <ChartProps, any> {
     ]);
 
     // TODO: this.sortLegend();
-    return { frame, metricCols: [METRICVAL], dimCols, scales: this.buildScales(columns, cfg.geom, sourceDef) };
+    return {
+      frame,
+      dimCols,
+      metricCols: [METRICVAL],
+      scales: this.buildScales(columns, cfg.geom, sourceDef)
+    };
   }
 
   private calculateAdjust(adjust: string, geom: string) {
@@ -290,37 +299,40 @@ class Chart extends React.Component <ChartProps, any> {
     return;
   }
   private calculatePlot(frame: any, chartCfg: any, dimCols: string[], chartType: string) {
-    let colPixels:any = null;
-    let pixels:number[] = null;
+    let colPixels: any = null;
+    let pixels: number[] = null;
     const margin = [20, 30, 30, 50];
     if (chartCfg.isThumb) {
-      return {margin:[0, 0, 0, 0], colPixels:null};
+      return { margin: [0, 0, 0, 0], colPixels: null };
     }
     if (chartCfg.transpose) {
       const maxWordLength = Math.max.apply(null, map(frame.colArray(dimCols[0]), "length"));
-      let c = document.createElement('canvas');
+      const c: HTMLCanvasElement = document.createElement("canvas");
       // Get the context of the dummy canvas
-      let ctx = c.getContext('2d');
+      const ctx: CanvasRenderingContext2D = c.getContext("2d");
       // Set the context.font to the font
       ctx.font = CHARTTHEME.fontSize + " " + CHARTTHEME.fontFamily;
       // Measure the string
-      pixels = frame.colArray(dimCols[0]).map((col:string) => {return ctx.measureText(col).width});
-      margin[3] = 5 + CHARTTHEME["axis"].labelOffset + Math.min(CHARTTHEME.maxPlotLength, Math.max(...pixels));
-      colPixels= Object.assign({}, ...frame.colArray(dimCols[0]).map((k:string, i:number) => {return {[k]: pixels[i]}}))
+      pixels = frame.colArray(dimCols[0]).map((col: string) => ctx.measureText(col).width);
+      margin[3] = 5 + CHARTTHEME.axis.labelOffset + Math.min(CHARTTHEME.maxPlotLength, Math.max(...pixels));
+      colPixels = assign(
+        {},
+        ...frame.colArray(dimCols[0]).map((k: string, i: number) => ({[k]: pixels[i]}))
+      );
     }
     if (!chartCfg.periodOverPeriod && isArray(chartCfg.geom)) { // 双轴图
       margin[1] = 50;
     }
 
-    if(isArray(chartCfg.geom)){
+    if (isArray(chartCfg.geom)){
       margin[2] = 70;
     }
 
-    if(chartType === "area" || chartType === "bubble" || chartType === "line" || chartType === "vbar"){
-      margin[3] = 10 + CHARTTHEME["axis"].titleOffset;
+    if (chartType === "area" || chartType === "bubble" || chartType === "line" || chartType === "vbar"){
+      margin[3] = 10 + CHARTTHEME.axis.titleOffset;
     }
     // 如果没有legend, 通常左边会有标题显示
-    return { margin: margin, colPixels: colPixels };
+    return { margin, colPixels };
   }
   private drawChart(chartParams: DrawParamsProps, source: any[], isThumb: boolean = false) {
     // 防止destroy删除父节点
@@ -405,6 +417,11 @@ class Chart extends React.Component <ChartProps, any> {
 
     chart.source(frame, scales);
 
+    if (!chartConfig.withRate && !metricCols.includes("val")) {
+      metricCols.forEach((s: string) => {
+        chart.axis(s, {title: {fill: "#999", textAlign: "center"}});
+      });
+    }
     // chart.axis(chartConfig.isThumb ? false : chartConfig.axis);
 
     let coord: any = null;
@@ -595,7 +612,8 @@ class Chart extends React.Component <ChartProps, any> {
     // 超出部分通过箭头scroll
     const scroller = document.createElement("div");
     scroller.className = "giochart-legend-scroller";
-    scroller.innerHTML = '<span><i class="anticon anticon-caret-up" data-action="up"></i></span><span><i class="anticon anticon-caret-down" data-action="down"></i></span>';
+    scroller.innerHTML = '<span><i class="anticon anticon-caret-up" data-action="up"></i>' +
+      '</span><span><i class="anticon anticon-caret-down" data-action="down"></i></span>';
     dom.appendChild(scroller);
     let scrollTop = 0;
     scroller.addEventListener("click", (e) => {
@@ -691,6 +709,9 @@ class Chart extends React.Component <ChartProps, any> {
           alias: m.name,
           type: "cat",
         };
+        if (m.formatterMap) {
+          scaleDef[m.id].formatter = (n: string): string => m.formatterMap[n];
+        }
       } else {
         scaleDef[m.id] = {
           alias: m.name,

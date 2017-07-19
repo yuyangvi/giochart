@@ -57,6 +57,7 @@ export interface Metric {
   interval?: number;
   isRate?: boolean;
   counter?: string;
+  formatterMap?: any;
 }
 
 // ResponseParams
