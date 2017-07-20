@@ -5,7 +5,7 @@
 
 import G2 = require("g2");
 import {
-  defaultsDeep, find, filter, fromPairs, groupBy, assign,
+  assign, defaultsDeep, find, filter, fromPairs, groupBy,
   isArray, invokeMap, isEmpty, isEqual, isMatch,
   map, merge, pick, reverse, some, uniq, zip, zipObject
 } from "lodash";
@@ -212,7 +212,6 @@ class Chart extends React.Component <ChartProps, any> {
     const METRICVAL: string = "val";
 
     // make scales;
-
     if (cfg.emptyDim) {
       dimCols = [null].concat(dimCols);
     }
@@ -228,8 +227,13 @@ class Chart extends React.Component <ChartProps, any> {
       metricCols = reverse(metricCols);
     }
 
-    if (!cfg.combineMetrics && (cfg.geom === "point" || isArray(cfg.geom) || cfg.withRate)) {
-      return { frame, metricCols, dimCols, scales: this.buildScales(columns, cfg.geom, sourceDef, null)};
+    if (!cfg.combineMetrics && (cfg.geom === "point" || isArray(cfg.geom) || cfg.withRate || metricCols.length < 2)) {
+      return {
+        frame,
+        dimCols,
+        metricCols,
+        scales: this.buildScales(columns, cfg.geom, sourceDef, null)
+      };
     }
     // retention 下 metricDict 对应不上 TODO: fix
     const metricNames: string[] = map(filter(columns, { isDim: false }), "name") as string[];
@@ -251,7 +255,12 @@ class Chart extends React.Component <ChartProps, any> {
     ]);
 
     // TODO: this.sortLegend();
-    return {frame, metricCols: [METRICVAL], dimCols, scales: this.buildScales(columns, cfg.geom, sourceDef, dimValues)};
+    return {
+      frame,
+      dimCols,
+      metricCols: [METRICVAL],
+      scales: this.buildScales(columns, cfg.geom, sourceDef, dimValues)
+    };
   }
 
   private calculateAdjust(adjust: string, geom: string) {
@@ -296,15 +305,20 @@ class Chart extends React.Component <ChartProps, any> {
     }
     if (chartCfg.transpose) {
       const maxWordLength = Math.max.apply(null, map(frame.colArray(dimCols[0]), "length"));
-      const c = document.createElement("canvas");
+      const c: HTMLCanvasElement = document.createElement("canvas");
       // Get the context of the dummy canvas
-      const ctx = c.getContext("2d");
+      const ctx: CanvasRenderingContext2D = c.getContext("2d");
       // Set the context.font to the font
       ctx.font = CHARTTHEME.fontSize + " " + CHARTTHEME.fontFamily;
       // Measure the string
       pixels = frame.colArray(dimCols[0]).map((col: string) => ctx.measureText(col).width);
       margin[3] = 5 + CHARTTHEME.labelOffset + Math.min(CHARTTHEME.maxPlotLength, Math.max(...pixels));
       colPixels = assign({}, ...frame.colArray(dimCols[0]).map((k: string, i: number) => ({[k]: pixels[i]})));
+      margin[3] = 5 + CHARTTHEME.axis.labelOffset + Math.min(CHARTTHEME.maxPlotLength, Math.max(...pixels));
+      colPixels = assign(
+        {},
+        ...frame.colArray(dimCols[0]).map((k: string, i: number) => ({[k]: pixels[i]}))
+      );
     }
 
     if (!chartCfg.periodOverPeriod && isArray(chartCfg.geom)) { // 双轴图
@@ -403,6 +417,11 @@ class Chart extends React.Component <ChartProps, any> {
 
     chart.source(frame, scales);
 
+    if (!chartConfig.withRate && !metricCols.includes("val")) {
+      metricCols.forEach((s: string) => {
+        chart.axis(s, {title: {fill: "#999", textAlign: "center"}});
+      });
+    }
     // chart.axis(chartConfig.isThumb ? false : chartConfig.axis);
 
     let coord: any = null;
@@ -497,7 +516,7 @@ class Chart extends React.Component <ChartProps, any> {
     if (chartConfig.label) {
       // geom.label(chartConfig.label);
       geom.label(metricCols[0], {
-        offset: -5
+        offset: 5
       });
     }
     if (chartConfig.isThumb || chartConfig.tooltip) {
@@ -586,8 +605,9 @@ class Chart extends React.Component <ChartProps, any> {
     // 超出部分通过箭头scroll
     const scroller = document.createElement("div");
     scroller.className = "giochart-legend-scroller";
+
     scroller.innerHTML = '<span><i class="anticon anticon-caret-up" data-action="up"></i></span>' +
-        '<span><i class="anticon anticon-caret-down" data-action="down"></i></span>';
+      '<span><i class="anticon anticon-caret-down" data-action="down"></i></span>';
     dom.appendChild(scroller);
     let scrollTop = 0;
     scroller.addEventListener("click", (e) => {
@@ -687,8 +707,11 @@ class Chart extends React.Component <ChartProps, any> {
           alias: m.name,
           type: "cat",
         };
+        if (m.formatterMap) {
+          scaleDef[m.id].formatter = (n: string): string => m.formatterMap[n];
+        }
         if (chartDimValues && m.id === chartDimValues.id) {
-            scaleDef[m.id].values = chartDimValues.dimValues;
+          scaleDef[m.id].values = chartDimValues.dimValues;
         }
       } else {
         scaleDef[m.id] = {

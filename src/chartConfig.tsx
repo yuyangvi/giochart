@@ -1,6 +1,6 @@
 // TODO: 将图表类型变成不同步骤的组合
 export const CHARTTYPEMAP: any[string] = {
-  area: { geom: "area", colorTheme: "252, 95, 58" },
+  area: { geom: "area", colorTheme: "252, 95, 58" }, // yes
   bar: { geom: "interval", reflect: "y", transpose: true, label: true },
   bubble: { geom: "point", shape: "circle" }, // 默认为point的直接MM，不合并metric
   comparison: { geom: ["area", "line"], periodOverPeriod: true, colorTheme: "252, 95, 58" }, // geom为数组，不combine

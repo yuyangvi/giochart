@@ -120,7 +120,7 @@ const convertChartParams = (v3Params: any): GioProps => {
   if (v3Params.chartType === "singleNumber") {
     aggregation = true;
     aggregator = v3Params.aggregateType || "sum";
-  } else if (["bar", "abar"].includes(v3Params.chartType)) {
+  } else if (["bar", "abar", "donut"].includes(v3Params.chartType)) {
     aggregator = "sum";
     aggregation = false;
   }
@@ -159,12 +159,14 @@ const convertChartParams = (v3Params: any): GioProps => {
     params.type = "funnel";
   }
   let adjust: string = v3Params.attrs.subChartType  || "dodge";
+  if (chartType === "donut") {
+    adjust = "percent";
+  }
   if (adjust === "seperate") {
     adjust = "dodge";
   } else if (adjust === "total") {
     adjust = "stack";
   }
-
   const colorTheme: string = v3Params.attrs.colorTheme;
   return { adjust, chartType, params, colorTheme };
 };
