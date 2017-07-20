@@ -5,7 +5,7 @@
 
 import G2 = require("g2");
 import {
-  defaultsDeep, find, filter, fromPairs, groupBy,
+  defaultsDeep, find, filter, fromPairs, groupBy, assign,
   isArray, invokeMap, isEmpty, isEqual, isMatch,
   map, merge, pick, reverse, some, uniq, zip, zipObject
 } from "lodash";
@@ -304,7 +304,7 @@ class Chart extends React.Component <ChartProps, any> {
       // Measure the string
       pixels = frame.colArray(dimCols[0]).map((col: string) => ctx.measureText(col).width);
       margin[3] = 5 + CHARTTHEME.labelOffset + Math.min(CHARTTHEME.maxPlotLength, Math.max(...pixels));
-      colPixels = Object.assign({}, ...frame.colArray(dimCols[0]).map((k: string, i: number) => { return {[k]: pixels[i]}; }));
+      colPixels = assign({}, ...frame.colArray(dimCols[0]).map((k: string, i: number) => ({[k]: pixels[i]})));
     }
 
     if (!chartCfg.periodOverPeriod && isArray(chartCfg.geom)) { // 双轴图
