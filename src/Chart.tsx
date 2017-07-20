@@ -314,11 +314,6 @@ class Chart extends React.Component <ChartProps, any> {
       pixels = frame.colArray(dimCols[0]).map((col: string) => ctx.measureText(col).width);
       margin[3] = 5 + CHARTTHEME.labelOffset + Math.min(CHARTTHEME.maxPlotLength, Math.max(...pixels));
       colPixels = assign({}, ...frame.colArray(dimCols[0]).map((k: string, i: number) => ({[k]: pixels[i]})));
-      margin[3] = 5 + CHARTTHEME.axis.labelOffset + Math.min(CHARTTHEME.maxPlotLength, Math.max(...pixels));
-      colPixels = assign(
-        {},
-        ...frame.colArray(dimCols[0]).map((k: string, i: number) => ({[k]: pixels[i]}))
-      );
     }
 
     if (!chartCfg.periodOverPeriod && isArray(chartCfg.geom)) { // 双轴图

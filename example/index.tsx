@@ -10,6 +10,6 @@ import ComparisonChart from "./ComparisonChart";
 
 
 ReactDOM.render(
-  <EasyChart />,
+  <Retention />,
   document.getElementById("example")
 );
