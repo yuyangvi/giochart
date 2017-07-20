@@ -25,11 +25,11 @@ const chartParams: DrawParamsProps = {
   chartType: "retention",
   columns: [
     { id: "turn", name: "留存周期", isDim: true, isRate: false },
-    //{ id: "comparison_value", name: "对比值", isDim: true, isRate: false },
-
-    //{ id: "tm", name: "时间", isDim: true, isRate: false },
-
-   { id: "users", name: "用户数", isDim: false, isRate: false },
+    // { id: "comparison_value", name: "对比值", isDim: true, isRate: false },
+    // { id: "tm", name: "时间", isDim: true, isRate: false },
+   // { id: "users", name: "用户数", isDim: false, isRate: false },
+   { id: "retention", name: "用户数", isDim: false, isRate: false },
+   { id: "retention_rate", name: "留存率", isDim: false, isRate: true },
    { id: "retention_0", name: "当天", isDim: false, isRate: false },
    { id: "retention_rate_0", name: "当天留存率", isDim: false, isRate: true },
    { id: "retention_1", name: "1天后", isDim: false, isRate: false },
@@ -57,10 +57,7 @@ const chartParams: DrawParamsProps = {
    { id: "retention_12", name: "12天后", isDim: false, isRate: false },
    { id: "retention_rate_12", name: "12天后留存率", isDim: false, isRate: true },
    { id: "retention_13", name: "13天后", isDim: false, isRate: false },
-   { id: "retention_rate_13", name: "13天后留存率", isDim: false, isRate: true },
-
-    { id: "retention", name: "用户数", isDim: false, isRate: false },
-    { id: "retention_rate", name: "留存率", isDim: false, isRate: true }
+   { id: "retention_rate_13", name: "13天后留存率", isDim: false, isRate: true }
 
   ]
 };

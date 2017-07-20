@@ -193,7 +193,7 @@ class Chart extends React.Component <ChartProps, any> {
 
   private washRecord(frame: any, metricCols: string[]) {
     return G2.Frame.filter(frame, (obj: any) => metricCols.every(
-      (col: string) => (typeof obj[col] === "number")
+      (col: string) => (typeof obj[col] === "number" || obj[col] === undefined)
     ));
   }
 
@@ -224,27 +224,32 @@ class Chart extends React.Component <ChartProps, any> {
     }
     if (cfg.withRate) {
       // metricCols = metricCols.filter((n: string) => n.indexOf("_rate") > -1);
-      metricCols = reverse(metricCols);
+     //  metricCols = reverse(metricCols);
     }
-
-    if (!cfg.combineMetrics && (cfg.geom === "point" || isArray(cfg.geom) || cfg.withRate || metricCols.length < 2)) {
-      return {
-        frame,
-        dimCols,
-        metricCols,
-        scales: this.buildScales(columns, cfg.geom, sourceDef, null)
-      };
-    }
-    // retention 下 metricDict 对应不上 TODO: fix
-    const metricNames: string[] = map(filter(columns, { isDim: false }), "name") as string[];
-    const metricDict = fromPairs(zip(metricCols, metricNames));
 
     let dimValues: ChartDimValues = null;
     const dimColumn: Metric[] = filter(columns, { isDim: true });
     if (dimColumn[0].id === "turn") {
       dimValues = this.getDimValues(frame, columns, "turn");
     }
+    if (!cfg.combineMetrics && (cfg.geom === "point" || isArray(cfg.geom) || cfg.withRate || metricCols.length < 2)) {
+      return {
+        frame,
+        dimCols,
+        metricCols,
+        scales: this.buildScales(columns, cfg.geom, sourceDef, dimValues)
+      };
+    }
+    // retention 下 metricDict 对应不上 TODO: fix
+    const metricNames: string[] = map(filter(columns, { isDim: false }), "name") as string[];
+    let metricDict = fromPairs(zip(metricCols, metricNames));
 
+    // retenton 特殊处理 需要洋哥定夺
+    if (metricCols[0] === "loss" && metricCols[1] === "retention") {
+      metricDict = {};
+      metricDict.loss = "流失";
+      metricDict.retention = "用户数";
+    }
     frame = G2.Frame.combinColumns(frame, metricCols, METRICVAL, METRICDIM, dimCols);
     dimCols.push(METRICDIM);
     const isRate = filter(columns, { isDim: false })[0].isRate;
@@ -700,7 +705,7 @@ class Chart extends React.Component <ChartProps, any> {
       } else if (m.isDim) {
         scaleDef[m.id] = {
           alias: m.name,
-          type: "cat",
+          type: "cat"
         };
         if (m.formatterMap) {
           scaleDef[m.id].formatter = (n: string): string => m.formatterMap[n];

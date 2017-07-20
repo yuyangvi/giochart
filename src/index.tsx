@@ -60,7 +60,8 @@ class ChartV4 extends React.Component <GioProps, any> {
         }];
       }
     }
-    return <DataSource params={params} cacheOptions={props.cacheOptions}>
+    return (
+      <DataSource params={params} cacheOptions={props.cacheOptions}>
       <ContextListener
         chartType={props.chartType}
         colorTheme={props.colorTheme}
@@ -72,7 +73,7 @@ class ChartV4 extends React.Component <GioProps, any> {
         sortHandler={this.sortHandler.bind(this)}
         isThumb={props.isThumb}
       />
-    </DataSource>;
+    </DataSource>);
   }
   private sortHandler(sort: any) {
     this.setState(sort);
