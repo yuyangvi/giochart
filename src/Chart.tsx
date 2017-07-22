@@ -200,8 +200,8 @@ class Chart extends React.Component <ChartProps, any> {
   private getDimValues(frame: any, columns: Metric[], columnId: string): ChartDimValues {
     let values: string[] = null;
     values = map(frame.data, (data: any) => {
-        const col: any = columns.filter((c) => c.id === "retention_" + data.turn );
-        return col[0].name;
+        // const col: any = columns.filter((c) => c.id === "retention_" + data.turn );
+        return data.turn;
     });
     return { id: columnId, dimValues: values };
   }
