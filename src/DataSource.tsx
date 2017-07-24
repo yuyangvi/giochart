@@ -120,7 +120,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
         }
       }
       this.startTime = Date.now();
-      this.setState({ loading: true });
+      this.setState({ error: false, loading: true });
       this.defaultRequest(nextProps.params, this.afterFetch.bind(this));
     }
   }

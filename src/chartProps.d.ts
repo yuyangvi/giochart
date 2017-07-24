@@ -152,7 +152,7 @@ export interface G2Scale {
   nice?: boolean;
   min?: number;
   max?: number;
-  values?: Array<string>;
+  values?: string[];
 }
 export interface SourceConfig {
   [colName: string]: G2Scale;
@@ -160,5 +160,5 @@ export interface SourceConfig {
 
 export interface ChartDimValues {
   id: string;
-  dimValues: Array<string>;
+  dimValues: string[];
 }

@@ -5,7 +5,7 @@
   "main": "dist/giochart.min.js",
   "scripts": {
     "build": "webpack --config webpack.prod.config.js",
-    "start": "webpack-dev-server --config webpack.config.js --hot --inline --display-modules --progress --colors --port=9090",
+    "start": "webpack-dev-server --config webpack.config.js --hot --inline --display-modules --progress --colors --port=9091",
     "test": "jest",
     "lint": "tslint \"src/index.tsx\""
   },
@@ -46,7 +46,7 @@
     "antd": "^2.12.1",
     "awesome-typescript-loader": "^3.0.0-beta.17",
     "css-loader": "^0.26.1",
-    "g2": "2.1.3",
+    "g2": "2.3.6",
     "json-loader": "^0.5.4",
     "less": "^2.7.2",
     "less-loader": "^2.2.3",
