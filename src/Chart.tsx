@@ -86,6 +86,7 @@ const tooltipMap: any = {
 class Chart extends React.Component <ChartProps, any> {
   private chart: any;
   private legends: any;
+  private inspectDom: HTMLElement;
   // private selectMode: string = "multiple";
   private lastSelectedShape: any = null;
   private constructor(props: ChartProps) {
@@ -94,6 +95,7 @@ class Chart extends React.Component <ChartProps, any> {
     const theme = G2.Util.mix(true, G2.Theme, CHARTTHEME);
     G2.Global.setTheme(theme);
     G2.Global.animate = navigator.hardwareConcurrency && navigator.hardwareConcurrency > 7;
+    this.inspectDom = null;
   }
   public render() {
     return <div className="giochart" style={this.props.style} />;
@@ -222,16 +224,14 @@ class Chart extends React.Component <ChartProps, any> {
       sourceDef = preRenderSource.sourceDef;
       metricCols = preRenderSource.metricCols;
     }
-    if (cfg.withRate) {
-      // metricCols = metricCols.filter((n: string) => n.indexOf("_rate") > -1);
-     //  metricCols = reverse(metricCols);
-    }
 
     let dimValues: ChartDimValues = null;
     const dimColumn: Metric[] = filter(columns, { isDim: true });
-    if (dimColumn[0].id === "turn") {
-      dimValues = this.getDimValues(frame, columns, "turn");
-    }
+
+    // if (dimColumn[0].id === "turn") {
+    //   dimValues = this.getDimValues(frame, columns, "turn");
+    // }
+
     if (!cfg.combineMetrics && (cfg.geom === "point" || isArray(cfg.geom) || cfg.withRate || metricCols.length < 2)) {
       return {
         frame,
@@ -247,7 +247,7 @@ class Chart extends React.Component <ChartProps, any> {
     // retenton 特殊处理 需要洋哥定夺
     if (metricCols[0] === "loss" && metricCols[1] === "retention") {
       metricDict = {};
-      metricDict.loss = "流失";
+      metricDict.loss = "流失率";
       metricDict.retention = "用户数";
     }
     frame = G2.Frame.combinColumns(frame, metricCols, METRICVAL, METRICDIM, dimCols);
@@ -502,7 +502,6 @@ class Chart extends React.Component <ChartProps, any> {
     if (!chartConfig.shape && color) {
       geom.color(color);
     }
-
     if (chartConfig.shape) {
       if (typeof chartConfig.shape === "string") {
         geom.shape(chartConfig.shape);
@@ -533,13 +532,25 @@ class Chart extends React.Component <ChartProps, any> {
       chart.on("tooltipchange", tooltipMap[chartType]);
     }
     // 参考线
-
+    // geom.selected(true, {
+    //   selectedMode: "single", // "multiple" || "single"
+    //   style: {fill: "#fe9929"}
+    // });
+    // chart.on("itemselected", (ev: any) => {
+    //   const data = ev.data;
+    //   if (data) {
+    //     console.log(data._origin);
+    //     console.log(data.x);
+    //     console.log(data.y);
+    //   }
+    //   if (this.inspectDom === null) {
+    //     this.inspectDom = this.createInspectDom(data, scales);
+    //     ReactDOM.findDOMNode(this).appendChild(this.inspectDom);
+    //   }else {
+    //     this.repaintInspectDom(this.inspectDom, data, scales);
+    //   }
+    // });
     /*
-    geom.selected(true, {
-      selectedMode: "single", // "multiple" || "single"
-      style: {fill: "#fe9929"}
-    });
-
     const selectCols = (chartConfig.geom === "point" ? metricCols.slice(0, 2) : dimCols) as string[];
     chart.on("plotclick", (evt: any) => this.selectHandler(evt, selectCols));
     chart.on("itemunselected", (evt: any) => this.unselectHandler(evt, selectCols));
@@ -553,6 +564,7 @@ class Chart extends React.Component <ChartProps, any> {
         "<p style=\"color:#333;font-size:22px;\">" + aggScale.formatter(chartParams.aggregator.values[0]) + "</p></div>"
       );
     }
+
     chart.render();
     this.chart = chart;
   }
@@ -710,9 +722,9 @@ class Chart extends React.Component <ChartProps, any> {
         if (m.formatterMap) {
           scaleDef[m.id].formatter = (n: string): string => m.formatterMap[n];
         }
-        if (chartDimValues && m.id === chartDimValues.id) {
-          scaleDef[m.id].values = chartDimValues.dimValues;
-        }
+        // if (chartDimValues && m.id === chartDimValues.id) {
+        //   scaleDef[m.id].values = chartDimValues.dimValues;
+        // }
       } else {
         scaleDef[m.id] = {
           alias: m.name,
@@ -728,6 +740,26 @@ class Chart extends React.Component <ChartProps, any> {
     }
     return scaleDef;
   }
+
+  // private createInspectDom(data: any, scales: any): HTMLElement {
+  //   const inspectDom: HTMLElement = document.createElement("div");
+  //   inspectDom.className = "giochart-inspect";
+  //   inspectDom.style.top = data.y[1] + "px";
+  //   inspectDom.style.left = data.x + "px";
+  //   inspectDom.innerHTML = "";
+  //
+  //   return inspectDom;
+  // }
+  //
+  // private repaintInspectDom(inspecDom: HTMLElement, data: any, scales: any){
+  //   inspecDom.style.top = data.y[1] + "px";
+  //   inspecDom.style.left = data.x + "px";
+  // }
+  //
+  // private calcuteInspectPostion(data: any): number[] {
+  //
+  //   return [0, 1];
+  // }
 }
 
 const getTooltipName = (item: any, key: string, isHour: boolean) => {
