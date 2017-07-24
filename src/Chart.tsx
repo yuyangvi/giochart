@@ -200,8 +200,8 @@ class Chart extends React.Component <ChartProps, any> {
   private getDimValues(frame: any, columns: Metric[], columnId: string): ChartDimValues {
     let values: string[] = null;
     values = map(frame.data, (data: any) => {
-        const col: any = columns.filter((c) => c.id === "retention_" + data.turn );
-        return col[0].name;
+        // const col: any = columns.filter((c) => c.id === "retention_" + data.turn );
+        return data.turn;
     });
     return { id: columnId, dimValues: values };
   }
@@ -416,7 +416,6 @@ class Chart extends React.Component <ChartProps, any> {
     });
 
     chart.source(frame, scales);
-
     if (!chartConfig.withRate && !metricCols.includes("val")) {
       metricCols.forEach((s: string) => {
         chart.axis(s, {title: {fill: "#999", textAlign: "center"}});
@@ -434,30 +433,29 @@ class Chart extends React.Component <ChartProps, any> {
       coord = chart.coord("rect");
     }
     if (chartConfig.transpose) {
-        chart.axis(position.x, {
-          formatter: (val: string) => {
-            if (plot.colPixels) {
-             if (plot.colPixels[val] <= CHARTTHEME.maxPlotLength) {
-               return val;
-             }else {
-               const c = document.createElement("canvas");
-               const ctx = c.getContext("2d");
-               ctx.font = CHARTTHEME.fontSize + " " + CHARTTHEME.fontFamily;
-               const ellipsis = ctx.measureText("...").width;
-               const chars = val.split("").map((char: string) => ctx.measureText(char).width);
-               let plotLength: number = 0; let i: number = 0;
-               while (plotLength + ellipsis <= CHARTTHEME.maxPlotLength) {
-                 plotLength += chars[i];
-                 i++;
-               }
-               return val.substring(0, i - 1) + "...";
-             }
-            }else {
+      chart.axis(position.x, {
+        formatter: (val: string) => {
+          if (plot.colPixels) {
+            if (plot.colPixels[val] <= CHARTTHEME.maxPlotLength) {
               return val;
+            } else {
+              const c = document.createElement("canvas");
+              const ctx = c.getContext("2d");
+              ctx.font = CHARTTHEME.fontSize + " " + CHARTTHEME.fontFamily;
+              const ellipsis = ctx.measureText("...").width;
+              const chars = val.split("").map((char: string) => ctx.measureText(char).width);
+              let plotLength: number = 0; let i: number = 0;
+              while (plotLength + ellipsis <= CHARTTHEME.maxPlotLength) {
+                plotLength += chars[i];
+                i++;
+              }
+              return val.substring(0, i - 1) + "...";
             }
-          },
-          labelOffset: CHARTTHEME.labelOffset,
-        });
+          }
+          return val;
+        },
+        labelOffset: CHARTTHEME.labelOffset,
+      });
     }
 
     // if (chartType === "area" || chartType === "bubble" || chartType === "line" || chartType === "vbar "){
@@ -471,12 +469,12 @@ class Chart extends React.Component <ChartProps, any> {
     //   });
     // }
 
-    if (chartConfig.transpose) {
+    /*if (chartConfig.transpose) {
       coord.transpose(chartConfig.transpose);
       if (chartConfig.reflect) {
         coord.reflect(chartConfig.reflect);
       }
-    }
+    }*/
     const geomType = isArray(chartConfig.geom) ? chartConfig.geom[0] : chartConfig.geom;
 
     // 参考线,周期对比图线在后
@@ -524,6 +522,7 @@ class Chart extends React.Component <ChartProps, any> {
     }
     // legend bottom 默认距离canvas底部为30px x轴labe默认距离x轴约20px
     chart.legend(isArray(chartConfig.geom) ? { position: "bottom" } : false);
+
     if (tooltipMap[chartType]) {
       geom.tooltip(metricCols.join("*"));
       if (metricCols.includes("rate")) { // rate作为title必须放前面,不然有bug
@@ -544,6 +543,7 @@ class Chart extends React.Component <ChartProps, any> {
     chart.on("plotclick", (evt: any) => this.selectHandler(evt, selectCols));
     chart.on("itemunselected", (evt: any) => this.unselectHandler(evt, selectCols));
     */
+
     if (chartConfig.aggregator) {
       const aggScale = scales[metricCols[0]];
       chart.guide().html(

@@ -97,3 +97,9 @@ label{margin-right: 10px;}
     color: #ea6947;
     transform: scale(.8) rotate(0deg);
 }
+.ant-table th, .ant-table td {
+    white-space: nowrap;
+}
+.ant-table td{
+    text-align: right;
+}

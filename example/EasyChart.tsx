@@ -1,7 +1,7 @@
 import * as React from "react";
 import { DrawParamsProps, Source} from "../src/ChartProps";
 import Chart from "../src/Chart";
-import { retentionSourceSelector } from "../src/utils";
+
 const retentionData: Source = [
   { retention: 2045, type: "ww"},
   { retention: 1045, type: "成都正合地产顾问股份有限公司"},
@@ -18,6 +18,8 @@ const retentionData: Source = [
 const chartParams: DrawParamsProps = {
   adjust: "stack",
   chartType: "vbar",
+  aggregator: { values: [4510] },
+  chartType: "bar",
   columns: [
     { id: "type", name: "type", isDim: true, isRate: false },
      { id: "retention", name: "留存", isDim: false, isRate: false }
