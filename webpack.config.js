@@ -1,12 +1,12 @@
 //var webpack=require('webpack');
 module.exports = {
     entry: [
-    'webpack-dev-server/client?http://0.0.0.0:9090',
+    'webpack-dev-server/client?http://0.0.0.0:9091',
     'webpack/hot/only-dev-server',
     './example/index.tsx'
     ],
     output: {
-        publicPath: "http://127.0.0.1:9090/dist/",
+        publicPath: "http://127.0.0.1:9091/dist/",
         filename: "bundle.js",
         path: __dirname + "/dist"
     },
