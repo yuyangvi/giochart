@@ -19,7 +19,6 @@ const chartParams: DrawParamsProps = {
   adjust: "stack",
   chartType: "vbar",
   aggregator: { values: [4510] },
-  chartType: "bar",
   columns: [
     { id: "type", name: "type", isDim: true, isRate: false },
      { id: "retention", name: "留存", isDim: false, isRate: false }
