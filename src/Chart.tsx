@@ -458,23 +458,23 @@ class Chart extends React.Component <ChartProps, any> {
       });
     }
 
-    // if (chartType === "area" || chartType === "bubble" || chartType === "line" || chartType === "vbar "){
-    //   chart.axis(position.y,{
-    //     titleOffset: CHARTTHEME.titleOffset,
-    //     title: {
-    //       fontSize: '12',
-    //       textAlign: 'center',
-    //       fill: '#8c8c8c',
-    //     }
-    //   });
-    // }
+    if (chartType === "area" || chartType === "bubble" || chartType === "line" || chartType === "vbar ") {
+      chart.axis(position.y, {
+        titleOffset: CHARTTHEME.titleOffset,
+        title: {
+          fontSize: "12",
+          textAlign: "center",
+          fill: "#8c8c8c"
+        }
+      });
+    }
 
-    /*if (chartConfig.transpose) {
+    if (chartConfig.transpose) {
       coord.transpose(chartConfig.transpose);
       if (chartConfig.reflect) {
         coord.reflect(chartConfig.reflect);
       }
-    }*/
+    }
     const geomType = isArray(chartConfig.geom) ? chartConfig.geom[0] : chartConfig.geom;
 
     // 参考线,周期对比图线在后
