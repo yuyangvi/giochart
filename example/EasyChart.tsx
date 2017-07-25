@@ -17,7 +17,7 @@ const retentionData: Source = [
 
 const chartParams: DrawParamsProps = {
   adjust: "stack",
-  chartType: "vbar",
+  chartType: "bar",
   aggregator: { values: [4510] },
   columns: [
     { id: "type", name: "type", isDim: true, isRate: false },

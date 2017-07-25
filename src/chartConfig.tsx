@@ -45,7 +45,7 @@ const COLORS = [
 export const CHARTTHEME: any = {
   animate: false,
   labelOffset: 15,
-  titleOffset: 70,
+  titleOffset: 60,
   axis: {
     bottom: {
       labels: { autoRotate: false },
