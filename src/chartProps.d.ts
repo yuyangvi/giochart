@@ -59,6 +59,7 @@ export interface Metric {
   isRate?: boolean;
   counter?: string;
   formatterMap?: any;
+  values?: string[];
 }
 
 export interface Additional {
