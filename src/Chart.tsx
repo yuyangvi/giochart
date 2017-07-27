@@ -376,8 +376,7 @@ class Chart extends React.Component <ChartProps, any> {
         scales[dimCols[1]],
         chartConfig.legendSingleMode,
         chartConfig.legendPosition === "top" ? chartParams.aggregator.values : null,
-        chartParams.attrs ? chartParams.attrs.selection : null
-      );
+        chartParams.attrs ? chartParams.attrs.selection : null, chartType);
       if (chartConfig.legendPosition === "top") {
         legendDom.className = "giochart-legends top-legends";
         ReactDOM.findDOMNode(this).insertBefore(legendDom, dom);
@@ -514,7 +513,7 @@ class Chart extends React.Component <ChartProps, any> {
       if (typeof chartConfig.shape === "string") {
         geom.shape(chartConfig.shape);
       } else {
-        geom.color("#5FB6C7").shape(dimCols[1], chartConfig.shape);
+        geom.color("#B8E986").shape(dimCols[1], chartConfig.shape);
       }
     }
     if (chartConfig.geom === "point" && metricCols.length > 2) {
@@ -586,7 +585,8 @@ class Chart extends React.Component <ChartProps, any> {
     scaleDef: G2Scale,
     isSingle: boolean,
     aggregates: number[],
-    colorSelection: number[]
+    colorSelection: number[],
+    chartType: string
   ): HTMLElement {
     const dom = document.createElement("div");
     dom.className = "giochart-legends";
@@ -598,14 +598,29 @@ class Chart extends React.Component <ChartProps, any> {
       colorSelection = Array.apply(null, Array(20)).map((v: undefined, i: number) => i);
     }
     const ul: HTMLElement = document.createElement("ul");
-    ul.innerHTML = coloredDim.map((n: string, i: number): string => (
-      `<li data-val="${n}" ` +
-        `title="${scaleDef.formatter ? scaleDef.formatter(n) : n}" class="${isSingle && i > 0 ? "disabled" : ""}">` +
-        `<svg fill="${colorArray[colorSelection[i] % colorArray.length]}"><rect width="11" height="11" zIndex="3"></rect></svg>` +
-        (scaleDef.formatter ? scaleDef.formatter(n) : n) +
-         (aggregates ? `：<span>${formatPercent(aggregates[i])}</span>` : "") +
-      `</li>`
-      )).join("");
+    ul.innerHTML = coloredDim.map((n: string, i: number): string => {
+        const li =  `<li data-val="${n}" ` +
+            `title="${scaleDef.formatter ? scaleDef.formatter(n) : n}" class="${isSingle && i > 0 ? "disabled" : ""}">`;
+        let svg = null;
+        if (chartType === "retention") {
+          if (n === "loss" ) {
+            svg = `<svg><rect width="11" height="11" zIndex="3" stroke="#B8E986" fill="white" stroke-width="2" stroke-dasharray="3,2"></rect></svg>`;
+          } else {
+            svg = `<svg fill="#B8E986"><rect width="11" height="11" zIndex="3" stroke-dasharray="3,2"></rect></svg>`;
+          }
+        }else {
+          svg = `<svg fill="${colorArray[colorSelection[i] % colorArray.length]}"><rect width="11" height="11" zIndex="3"></rect></svg>`;
+        }
+        return li + svg + (scaleDef.formatter ? scaleDef.formatter(n) : n) +
+            (aggregates ? `：<span>${formatPercent(aggregates[i])}</span>` : "") +
+            `</li>`;
+      // `<li data-val="${n}" ` +
+      //   `title="${scaleDef.formatter ? scaleDef.formatter(n) : n}" class="${isSingle && i > 0 ? "disabled" : ""}">` +
+      //   `<svg fill="${colorArray[colorSelection[i] % colorArray.length]}"><rect width="11" height="11" zIndex="3"></rect></svg>` +
+      //   (scaleDef.formatter ? scaleDef.formatter(n) : n) +
+      //    (aggregates ? `：<span>${formatPercent(aggregates[i])}</span>` : "") +
+      // `</li>`
+    }).join("");
     dom.appendChild(ul);
     this.legends = coloredDim.map((n: string, i: number) => ({
       color: G2.Global.colors.default[i],

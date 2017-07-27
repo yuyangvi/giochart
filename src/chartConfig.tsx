@@ -70,7 +70,8 @@ export const CHARTTHEME: any = {
   shape: {
     area: { fill: "#5FB6C7" },
     hollowPoint: {fill: "#5FB6C7" },
-    interval: { fill: "#abce5b", fillOpacity: 1, stroke: "#5FB6C7" },
+    hollowInterval: { lineDash: [3, 2], lineWidth: 1},
+    interval: { fill: "#abce5b", fillOpacity: 1, stroke: "#5FB6C7"},
     line: { stroke: "#5FB6C7", lineWidth: 2 },
     point: {fill: "#5FB6C7", fillOpacity: .5 }
   },
