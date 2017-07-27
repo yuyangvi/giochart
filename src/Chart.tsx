@@ -45,6 +45,14 @@ const adjustFrame: any = {
   retention: (frame: any, metricCols: string[]) => {
     // 增加流失人数字段，并且计为负数
     const lossWord = "loss";
+/*
+*  retention 多列 步骤
+*  step1：判断根据chartParams 是否含有comparison_value 为 true
+*  step2：Frame.filter(frame, "comparison_value")进行分组
+*  step3：计算每个里面的最大retention 然后添加addcol(lossword) 跟现在一样
+*  step4：Frame.merge()合并
+*  step5：返回
+* */
     const maxRetention = G2.Frame.max(frame, "retention");
     frame.addCol(lossWord, (obj: any) => maxRetention - obj.retention);
     // chartParams.columns.push({ id: lossWord, name: "流失人数", isDim: false });
@@ -250,6 +258,8 @@ class Chart extends React.Component <ChartProps, any> {
       metricDict.loss = "流失率";
       metricDict.retention = "用户数";
     }
+
+    // retention 多列要保留 comparison_value 字段 最后绘图参考G2线上demo
     frame = G2.Frame.combinColumns(frame, metricCols, METRICVAL, METRICDIM, dimCols);
     dimCols.push(METRICDIM);
     const isRate = filter(columns, { isDim: false })[0].isRate;
@@ -372,7 +382,8 @@ class Chart extends React.Component <ChartProps, any> {
         uniq(colNames),
         scales[dimCols[1]],
         chartConfig.legendSingleMode,
-        chartConfig.legendPosition === "top" ? chartParams.aggregator.values : null
+        chartConfig.legendPosition === "top" ? chartParams.aggregator.values : null,
+        chartParams.attrs ? chartParams.attrs.selection : null
       );
       if (chartConfig.legendPosition === "top") {
         legendDom.className = "giochart-legends top-legends";
@@ -575,16 +586,23 @@ class Chart extends React.Component <ChartProps, any> {
     coloredDim: string[],
     scaleDef: G2Scale,
     isSingle: boolean,
-    aggregates: number[]
+    aggregates: number[],
+    colorSelection: number[]
   ): HTMLElement {
     const dom = document.createElement("div");
     dom.className = "giochart-legends";
-    const colorArray = G2.Global.colors.default;
+    let colorArray: string[] = null;
+    if (colorSelection && colorSelection.length === coloredDim.length) {
+      colorArray = G2.Global.colors.trend;
+    } else {
+      colorArray = G2.Global.colors.default;
+      colorSelection = Array.apply(null, Array(20)).map((v: undefined, i: number) => i);
+    }
     const ul: HTMLElement = document.createElement("ul");
     ul.innerHTML = coloredDim.map((n: string, i: number): string => (
       `<li data-val="${n}" ` +
         `title="${scaleDef.formatter ? scaleDef.formatter(n) : n}" class="${isSingle && i > 0 ? "disabled" : ""}">` +
-        `<svg fill="${colorArray[i % colorArray.length]}"><rect width="11" height="11" zIndex="3"></rect></svg>` +
+        `<svg fill="${colorArray[colorSelection[i] % colorArray.length]}"><rect width="11" height="11" zIndex="3"></rect></svg>` +
         (scaleDef.formatter ? scaleDef.formatter(n) : n) +
          (aggregates ? `：<span>${formatPercent(aggregates[i])}</span>` : "") +
       `</li>`
