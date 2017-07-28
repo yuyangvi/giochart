@@ -4,9 +4,10 @@
 import * as React from "react";
 import Aggregate from "./Aggregate";
 import Chart from "./Chart";
-import { SingleChartProps, DrawParamsProps } from "./ChartProps";
+import { SingleChartProps, DrawParamsProps, Metric } from "./ChartProps";
 import GrTable from "./GrTable";
 import { retentionSourceSelector } from "./utils";
+import {map, filter} from "lodash";
 class ContextListener extends React.Component <SingleChartProps, any> {
   private static contextTypes: React.ValidationMap<any> = {
     aggregator: React.PropTypes.any,
@@ -88,11 +89,15 @@ class ContextListener extends React.Component <SingleChartProps, any> {
         </div>);
     } else if (["retention", "retentionTrend"].includes(chartParams.chartType)) {
       const source = retentionSourceSelector(this.context.source, ["comparison_value"], false);
+      let values: string[] = null;
+      if (this.context.columns) {
+        values = map(filter(this.context.columns, (n: Metric) => (/^retention_\d+$/.test(n.id))), "name");
+      }
       const retentionParams: DrawParamsProps = {
         adjust: "stack",
         chartType: chartParams.chartType,
         columns: [
-          { id: "turn", name: "留存周期", isDim: true, isRate: false },
+          { id: "turn", name: "留存周期", isDim: true, isRate: false, values},
           { id: "retention", name: "用户数", isDim: false, isRate: false },
           { id: "retention_rate", name: "留存率", isDim: false, isRate: true }
         ]
