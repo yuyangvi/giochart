@@ -39,7 +39,7 @@ interface Granulariy {
   values?: string[];
 }
 
-// 绘制接口
+// 绘制接口  adjust?: string|string[]
 export interface DrawParamsProps {
   aggregator?: any;
   adjust?: string;
@@ -48,6 +48,7 @@ export interface DrawParamsProps {
   columns: Metric[];
   granularities?: Granulariy[];
   groupCol?: string;
+  attrs?: Additional;
 }
 export interface Metric {
   id: string;
@@ -58,6 +59,11 @@ export interface Metric {
   isRate?: boolean;
   counter?: string;
   formatterMap?: any;
+  values?: string[];
+}
+
+export interface Additional {
+  selection: number[];
 }
 
 // ResponseParams

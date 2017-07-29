@@ -15,21 +15,6 @@ export const CHARTTYPEMAP: any[string] = {
   donut: { geom: "interval", emptyDim: true, coord: "theta", aggregator: true }
 }
 
-// 根据字段取得不同的步骤
-/*
-const COLORS = [
-  "#fc5f3a", "#fa9d1b",
-  "#48a1f9", "#9ecefe",
-  "#349a38", "#7fd182",
-  "#d5375f", "#ff8ba8",
-  "#3e4a9c", "#8d9bf3",
-  "#525566", "#a1a4b3",
-  "#25ada1", "#8ae1d8",
-  "#755920", "#dab873",
-  "#8d49a4", "#da97f1",
-  "#f5d360", "#ffbd9c"
-];
-*/
 const COLORS = [
   "#5FB6C7", "#FFD159",
   "#C9C77C", "#FA7413",
@@ -39,6 +24,19 @@ const COLORS = [
   "#B96285", "#8a73c9",
   "#005a03", "#320096",
   "#673000", "#2d396b"
+];
+
+const TRENDCOLORS = [
+  "#C9DE00", "#FF4500",
+  "#00BFD8", "#FFEC00",
+  "#734A3F", "#375167",
+  "#587E8D", "#9E9E9E",
+  "#FFBF00", "#3C4FBC",
+  "#6AB626", "#AB02B6",
+  "#00ABFB", "#6F31BE",
+  "#FE0061", "#00B341",
+  "#009988", "#FF2825",
+  "#FFA300", "#0096FB"
 ];
 
 // G2 的主题有bug，legend读的是G2.Theme的颜色，因此直接覆盖Theme更合适
@@ -64,14 +62,16 @@ export const CHARTTHEME: any = {
   },
   colors: {
     default: COLORS,
-    intervalStack: COLORS
+    intervalStack: COLORS,
+    trend: TRENDCOLORS
   },
   defaultColor: "#5FB6C7",
   legend: false,
   shape: {
     area: { fill: "#5FB6C7" },
     hollowPoint: {fill: "#5FB6C7" },
-    interval: { fill: "#abce5b", fillOpacity: 1, stroke: "#5FB6C7" },
+    hollowInterval: { lineDash: [3, 2], lineWidth: 1},
+    interval: { fill: "#abce5b", fillOpacity: 1, stroke: "#5FB6C7"},
     line: { stroke: "#5FB6C7", lineWidth: 2 },
     point: {fill: "#5FB6C7", fillOpacity: .5 }
   },

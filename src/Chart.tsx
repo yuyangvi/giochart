@@ -45,6 +45,14 @@ const adjustFrame: any = {
   retention: (frame: any, metricCols: string[]) => {
     // 增加流失人数字段，并且计为负数
     const lossWord = "loss";
+/*
+*  retention 多列 步骤
+*  step1：判断根据chartParams 是否含有comparison_value 为 true
+*  step2：Frame.filter(frame, "comparison_value")进行分组
+*  step3：计算每个里面的最大retention 然后添加addcol(lossword) 跟现在一样
+*  step4：Frame.merge()合并
+*  step5：返回
+* */
     const maxRetention = G2.Frame.max(frame, "retention");
     frame.addCol(lossWord, (obj: any) => maxRetention - obj.retention);
     // chartParams.columns.push({ id: lossWord, name: "流失人数", isDim: false });
@@ -225,19 +233,12 @@ class Chart extends React.Component <ChartProps, any> {
       metricCols = preRenderSource.metricCols;
     }
 
-    let dimValues: ChartDimValues = null;
-    const dimColumn: Metric[] = filter(columns, { isDim: true });
-
-    // if (dimColumn[0].id === "turn") {
-    //   dimValues = this.getDimValues(frame, columns, "turn");
-    // }
-
     if (!cfg.combineMetrics && (cfg.geom === "point" || isArray(cfg.geom) || cfg.withRate || metricCols.length < 2)) {
       return {
         frame,
         dimCols,
         metricCols,
-        scales: this.buildScales(columns, cfg.geom, sourceDef, dimValues)
+        scales: this.buildScales(columns, cfg.geom, sourceDef)
       };
     }
     // retention 下 metricDict 对应不上 TODO: fix
@@ -250,11 +251,13 @@ class Chart extends React.Component <ChartProps, any> {
       metricDict.loss = "流失率";
       metricDict.retention = "用户数";
     }
+
+    // retention 多列要保留 comparison_value 字段 最后绘图参考G2线上demo
     frame = G2.Frame.combinColumns(frame, metricCols, METRICVAL, METRICDIM, dimCols);
     dimCols.push(METRICDIM);
     const isRate = filter(columns, { isDim: false })[0].isRate;
 
-    columns = dimColumn.concat([
+    columns = filter(columns, { isDim: true }).concat([
       { id: "metric", isDim: true, formatterMap: metricDict },
       { id: "val", isRate, isDim: false }
     ]);
@@ -264,7 +267,7 @@ class Chart extends React.Component <ChartProps, any> {
       frame,
       dimCols,
       metricCols: [METRICVAL],
-      scales: this.buildScales(columns, cfg.geom, sourceDef, dimValues)
+      scales: this.buildScales(columns, cfg.geom, sourceDef)
     };
   }
 
@@ -372,8 +375,8 @@ class Chart extends React.Component <ChartProps, any> {
         uniq(colNames),
         scales[dimCols[1]],
         chartConfig.legendSingleMode,
-        chartConfig.legendPosition === "top" ? chartParams.aggregator.values : null
-      );
+        chartConfig.legendPosition === "top" ? chartParams.aggregator.values : null,
+        chartParams.attrs ? chartParams.attrs.selection : null, chartType);
       if (chartConfig.legendPosition === "top") {
         legendDom.className = "giochart-legends top-legends";
         ReactDOM.findDOMNode(this).insertBefore(legendDom, dom);
@@ -498,13 +501,19 @@ class Chart extends React.Component <ChartProps, any> {
     }
     geom.position(position.pos);
     if (!chartConfig.shape && color) {
-      geom.color(color);
+      if (chartParams.attrs) {
+        chartParams.attrs.selection ? geom.color(color, G2.Global.colors.trend.filter(
+            (c: string, i: number) => chartParams.attrs.selection.includes(i)
+        )) : geom.color(color);
+      } else {
+        geom.color(color);
+      }
     }
     if (chartConfig.shape) {
       if (typeof chartConfig.shape === "string") {
         geom.shape(chartConfig.shape);
       } else {
-        geom.color("#5FB6C7").shape(dimCols[1], chartConfig.shape);
+        geom.color("#B8E986").shape(dimCols[1], chartConfig.shape);
       }
     }
     if (chartConfig.geom === "point" && metricCols.length > 2) {
@@ -575,20 +584,43 @@ class Chart extends React.Component <ChartProps, any> {
     coloredDim: string[],
     scaleDef: G2Scale,
     isSingle: boolean,
-    aggregates: number[]
+    aggregates: number[],
+    colorSelection: number[],
+    chartType: string
   ): HTMLElement {
     const dom = document.createElement("div");
     dom.className = "giochart-legends";
-    const colorArray = G2.Global.colors.default;
+    let colorArray: string[] = null;
+    if (colorSelection && colorSelection.length === coloredDim.length) {
+      colorArray = G2.Global.colors.trend;
+    } else {
+      colorArray = G2.Global.colors.default;
+      colorSelection = Array.apply(null, Array(20)).map((v: undefined, i: number) => i);
+    }
     const ul: HTMLElement = document.createElement("ul");
-    ul.innerHTML = coloredDim.map((n: string, i: number): string => (
-      `<li data-val="${n}" ` +
-        `title="${scaleDef.formatter ? scaleDef.formatter(n) : n}" class="${isSingle && i > 0 ? "disabled" : ""}">` +
-        `<svg fill="${colorArray[i % colorArray.length]}"><rect width="11" height="11" zIndex="3"></rect></svg>` +
-        (scaleDef.formatter ? scaleDef.formatter(n) : n) +
-         (aggregates ? `：<span>${formatPercent(aggregates[i])}</span>` : "") +
-      `</li>`
-      )).join("");
+    ul.innerHTML = coloredDim.map((n: string, i: number): string => {
+        const li =  `<li data-val="${n}" ` +
+            `title="${scaleDef.formatter ? scaleDef.formatter(n) : n}" class="${isSingle && i > 0 ? "disabled" : ""}">`;
+        let svg = null;
+        if (chartType === "retention") {
+          if (n === "loss" ) {
+            svg = `<svg><rect width="11" height="11" zIndex="3" stroke="#B8E986" fill="white" stroke-width="2" stroke-dasharray="3,2"></rect></svg>`;
+          } else {
+            svg = `<svg fill="#B8E986"><rect width="11" height="11" zIndex="3" stroke-dasharray="3,2"></rect></svg>`;
+          }
+        }else {
+          svg = `<svg fill="${colorArray[colorSelection[i] % colorArray.length]}"><rect width="11" height="11" zIndex="3"></rect></svg>`;
+        }
+        return li + svg + (scaleDef.formatter ? scaleDef.formatter(n) : n) +
+            (aggregates ? `：<span>${formatPercent(aggregates[i])}</span>` : "") +
+            `</li>`;
+      // `<li data-val="${n}" ` +
+      //   `title="${scaleDef.formatter ? scaleDef.formatter(n) : n}" class="${isSingle && i > 0 ? "disabled" : ""}">` +
+      //   `<svg fill="${colorArray[colorSelection[i] % colorArray.length]}"><rect width="11" height="11" zIndex="3"></rect></svg>` +
+      //   (scaleDef.formatter ? scaleDef.formatter(n) : n) +
+      //    (aggregates ? `：<span>${formatPercent(aggregates[i])}</span>` : "") +
+      // `</li>`
+    }).join("");
     dom.appendChild(ul);
     this.legends = coloredDim.map((n: string, i: number) => ({
       color: G2.Global.colors.default[i],
@@ -700,8 +732,7 @@ class Chart extends React.Component <ChartProps, any> {
   private buildScales(
       columns: any[],
       geom: string | string[],
-      defaultScaleDef: SourceConfig,
-      chartDimValues: ChartDimValues): SourceConfig {
+      defaultScaleDef: SourceConfig): SourceConfig {
     const scaleDef: SourceConfig = {};
     if (typeof geom !== "string") {
       geom = geom[0];
@@ -722,9 +753,9 @@ class Chart extends React.Component <ChartProps, any> {
         if (m.formatterMap) {
           scaleDef[m.id].formatter = (n: string): string => m.formatterMap[n];
         }
-        // if (chartDimValues && m.id === chartDimValues.id) {
-        //   scaleDef[m.id].values = chartDimValues.dimValues;
-        // }
+        if (m.values) {
+          scaleDef[m.id].values = m.values;
+        }
       } else {
         scaleDef[m.id] = {
           alias: m.name,
