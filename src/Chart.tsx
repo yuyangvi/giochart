@@ -421,7 +421,7 @@ class Chart extends React.Component <ChartProps, any> {
     chart.source(frame, scales);
     if (!chartConfig.withRate && !metricCols.includes("val")) {
       metricCols.forEach((s: string) => {
-        chart.axis(s, {title: {fill: "#999", textAlign: "center"}});
+        chart.axis(s, { title: {fill: "#999", textAlign: "center"}});
       });
     }
     // chart.axis(chartConfig.isThumb ? false : chartConfig.axis);
@@ -467,7 +467,7 @@ class Chart extends React.Component <ChartProps, any> {
         title: {
           fontSize: "12",
           textAlign: "center",
-          fill: "#8c8c8c"
+          fill: "#999"
         }
       });
     }
