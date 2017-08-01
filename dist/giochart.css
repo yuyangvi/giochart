@@ -1,3 +1,7 @@
+.giochart>div canvas:nth-child(0n+3){
+    z-index: 1;
+}
+
 .giochart-legends{
     font-size: 11px;
     max-height: 60px;
@@ -76,4 +80,36 @@
   padding-left: 50px;
   background: url(../assets/images/error@2x.png) 10px center no-repeat;
   background-size: auto 50%;
+}
+
+.ac-tooltip{
+    position:absolute;
+    visibility:hidden;
+    border-radius: 5px;
+    background-color: black;
+    opacity: .7;
+    padding: 12px;
+    color: white;
+    font-size: 12px;
+    transition: top 200ms,left 200ms;
+    -moz-transition:  top 200ms,left 200ms;
+    -webkit-transition:  top 200ms,left 200ms;
+    -o-transition:  top 200ms,left 200ms;
+}
+.ac-tooltip .ac-title{
+    margin: 0;
+    padding: 5px 0;
+}
+.ac-tooltip .ac-list{
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.ac-svg{
+    height: 12px;
+    width: 12px;
+
+}
+.ac-tooltip li{
+    line-height:  22px;
 }

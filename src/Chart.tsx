@@ -245,7 +245,7 @@ class Chart extends React.Component <ChartProps, any> {
     const metricNames: string[] = map(filter(columns, { isDim: false }), "name") as string[];
     let metricDict = fromPairs(zip(metricCols, metricNames));
 
-    // retenton 特殊处理 需要洋哥定夺
+    // retenton 特殊处理
     if (metricCols[0] === "loss" && metricCols[1] === "retention") {
       metricDict = {};
       metricDict.loss = "流失率";
@@ -539,6 +539,13 @@ class Chart extends React.Component <ChartProps, any> {
       }
       chart.on("tooltipchange", tooltipMap[chartType]);
     }
+
+    chart.tooltip(true, {
+      custom: true,
+      html:  '<div class="ac-tooltip" style="position:absolute;visibility: hidden;"><span class="ac-title"></span><ul class="ac-list"></ul></div>',
+      itemTpl: '<li><svg fill={color} class="ac-svg"><circle cx="3" cy="7" r="3"/></svg>{name}: {value}</li>',
+      offset: 17
+    });
     // 参考线
     // geom.selected(true, {
     //   selectedMode: "single", // "multiple" || "single"
