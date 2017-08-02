@@ -42,7 +42,7 @@ const adjustFrame: any = {
     metricCols.push("rate");
     return { frame, sourceDef, metricCols };
   },
-  retention: (frame: any, metricCols: string[]) => {
+  retentionColumn: (frame: any, metricCols: string[]) => {
     // 增加流失人数字段，并且计为负数
     const lossWord = "loss";
 /*
@@ -609,7 +609,7 @@ class Chart extends React.Component <ChartProps, any> {
         const li =  `<li data-val="${n}" ` +
             `title="${scaleDef.formatter ? scaleDef.formatter(n) : n}" class="${isSingle && i > 0 ? "disabled" : ""}">`;
         let svg = null;
-        if (chartType === "retention") {
+        if (chartType === "retentionColumn") {
           if (n === "loss" ) {
             svg = `<svg><rect width="11" height="11" zIndex="3" stroke="#B8E986" fill="white" stroke-width="2" stroke-dasharray="3,2"></rect></svg>`;
           } else {
