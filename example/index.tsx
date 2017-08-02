@@ -11,6 +11,6 @@ import Funnel from "./Funnel";
 import Retention from "./Retention";
 
 ReactDOM.render(
-  <Funnel />,
+  <Retention />,
   document.getElementById("example")
 );

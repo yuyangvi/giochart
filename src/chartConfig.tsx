@@ -8,8 +8,8 @@ export const CHARTTYPEMAP: any[string] = {
   funnel: { geom: "line", withRate: true },
   funnelChart: {geom: "line", withRate: true, legendPosition: "top"},
   line: { geom: "line" },
-  retention: { geom: "interval", shape: ["hollowRect", "stroke"], withRate: true, combineMetrics: true },
-  retentionTrend: { geom: "line", withRate: true },
+  retentionColumn: { geom: "interval", shape: ["hollowRect", "stroke"], withRate: true, combineMetrics: true },
+  retention: { geom: "line", withRate: true },
   singleNumber: { geom: "area", shape: "smooth", isThumb: true, colorTheme: "252, 95, 58" },
   vbar: { geom: "interval" }, // 329615792
   donut: { geom: "interval", emptyDim: true, coord: "theta", aggregator: true }

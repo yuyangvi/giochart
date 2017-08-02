@@ -107,7 +107,7 @@ const retentionData: Source = [
 const chartParams: DrawParamsProps = {
   // ["dodge", "stack"]  "stack"
   adjust:   "stack",
-  chartType: "retentionTrend",
+  chartType: "retention",
   attrs: {selection: [1, 2]},
   columns: [
     { id: "turn", name: "留存周期", isDim: true, isRate: false, values: ["当天", "1天后", "2天后", "3天后", "4天后", "5天后", "6天后", "7天后", "8天后", "9天后", "10天后", "11天后", "12天后", "13天后"]},
