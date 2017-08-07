@@ -91,7 +91,7 @@ class ContextListener extends React.Component <SingleChartProps, any> {
       const source = retentionSourceSelector(this.context.source, ["comparison_value"], false);
       let values: string[] = null;
       if (this.context.columns) {
-        values = map(filter(this.context.columns, (n: Metric) => (/^retention_\d+$/.test(n.id))), "name");
+        values = map(filter(this.context.columns, (n: Metric) => (/^retention_\d+$/.test(n.id))), "name") as string[];
       }
       const retentionParams: DrawParamsProps = {
         adjust: "stack",

@@ -28,7 +28,7 @@ const descValue = (value: number|undefined, isRate: boolean): string|undefined =
     if (isRate) {
       return (100 * value).toPrecision(3) + "%";
     } else if (!Number.isInteger(value)) {
-      return value.toPrecision(3);
+      return (value >= 1000) ? Math.round(value).toString() : value.toPrecision(3);
     }
   }
   if (typeof value === "string") {
@@ -57,7 +57,9 @@ class GrTable extends React.Component <ChartProps, any> {
   private checkDate(m: Metric) {
     if (m.id === "tm") {
       const gra = find(this.props.chartParams.granularities, {id: "tm"});
-      if (gra.interval && gra.interval >= 864e5) {
+      if (gra.interval && gra.interval > 6048e5) {
+        return (v: number) => moment.unix(v / 1000).format("MMMM");
+      } else if (gra.interval && gra.interval >= 864e5) {
         return (v: number) => moment.unix(v / 1000).format("YYYY-MM-DD");
       } else {
         return (v: number) => moment.unix(v / 1000).format("YYYY-MM-DD HH:mm");

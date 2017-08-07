@@ -1,4 +1,5 @@
 import * as G2 from "g2";
+import * as moment from "moment";
 import { assign, filter, flatten, map, reject, transform, pick } from "lodash";
 import { Source } from "./chartProps";
 /**
@@ -50,20 +51,51 @@ export const calculateTimeRange = (timeRange: string) => {
   }
 }
 
-// countTimeCount
-export const countTickCount = (frame: any, width: number) => {
+// 如果是要从倍数里面去取，小时要照顾到天
+export const countTickCount = (frame: any, width: number, tmInterval: number) => {
   const range = G2.Frame.range(frame, "tm");
   const tmLength: number = G2.Frame.group(frame, ["tm"]).length;
   // TODO: 计算tickInterval
+
   const [startTime, endTime] = G2.Frame.range(frame, "tm");
   const interval = (endTime - startTime)  / width * 80;
-  if (endTime - startTime > 86400000) {
+  if (endTime - startTime > tmInterval) {
+    return Math.ceil(interval / tmInterval) * tmInterval;
+  } else if (endTime - startTime > 86400000) {
     return Math.ceil(interval / 86400000) * 86400000;
   } else {
-    return Math.ceil(interval / 3600000) * 3600000;
+    const ceilNum =  Math.ceil(interval / 3600000);
+    // 取大于divisor的24的约数
+    const divisor = [24, 12, 8, 6, 4, 3, 2, 1].reduce((b, n) => (ceilNum > n ? b : n));
+    return (divisor * 3600000);
   }
 }
 
+export const getTmFormat = (tmInterval: number) => {
+  if (tmInterval > 6048e5) { // 按月
+    return (v: number) => moment.unix(v / 1000).format("MMMM");
+  } else if (tmInterval === 6048e5) { // 按周
+    return (v: number) => (
+      `${moment.unix(v / 1000).format("MM-DD ddd")} 到 ${moment.unix(v / 1000).endOf("week").format("MM-DD ddd")}`
+    );
+  } else if (tmInterval === 864e5) { // 按天
+    return (v: number) => moment.unix(v / 1000).format("MM-DD ddd");
+  } else if (tmInterval === 36e5) { // 按小时
+    return (v: number) => moment.unix(v / 1000).format("MM-DD ddd HH:mm");
+  }
+  return (v: number) => moment.unix(v / 1000).format("MM-DD ddd");
+}
+export const getAxisFormat = (tmInterval: number) => {
+  if (tmInterval === 6048e5) { // 按周
+    return (n: string) => n.slice(0, 8);
+  } else if (tmInterval === 36e5) {
+    return (n: string) => {
+      const matches = n.split(" ");
+      return (matches[1] === "00:00") ? matches[0] : matches[1];
+    };
+  }
+  return;
+}
 // 根据留存的数据源图形进行处理
 export const retentionSourceSelector = (source: Source, dimCols: string[], overTime: boolean): Source => {
   const filterSource = (overTime ? reject : filter)(source, { tm: 0 });

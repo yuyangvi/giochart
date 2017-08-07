@@ -11,9 +11,12 @@ import {
 } from "lodash";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { ChartProps, DrawParamsProps, Metric, Source, G2Scale, SourceConfig, ChartDimValues } from "./ChartProps";
+import {
+  ChartProps, DrawParamsProps, Metric, Source, G2Scale, SourceConfig, ChartDimValues,
+  Granulariy
+} from "./ChartProps";
 import { CHARTTHEME, CHARTTYPEMAP } from "./chartConfig";
-import { formatNumber, formatPercent, countTickCount } from "./utils";
+import { formatNumber, formatPercent, countTickCount, getTmFormat, getAxisFormat } from "./utils";
 import * as moment from "moment";
 moment.locale("zh-cn");
 
@@ -115,7 +118,7 @@ class Chart extends React.Component <ChartProps, any> {
       return false;
     } else if (chartParams.chartType === "bar") {
       // 是否有非tm的维度
-      const dim = find(chartParams.columns, {isDim: true});
+      const dim = find(chartParams.columns, { isDim: true });
       return dim.id !== "tm";
     }
     return true;
@@ -359,7 +362,14 @@ class Chart extends React.Component <ChartProps, any> {
 
     // x轴tickCount
     if (scales.tm) {
-      scales.tm.tickInterval = countTickCount(frame, canvasRect.width);
+      // 寻找时间粒度
+      const tmGran: Granulariy = find(chartParams.granularities, { id: "tm" });
+      const tmInterval = tmGran.interval;
+      merge(scales.tm, {
+        tickInterval: countTickCount(frame, canvasRect.width, tmInterval),
+        formatter: getTmFormat(tmInterval),
+        axisFormatter: getAxisFormat(tmInterval)
+      });
     }
     // 百分比
     if (chartParams.adjust === "percent") {
@@ -422,6 +432,11 @@ class Chart extends React.Component <ChartProps, any> {
     if (!chartConfig.withRate && !metricCols.includes("val")) {
       metricCols.forEach((s: string) => {
         chart.axis(s, { title: {fill: "#999", textAlign: "center"}});
+      });
+    }
+    if (scales.tm) {
+      chart.axis("tm", {
+        formatter: scales.tm.axisFormatter
       });
     }
     // chart.axis(chartConfig.isThumb ? false : chartConfig.axis);
@@ -748,8 +763,8 @@ class Chart extends React.Component <ChartProps, any> {
     columns.forEach((m: Metric) => {
       if (m.id === "tm") {
         scaleDef.tm = {
-          tickCount: 4,
           type: geom === "interval" ? "timeCat" : "time", // TODO 可能有其他case
+          // TODO 这里用来显示ToolTip, axis的显示，在chart.axis里面定义
           formatter: (v: number) => moment.unix(v / 1000).format(v % 864e5 === 576e5 ? "MM-DD ddd" : "HH:mm")
         };
       } else if (m.isDim) {
