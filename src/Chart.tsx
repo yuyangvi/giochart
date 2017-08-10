@@ -236,7 +236,7 @@ class Chart extends React.Component <ChartProps, any> {
       metricCols = preRenderSource.metricCols;
     }
 
-    if (!cfg.combineMetrics && (cfg.geom === "point" || isArray(cfg.geom) || cfg.withRate || metricCols.length < 2)) {
+    if (!cfg.combineMetrics && (cfg.geom === "point" || isArray(cfg.geom) || cfg.withRate || (metricCols && metricCols.length < 2))) {
       return {
         frame,
         dimCols,
@@ -370,6 +370,8 @@ class Chart extends React.Component <ChartProps, any> {
         formatter: getTmFormat(tmInterval),
         axisFormatter: getAxisFormat(tmInterval)
       });
+    } else if (chartConfig.geom !== "point") {
+      scales[dimCols[0]].tickCount = Math.ceil((canvasRect.height - 100) / 80);
     }
     // 百分比
     if (chartParams.adjust === "percent") {
@@ -595,7 +597,6 @@ class Chart extends React.Component <ChartProps, any> {
         "<p style=\"color:#333;font-size:22px;\">" + aggScale.formatter(chartParams.aggregator.values[0]) + "</p></div>"
       );
     }
-
     chart.render();
     this.chart = chart;
   }

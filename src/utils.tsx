@@ -106,7 +106,8 @@ export const retentionSourceSelector = (source: Source, dimCols: string[], overT
       [
         "retention_1", "retention_rate_1",
         "retention_7", "retention_rate_7",
-        "retention_14", "retention_rate_14"
+        "retention_14", "retention_rate_14",
+        "retention_30", "retention_rate_30"
       ]
     ))) as Source;
     return results;

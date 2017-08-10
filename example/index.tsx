@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
-import WeekChart from "./WeekChart";
+import EasyChart from "./EasyChart";
 /*
 import DonutChart from "./DonutChart";
 import DualChart from"./DualChart";
@@ -10,6 +10,6 @@ import Funnel from "./Funnel";
 import Retention from "./Retention";
 */
 ReactDOM.render(
-  <WeekChart />,
+  <EasyChart />,
   document.getElementById("example")
 );
