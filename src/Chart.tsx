@@ -370,7 +370,7 @@ class Chart extends React.Component <ChartProps, any> {
         formatter: getTmFormat(tmInterval),
         axisFormatter: getAxisFormat(tmInterval)
       });
-    } else if (chartConfig.geom !== "point") {
+    } else if (chartConfig.geom !== "point" && scales[dimCols[0]]) {
       scales[dimCols[0]].tickCount = Math.ceil((canvasRect.height - 100) / 80);
     }
     // 百分比
