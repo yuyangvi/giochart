@@ -18,7 +18,7 @@ const retentionData: Source = [
   { comparison_value: "所有符合行为用户", tm: 1499702400000, users: 6043, retention_0: 6043, retention_rate_0: 1, retention_1: 1479, retention_rate_1: 0.24474598709250373, retention_2: 1302, retention_rate_2: 0.21545589938772133 },
   { comparison_value: "所有符合行为用户", tm: 1499788800000, users: 5942, retention_0: 5942, retention_rate_0: 1, retention_1: 1491, retention_rate_1: 0.2509256142712891 },
   { comparison_value: "所有符合行为用户", tm: 1499875200000, users: 5752, retention_0: 5752, retention_rate_0: 1 },
-
+/*
   { comparison_value: "鲁路修", tm: 0, users: 69073, retention_0: 69073, retention_rate_0: 1, retention_1: 12272, retention_rate_1: 0.1938061622526492, retention_2: 8575, retention_rate_2: 0.14944491887275832, retention_3: 7937, retention_rate_3: 0.1546088514882344, retention_4: 6244, retention_rate_4: 0.1378366445916115, retention_5: 5749, retention_rate_5: 0.1318336085121996, retention_6: 5999, retention_rate_6: 0.14526478920986996, retention_7: 5658, retention_rate_7: 0.15860735009671179, retention_8: 3604, retention_rate_8: 0.12200406228842248, retention_9: 2596, retention_rate_9: 0.11131120830117486, retention_10: 2453, retention_rate_10: 0.14757550234628805, retention_11: 1385, retention_rate_11: 0.14388115520465405, retention_12: 1109, retention_rate_12: 0.1430414033277441, retention_13: 843, retention_rate_13: 0.15091299677765843 },
   { comparison_value: "鲁路修", tm: 1498752000000, users: 5586, retention_0: 5586, retention_rate_0: 1, retention_1: 381, retention_rate_1: 0.0682062298603652, retention_2: 264, retention_rate_2: 0.047261009667024706, retention_3: 1350, retention_rate_3: 0.24167561761546724, retention_4: 1113, retention_rate_4: 0.19924812030075187, retention_5: 1041, retention_rate_5: 0.18635875402792695, retention_6: 1026, retention_rate_6: 0.1836734693877551, retention_7: 981, retention_rate_7: 0.17561761546723953, retention_8: 239, retention_rate_8: 0.04278553526673828, retention_9: 158, retention_rate_9: 0.02828499820981024, retention_10: 1012, retention_rate_10: 0.1811672037235947, retention_11: 931, retention_rate_11: 0.16666666666666666, retention_12: 869, retention_rate_12: 0.15556749015395632, retention_13: 843, retention_rate_13: 0.15091299677765843 },
   { comparison_value: "鲁路修", tm: 1498838400000, users: 2167, retention_0: 2167, retention_rate_0: 1, retention_1: 178, retention_rate_1: 0.08214120904476234, retention_2: 343, retention_rate_2: 0.15828334102445776, retention_3: 283, retention_rate_3: 0.13059529303184125, retention_4: 269, retention_rate_4: 0.12413474850023073, retention_5: 257, retention_rate_5: 0.11859713890170744, retention_6: 250, retention_rate_6: 0.11536686663590216, retention_7: 130, retention_rate_7: 0.05999077065066913, retention_8: 88, retention_rate_8: 0.04060913705583756, retention_9: 258, retention_rate_9: 0.11905860636825104, retention_10: 248, retention_rate_10: 0.11444393170281496, retention_11: 249, retention_rate_11: 0.11490539916935856, retention_12: 240, retention_rate_12: 0.11075219197046608 },
@@ -34,7 +34,7 @@ const retentionData: Source = [
   { comparison_value: "鲁路修", tm: 1499702400000, users: 6043, retention_0: 6043, retention_rate_0: 1, retention_1: 1479, retention_rate_1: 0.24474598709250373, retention_2: 1302, retention_rate_2: 0.21545589938772133 },
   { comparison_value: "鲁路修", tm: 1499788800000, users: 5942, retention_0: 5942, retention_rate_0: 1, retention_1: 1491, retention_rate_1: 0.2509256142712891 },
   { comparison_value: "鲁路修", tm: 1499875200000, users: 5752, retention_0: 5752, retention_rate_0: 1 },
-
+*/
   // { comparison_value: "夜神月", tm: 0, users: 69073, retention_0: 69073, retention_rate_0: 1, retention_1: 12272, retention_rate_1: 0.1938061622526492, retention_2: 8575, retention_rate_2: 0.14944491887275832, retention_3: 7937, retention_rate_3: 0.1546088514882344, retention_4: 6244, retention_rate_4: 0.1378366445916115, retention_5: 5749, retention_rate_5: 0.1318336085121996, retention_6: 5999, retention_rate_6: 0.14526478920986996, retention_7: 5658, retention_rate_7: 0.15860735009671179, retention_8: 3604, retention_rate_8: 0.12200406228842248, retention_9: 2596, retention_rate_9: 0.11131120830117486, retention_10: 2453, retention_rate_10: 0.14757550234628805, retention_11: 1385, retention_rate_11: 0.14388115520465405, retention_12: 1109, retention_rate_12: 0.1430414033277441, retention_13: 843, retention_rate_13: 0.15091299677765843 },
   // { comparison_value: "夜神月", tm: 1498752000000, users: 5586, retention_0: 5586, retention_rate_0: 1, retention_1: 381, retention_rate_1: 0.0682062298603652, retention_2: 264, retention_rate_2: 0.047261009667024706, retention_3: 1350, retention_rate_3: 0.24167561761546724, retention_4: 1113, retention_rate_4: 0.19924812030075187, retention_5: 1041, retention_rate_5: 0.18635875402792695, retention_6: 1026, retention_rate_6: 0.1836734693877551, retention_7: 981, retention_rate_7: 0.17561761546723953, retention_8: 239, retention_rate_8: 0.04278553526673828, retention_9: 158, retention_rate_9: 0.02828499820981024, retention_10: 1012, retention_rate_10: 0.1811672037235947, retention_11: 931, retention_rate_11: 0.16666666666666666, retention_12: 869, retention_rate_12: 0.15556749015395632, retention_13: 843, retention_rate_13: 0.15091299677765843 },
   // { comparison_value: "夜神月", tm: 1498838400000, users: 2167, retention_0: 2167, retention_rate_0: 1, retention_1: 178, retention_rate_1: 0.08214120904476234, retention_2: 343, retention_rate_2: 0.15828334102445776, retention_3: 283, retention_rate_3: 0.13059529303184125, retention_4: 269, retention_rate_4: 0.12413474850023073, retention_5: 257, retention_rate_5: 0.11859713890170744, retention_6: 250, retention_rate_6: 0.11536686663590216, retention_7: 130, retention_rate_7: 0.05999077065066913, retention_8: 88, retention_rate_8: 0.04060913705583756, retention_9: 258, retention_rate_9: 0.11905860636825104, retention_10: 248, retention_rate_10: 0.11444393170281496, retention_11: 249, retention_rate_11: 0.11490539916935856, retention_12: 240, retention_rate_12: 0.11075219197046608 },
@@ -109,13 +109,13 @@ const chartParams: DrawParamsProps = {
   adjust:   "stack",
   chartType: "retention",
   attrs: {selection: [1, 2]},
+  granularities: [{ id: "tm", interval: 864e5 }],
   columns: [
+    { id: "tm", name: "时间", isDim: true, isRate: false },
     { id: "turn", name: "留存周期", isDim: true, isRate: false, values: ["当天", "1天后", "2天后", "3天后", "4天后", "5天后", "6天后", "7天后", "8天后", "9天后", "10天后", "11天后", "12天后", "13天后"]},
-    { id: "comparison_value", name: "对比值", isDim: true, isRate: false },
-    // { id: "tm", name: "时间", isDim: true, isRate: false },
    // { id: "users", name: "用户数", isDim: false, isRate: false },
-   { id: "retention", name: "用户数", isDim: false, isRate: false },
-   { id: "retention_rate", name: "留存率", isDim: false, isRate: true },
+    { id: "retention_rate", name: "留存率", isDim: false, isRate: true },
+    { id: "retention", name: "用户数", isDim: false, isRate: false }
    // { id: "retention_0", name: "当天", isDim: false, isRate: false },
    // { id: "retention_rate_0", name: "当天留存率", isDim: false, isRate: true },
    // { id: "retention_1", name: "1天后", isDim: false, isRate: false },
@@ -146,7 +146,9 @@ const chartParams: DrawParamsProps = {
    // { id: "retention_rate_13", name: "13天后留存率", isDim: false, isRate: true }
   ]
 };
-const a = retentionSourceSelector(retentionData, ["comparison_value"], false);
+
+const a = retentionSourceSelector(retentionData, ["tm"], true);
+
 const Retention = (props: any) => (
   <Chart chartParams={chartParams} source={a} />
 );

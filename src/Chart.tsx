@@ -310,7 +310,7 @@ class Chart extends React.Component <ChartProps, any> {
   private calculatePlot(frame: any, chartCfg: any, dimCols: string[], chartType: string) {
     let colPixels: any = null;
     let pixels: number[] = null;
-    const margin = [20, 30, 30, 50];
+    const margin = [20, 90, 30, 50];
     if (chartCfg.isThumb) {
       return { margin: [0, 0, 0, 0], colPixels: null };
     }
@@ -518,14 +518,16 @@ class Chart extends React.Component <ChartProps, any> {
     }
     geom.position(position.pos);
     if (!chartConfig.shape && color) {
-      if (chartParams.attrs) {
-        chartParams.attrs.selection ? geom.color(color, G2.Global.colors.trend.filter(
-            (c: string, i: number) => chartParams.attrs.selection.includes(i)
-        )) : geom.color(color);
+      if (chartParams.attrs &&  chartParams.attrs.selection) {
+        const colorArray = G2.Global.colors.trend.filter(
+          (c: string, i: number) => chartParams.attrs.selection.includes(i)
+        );
+        geom.color(color, colorArray);
       } else {
         geom.color(color);
       }
     }
+    /*
     if (chartConfig.shape) {
       if (typeof chartConfig.shape === "string") {
         geom.shape(chartConfig.shape);
@@ -582,6 +584,8 @@ class Chart extends React.Component <ChartProps, any> {
     //     this.repaintInspectDom(this.inspectDom, data, scales);
     //   }
     // });
+    *.
+    */
     /*
     const selectCols = (chartConfig.geom === "point" ? metricCols.slice(0, 2) : dimCols) as string[];
     chart.on("plotclick", (evt: any) => this.selectHandler(evt, selectCols));
