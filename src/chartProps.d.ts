@@ -118,6 +118,7 @@ export interface SingleChartProps {
   range?: boolean;
   sortHandler?: (evt: any) => any;
   isThumb?: boolean;
+  timeRange?: string;
 }
 
 interface LinearScale {

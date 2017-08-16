@@ -9,7 +9,7 @@ import {DataRequestProps, Granulariy, GioProps} from "./ChartProps";
 import ContextListener from "./ContextListener";
 import DataSource from "./DataSource";
 import GrTable from "./GrTable";
-import { retentionSourceSelector } from "./utils";
+import { retentionSourceSelector, retentionIntervalColumns } from "./utils";
 
 const timeWeekRange = (timeRange: string) => {
   if (!timeRange) {
@@ -62,18 +62,20 @@ class ChartV4 extends React.Component <GioProps, any> {
     }
     return (
       <DataSource params={params} cacheOptions={props.cacheOptions}>
-      <ContextListener
-        chartType={props.chartType}
-        colorTheme={props.colorTheme}
-        granularities={props.params.granularities}
-        adjust={props.adjust}
-        extraColumns={props.extraColumns}
-        groupCol={props.groupCol}
-        range={timeWeekRange(props.params.timeRange)}
-        sortHandler={this.sortHandler.bind(this)}
-        isThumb={props.isThumb}
-      />
-    </DataSource>);
+        <ContextListener
+          chartType={props.chartType}
+          colorTheme={props.colorTheme}
+          granularities={props.params.granularities}
+          timeRange={props.params.timeRange}
+          adjust={props.adjust}
+          extraColumns={props.extraColumns}
+          groupCol={props.groupCol}
+          range={timeWeekRange(props.params.timeRange)}
+          sortHandler={this.sortHandler.bind(this)}
+          isThumb={props.isThumb}
+        />
+      </DataSource>
+    );
   }
   private sortHandler(sort: any) {
     this.setState(sort);
@@ -205,6 +207,7 @@ export {
   DataSource,
   GrTable,
   convertChartParams,
-  retentionSourceSelector
+  retentionSourceSelector,
+  retentionIntervalColumns
 };
 export default GioChart;

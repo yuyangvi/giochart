@@ -796,6 +796,7 @@ class Chart extends React.Component <ChartProps, any> {
           alias: m.name,
           type: "linear",
           min: 0,
+          max: m.isRate ? 1 : undefined,
           formatter: m.isRate ? formatPercent : formatNumber,
           tickCount: 4
         };

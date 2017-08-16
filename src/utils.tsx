@@ -45,9 +45,13 @@ export const calculateTimeRange = (timeRange: string) => {
   const [cate, v] = timeRange.split(":");
   const [start, end] = v.split(",");
   if (cate === "day") {
-    return parseInt(start, 10) * 864e5;
+    return (parseInt(start, 10) - parseInt(end, 10)) * 864e5;
   } else if (cate === "abs") {
     return parseInt(end, 10) - parseInt(start, 10);
+  } else if (cate === "week") {
+    return (parseInt(start, 10) - parseInt(end, 10)) * 6048e5;
+  } else if  (cate === "month") {
+    return (parseInt(start, 10) - parseInt(end, 10)) * 25920e5;
   }
 }
 
@@ -96,13 +100,26 @@ export const getAxisFormat = (tmInterval: number) => {
   }
   return;
 }
+// 根据调整
+export const retentionIntervalColumns = (interval: number, timeRange: string): string[] => {
+  const mx = Math.floor(calculateTimeRange(timeRange) / interval);
+  let result: number[] = [];
+  if (interval === 6048e5) {
+    result = [1, 2, 3, 4];
+  } else if (interval === 25920e5) {
+    result = [1, 2, 3];
+  } else if (interval === 864e5) {
+    result = [1, 7, 14, 30];
+  }
+  return map(filter(result, (n) => (n <= mx)), (n) => n.toString()) as string[];
+}
 // 根据留存的数据源图形进行处理
-export const retentionSourceSelector = (source: Source, dimCols: string[], overTime: boolean): Source => {
+export const retentionSourceSelector = (source: Source, dimCols: string[], overTime: boolean, interval: number, timeRange: string): Source => {
   const filterSource = (overTime ? reject : filter)(source, { tm: 0 });
   // 记录需要保留的字段
   if (overTime) {
     // 挑选里面的字段第1，7，14天
-    const fetchedTurns = ["1", "3", "7", "14", "30"];
+    const fetchedTurns = retentionIntervalColumns(interval, timeRange);
 
     const results: Source = filter(flatten(map(fetchedTurns, (turn) =>  map(
       filterSource, (s) => {

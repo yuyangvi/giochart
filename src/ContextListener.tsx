@@ -7,7 +7,7 @@ import Chart from "./Chart";
 import { SingleChartProps, DrawParamsProps, Metric } from "./ChartProps";
 import GrTable from "./GrTable";
 import { retentionSourceSelector } from "./utils";
-import {map, filter} from "lodash";
+import { map, filter, find } from "lodash";
 class ContextListener extends React.Component <SingleChartProps, any> {
   private static contextTypes: React.ValidationMap<any> = {
     aggregator: React.PropTypes.any,
@@ -88,7 +88,13 @@ class ContextListener extends React.Component <SingleChartProps, any> {
           />
         </div>);
     } else if (["retention", "retentionTrend"].includes(chartParams.chartType)) {
-      const source = retentionSourceSelector(this.context.source, ["comparison_value"], false);
+      const source = retentionSourceSelector(
+        this.context.source,
+        ["comparison_value"],
+        false,
+        find(chartParams.granularities, {id: "tm"}).interval,
+        this.props.timeRange
+      );
       let values: string[] = null;
       if (this.context.columns) {
         values = map(filter(this.context.columns, (n: Metric) => (/^retention_\d+$/.test(n.id))), "name") as string[];
