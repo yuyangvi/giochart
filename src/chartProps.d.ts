@@ -159,6 +159,7 @@ export interface G2Scale {
   min?: number;
   max?: number;
   values?: string[];
+  mapValues?: string[];
 }
 export interface SourceConfig {
   [colName: string]: G2Scale;

@@ -102,7 +102,7 @@ export const retentionSourceSelector = (source: Source, dimCols: string[], overT
   // 记录需要保留的字段
   if (overTime) {
     // 挑选里面的字段第1，7，14天
-    const fetchedTurns = ["1", "7", "14", "30"];
+    const fetchedTurns = ["1", "3", "7", "14", "30"];
 
     const results: Source = filter(flatten(map(fetchedTurns, (turn) =>  map(
       filterSource, (s) => {

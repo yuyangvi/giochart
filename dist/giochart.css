@@ -95,6 +95,7 @@
     -moz-transition:  top 200ms,left 200ms;
     -webkit-transition:  top 200ms,left 200ms;
     -o-transition:  top 200ms,left 200ms;
+    z-index: 9999;
 }
 .ac-tooltip .ac-title{
     margin: 0;

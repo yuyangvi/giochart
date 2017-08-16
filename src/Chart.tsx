@@ -258,7 +258,8 @@ class Chart extends React.Component <ChartProps, any> {
     // retention 多列要保留 comparison_value 字段 最后绘图参考G2线上demo
     frame = G2.Frame.combinColumns(frame, metricCols, METRICVAL, METRICDIM, dimCols);
     dimCols.push(METRICDIM);
-    const isRate = filter(columns, { isDim: false })[0].isRate;
+    const examCol = find(columns, { id: metricCols[0] });
+    const isRate = examCol ? examCol.isRate : false;
 
     columns = filter(columns, { isDim: true }).concat([
       { id: "metric", isDim: true, formatterMap: metricDict },
@@ -310,7 +311,7 @@ class Chart extends React.Component <ChartProps, any> {
   private calculatePlot(frame: any, chartCfg: any, dimCols: string[], chartType: string) {
     let colPixels: any = null;
     let pixels: number[] = null;
-    const margin = [20, 90, 30, 50];
+    const margin = [20, 30, 30, 50];
     if (chartCfg.isThumb) {
       return { margin: [0, 0, 0, 0], colPixels: null };
     }
@@ -371,7 +372,8 @@ class Chart extends React.Component <ChartProps, any> {
         axisFormatter: getAxisFormat(tmInterval)
       });
     } else if (chartConfig.geom !== "point" && scales[dimCols[0]]) {
-      scales[dimCols[0]].tickCount = Math.ceil((canvasRect.height - 100) / 80);
+      scales[dimCols[0]].tickCount = Math.ceil((canvasRect.width - 100) / 60);
+      // console.log(Math.ceil((canvasRect.width - 100) / 60));
     }
     // 百分比
     if (chartParams.adjust === "percent") {
@@ -527,7 +529,7 @@ class Chart extends React.Component <ChartProps, any> {
         geom.color(color);
       }
     }
-    /*
+
     if (chartConfig.shape) {
       if (typeof chartConfig.shape === "string") {
         geom.shape(chartConfig.shape);
@@ -565,6 +567,7 @@ class Chart extends React.Component <ChartProps, any> {
       itemTpl: '<li><svg fill={color} class="ac-svg"><circle cx="3" cy="7" r="3"/></svg>{name}: {value}</li>',
       offset: 17
     });
+
     // 参考线
     // geom.selected(true, {
     //   selectedMode: "single", // "multiple" || "single"
@@ -584,8 +587,6 @@ class Chart extends React.Component <ChartProps, any> {
     //     this.repaintInspectDom(this.inspectDom, data, scales);
     //   }
     // });
-    *.
-    */
     /*
     const selectCols = (chartConfig.geom === "point" ? metricCols.slice(0, 2) : dimCols) as string[];
     chart.on("plotclick", (evt: any) => this.selectHandler(evt, selectCols));
@@ -601,6 +602,7 @@ class Chart extends React.Component <ChartProps, any> {
         "<p style=\"color:#333;font-size:22px;\">" + aggScale.formatter(chartParams.aggregator.values[0]) + "</p></div>"
       );
     }
+
     chart.render();
     this.chart = chart;
   }
@@ -638,7 +640,13 @@ class Chart extends React.Component <ChartProps, any> {
         }else {
           svg = `<svg fill="${colorArray[colorSelection[i] % colorArray.length]}"><rect width="11" height="11" zIndex="3"></rect></svg>`;
         }
-        return li + svg + (scaleDef.formatter ? scaleDef.formatter(n) : n) +
+        let name = n;
+        if (scaleDef.mapValues) {
+          name = scaleDef.mapValues[i];
+        } else if (scaleDef.formatter) {
+          name = scaleDef.formatter(n);
+        }
+        return li + svg + name +
             (aggregates ? `：<span>${formatPercent(aggregates[i])}</span>` : "") +
             `</li>`;
       // `<li data-val="${n}" ` +
@@ -652,7 +660,7 @@ class Chart extends React.Component <ChartProps, any> {
     this.legends = coloredDim.map((n: string, i: number) => ({
       color: G2.Global.colors.default[i],
       dotDom: dom.querySelector(`li:nth-child(${1 + i})`),
-      isChecked: (isSingle && i > 0) ? false : true,
+      isChecked: !(isSingle && i > 0),
       name: n
     }));
     // 绑定事件
@@ -781,7 +789,7 @@ class Chart extends React.Component <ChartProps, any> {
           scaleDef[m.id].formatter = (n: string): string => m.formatterMap[n];
         }
         if (m.values) {
-          scaleDef[m.id].values = m.values;
+          scaleDef[m.id].mapValues = m.values;
         }
       } else {
         scaleDef[m.id] = {
