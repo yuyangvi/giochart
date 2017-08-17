@@ -109,6 +109,7 @@ label{margin-right: 10px;}
 }
 
 .ac-tooltip{
+    z-index: 9999;
     position:absolute;
     visibility:hidden;
     border-radius: 5px;

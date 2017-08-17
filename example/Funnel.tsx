@@ -46,4 +46,3 @@ const Funnel = (props: any) => (
     <Chart chartParams={chartParams} source={source} />
 );
 export default Funnel;
-
