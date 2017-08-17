@@ -372,7 +372,8 @@ class Chart extends React.Component <ChartProps, any> {
         axisFormatter: getAxisFormat(tmInterval)
       });
     } else if (chartConfig.geom !== "point" && scales[dimCols[0]]) {
-      scales[dimCols[0]].tickCount = Math.ceil((canvasRect.width - 100) / 60);
+      const maxTicks = G2.Frame.group(frame, dimCols[0]).length;
+      scales[dimCols[0]].tickInterval = Math.ceil(60 * maxTicks / (canvasRect.width - 100));
       // console.log(Math.ceil((canvasRect.width - 100) / 60));
     }
     // 百分比
