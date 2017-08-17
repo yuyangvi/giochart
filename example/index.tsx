@@ -9,6 +9,7 @@ import ComparisonChart from "./ComparisonChart";
 import Funnel from "./Funnel";
 */
 import Retention from "./Retention";
+import Funnel from "./Funnel";
 
 ReactDOM.render(
   <Retention />,

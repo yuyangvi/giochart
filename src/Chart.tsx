@@ -92,6 +92,20 @@ const tooltipMap: any = {
       ev.items[1].name = getTooltipName(ev.items[1], "tm_", false);
     }*/
     ev.items.splice(ev.items.length - 1);
+  },
+  retention: (ev: any) => {
+      const itemsGroup = groupBy(ev.items, "color");
+      const keys = Object.keys(itemsGroup);
+      ev.items.splice(0);
+      keys.forEach((key: string)  => {
+          const items: any = itemsGroup[key];
+          const value = items.map((item: any) => (item.name + ": " + item.value)).splice(1).join(", ");
+          let combineValue = items[0].value;
+          if (value.length) {
+              combineValue = combineValue + ", " + value;
+          }
+          ev.items.push(assign({}, items[0], { value: combineValue }));
+      });
   }
 };
 class Chart extends React.Component <ChartProps, any> {
@@ -416,7 +430,7 @@ class Chart extends React.Component <ChartProps, any> {
       chartConfig.colorTheme ? (chartParams.colorTheme || chartConfig.colorTheme) : null,
       (chartType === "singleNum")
     );
-    if (color !== 'turn') {
+    if (color !== "turn") {
     }
 
     // render配置
@@ -556,7 +570,11 @@ class Chart extends React.Component <ChartProps, any> {
     chart.legend(isArray(chartConfig.geom) ? { position: "bottom" } : false);
 
     if (tooltipMap[chartType]) {
-      geom.tooltip(metricCols.join("*"));
+      if (chartType === "retention" && color) {
+        geom.tooltip(color + "*" + metricCols.join("*"));
+      }else {
+        geom.tooltip(metricCols.join("*"));
+      }
       if (metricCols.includes("rate")) { // rate作为title必须放前面,不然有bug
       //  console.log("rate");
         chart.tooltip(true, {map: {title: "rate"}});
@@ -568,7 +586,7 @@ class Chart extends React.Component <ChartProps, any> {
       custom: true,
       html:  '<div class="ac-tooltip" style="position:absolute;visibility: hidden;"><span class="ac-title"></span><ul class="ac-list"></ul></div>',
       itemTpl: '<li><svg fill={color} class="ac-svg"><circle cx="3" cy="7" r="3"/></svg>{name}: {value}</li>',
-      offset: 17
+      offset: 10
     });
 
     // 参考线
