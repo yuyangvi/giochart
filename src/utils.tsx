@@ -139,7 +139,6 @@ export const retentionSourceSelector = (source: Source, dimCols: string[], overT
   }
   const lastResult = map(filterSource, (s) => {
     const reservedObj = pick(s, dimCols);
-
     const combinedResults = transform(s, (result: any[], value, key: string) => {
       const matches: string[] = key.match(/^(retention(?:_rate)?)_(\d+)$/);
       if (matches) {

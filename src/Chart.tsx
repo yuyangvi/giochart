@@ -415,6 +415,8 @@ class Chart extends React.Component <ChartProps, any> {
       chartConfig.colorTheme ? (chartParams.colorTheme || chartConfig.colorTheme) : null,
       (chartType === "singleNum")
     );
+    if (color !== 'turn') {
+    }
 
     // render配置
     let canvasHeight = canvasRect.height - legendHeight;
@@ -773,7 +775,7 @@ class Chart extends React.Component <ChartProps, any> {
       geom = geom[0];
     }
     // 日期在外面设置
-    columns.forEach((m: Metric) => {
+    columns.forEach((m: Metric, i: number) => {
       if (m.id === "tm") {
         scaleDef.tm = {
           type: geom === "interval" ? "timeCat" : "time", // TODO 可能有其他case
@@ -789,7 +791,11 @@ class Chart extends React.Component <ChartProps, any> {
           scaleDef[m.id].formatter = (n: string): string => m.formatterMap[n];
         }
         if (m.values) {
-          scaleDef[m.id].mapValues = m.values;
+          if (i === 0) {
+            scaleDef[m.id].values = m.values;
+          } else {
+            scaleDef[m.id].mapValues = m.values;
+          }
         }
       } else {
         scaleDef[m.id] = {
