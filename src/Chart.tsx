@@ -92,7 +92,7 @@ const tooltipMap: any = {
       ev.items[1].name = getTooltipName(ev.items[1], "tm_", false);
     }*/
     ev.items.splice(ev.items.length - 1);
-  }
+  },
 };
 class Chart extends React.Component <ChartProps, any> {
   private chart: any;
