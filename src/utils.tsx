@@ -23,6 +23,15 @@ export const formatNumber = (n: number): string => {
   }
   return parseFloat((n * Math.pow(0.1, 4 * suffixIndex)).toPrecision(3)) + suffixArray[suffixIndex];
 };
+
+export const getRowIndex = (tickCount: number, rows: number): number[] => {
+
+};
+
+export const filterValuesByTickCount = (tickCount: number, values: string[]): string[] => {
+  const step = Math.floor((values.length - 1) / (tickCount - 1));
+
+};
 export const formatPercent = (n: number): string => {
   if (typeof n !== "number") {
     return n;
@@ -153,4 +162,3 @@ export const retentionSourceSelector = (source: Source, dimCols: string[], overT
   });
   return flatten(lastResult);
 }
-

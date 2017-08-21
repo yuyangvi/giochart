@@ -16,7 +16,7 @@ import {
   Granulariy
 } from "./ChartProps";
 import { CHARTTHEME, CHARTTYPEMAP } from "./chartConfig";
-import { formatNumber, formatPercent, countTickCount, getTmFormat, getAxisFormat } from "./utils";
+import { formatNumber, formatPercent, countTickCount, getTmFormat, getAxisFormat, getRowIndex, filterValuesByTickCount } from "./utils";
 import * as moment from "moment";
 moment.locale("zh-cn");
 
@@ -387,9 +387,28 @@ class Chart extends React.Component <ChartProps, any> {
       });
     } else if (chartConfig.geom !== "point" && scales[dimCols[0]]) {
       const maxTicks = G2.Frame.group(frame, dimCols[0]).length;
-      scales[dimCols[0]].tickInterval = Math.ceil(60 * maxTicks / (canvasRect.width - 100));
-      // console.log(Math.ceil((canvasRect.width - 100) / 60));
+      if (scales[dimCols[0]].type === "linear") {
+        scales[dimCols[0]].tickInterval = Math.ceil(60 * maxTicks / (canvasRect.width - 100));
+      }
+      if (scales[dimCols[0]].values) {
+          const origValues = scales[dimCols[0]].values;
+          window.onresize = () => {
+             const currentRect: ClientRect = dom.getBoundingClientRect();
+             const tickC = Math.ceil(60 * maxTicks / (currentRect.width - 100));
+             if (tickC > 1) {
+               const indexs = getRowIndex(tickC);
+               const newValues = filterValuesByTickCount(tickC, origValues);
+               const newFrame = frame.rows(indexs);
+               chart.col(dimCols[0], assign({}, scales[dimCols[0]], { tickCount: newValues.length, values: newValues}));
+               chart.changeData(newFrame);
+             }else {
+                 chart.col(dimCols[0], assign({}, scales[dimCols[0]], { tickCount: origValues.length, values: origValues}));
+                 chart.changeData(frame);
+             }
+          };
+      }
     }
+
     // 百分比
     if (chartParams.adjust === "percent") {
       scales["..percent"] = { formatter: formatPercent, type: "linear" };
@@ -741,6 +760,7 @@ class Chart extends React.Component <ChartProps, any> {
 
     return dom;
   }
+
   private filter(dim: any, name: string, isSingle: boolean) {
     const obj = find(this.legends, { name }) as any;
     const filterNames: string[] = [];

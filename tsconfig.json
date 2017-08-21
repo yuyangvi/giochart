@@ -12,6 +12,7 @@
       "DOM.Iterable",
       "ScriptHost"
     ],
+    "target": "es6",
     "allowSyntheticDefaultImports": true,
     "declaration": true,
     "declarationDir": "./"
