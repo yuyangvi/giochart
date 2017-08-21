@@ -11,6 +11,7 @@
     "no-invalid-this": [true, "check-function-in-method"],
     "ordered-imports": [false],
     "object-literal-sort-keys": false,
+    "semicolon": [false],
     "variable-name": [
       "ban-keywords",
       "check-format",

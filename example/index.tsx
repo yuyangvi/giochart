@@ -12,8 +12,9 @@ import Retention from "./Retention";
 import Funnel from "./Funnel";
 import RetentionColumn from "./RetentionColumn";
 import RetentionLongTime from "./RetentionLongTime";
+import ChangeOverTime from "./ChangeOverTime";
 
 ReactDOM.render(
-  <RetentionLongTime />,
+  <ChangeOverTime />,
   document.getElementById("example")
 );

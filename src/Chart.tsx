@@ -15,8 +15,8 @@ import {
   ChartProps, DrawParamsProps, Metric, Source, G2Scale, SourceConfig, ChartDimValues,
   Granulariy
 } from "./ChartProps";
-import { CHARTTHEME, CHARTTYPEMAP } from "./chartConfig";
-import { formatNumber, formatPercent, countTickCount, getTmFormat, getAxisFormat, getRowIndex, filterValuesByTickCount } from "./utils";
+import { CHARTTHEME, CHARTTYPEMAP, ResizeChartType } from "./chartConfig";
+import { formatNumber, formatPercent, countTickCount, getTmFormat, getAxisFormat, mergeFrame, filterValuesByTickCount } from "./utils";
 import * as moment from "moment";
 moment.locale("zh-cn");
 
@@ -265,8 +265,8 @@ class Chart extends React.Component <ChartProps, any> {
     // retenton 特殊处理
     if (metricCols[0] === "loss" && metricCols[1] === "retention") {
       metricDict = {};
-      metricDict.loss = "流失率";
-      metricDict.retention = "用户数";
+      metricDict.loss = "未留存人数";
+      metricDict.retention = "留存人数";
     }
 
     // retention 多列要保留 comparison_value 字段 最后绘图参考G2线上demo
@@ -385,21 +385,31 @@ class Chart extends React.Component <ChartProps, any> {
         formatter: getTmFormat(tmInterval),
         axisFormatter: getAxisFormat(tmInterval)
       });
+
+      window.onresize = () => {
+        const currentRect: ClientRect = dom.getBoundingClientRect();
+        const tm = merge({}, scales.tm, {
+            tickInterval: countTickCount(frame, currentRect.width, tmInterval),
+            formatter: getTmFormat(tmInterval),
+            axisFormatter: getAxisFormat(tmInterval)
+        });
+        chart.col(dimCols[0], tm);
+        chart.repaint();
+      };
     } else if (chartConfig.geom !== "point" && scales[dimCols[0]]) {
       const maxTicks = G2.Frame.group(frame, dimCols[0]).length;
       if (scales[dimCols[0]].type === "linear") {
         scales[dimCols[0]].tickInterval = Math.ceil(60 * maxTicks / (canvasRect.width - 100));
       }
-      if (scales[dimCols[0]].values) {
+      if (ResizeChartType.includes(chartType) && scales[dimCols[0]].values) {
           const origValues = scales[dimCols[0]].values;
           window.onresize = () => {
              const currentRect: ClientRect = dom.getBoundingClientRect();
              const tickC = Math.ceil(60 * maxTicks / (currentRect.width - 100));
              if (tickC > 1) {
-               const indexs = getRowIndex(tickC);
                const newValues = filterValuesByTickCount(tickC, origValues);
-               const newFrame = frame.rows(indexs);
-               chart.col(dimCols[0], assign({}, scales[dimCols[0]], { tickCount: newValues.length, values: newValues}));
+               const newFrame = mergeFrame(frame, dimCols[0], newValues.indexs);
+               chart.col(dimCols[0], assign({}, scales[dimCols[0]], { tickCount: newValues.values.length, values: newValues.values}));
                chart.changeData(newFrame);
              }else {
                  chart.col(dimCols[0], assign({}, scales[dimCols[0]], { tickCount: origValues.length, values: origValues}));
@@ -449,8 +459,6 @@ class Chart extends React.Component <ChartProps, any> {
       chartConfig.colorTheme ? (chartParams.colorTheme || chartConfig.colorTheme) : null,
       (chartType === "singleNum")
     );
-    if (color !== "turn") {
-    }
 
     // render配置
     let canvasHeight = canvasRect.height - legendHeight;
@@ -468,7 +476,19 @@ class Chart extends React.Component <ChartProps, any> {
       }
     });
 
-    chart.source(frame, scales);
+    const origValues = scales[dimCols[0]].values;
+    const maxTicks = G2.Frame.group(frame, dimCols[0]).length;
+    const tickC = Math.ceil(60 * maxTicks / (canvasRect.width - 100));
+    if (tickC > 1 && ResizeChartType.includes(chartType) && origValues) {
+        const newValues = filterValuesByTickCount(tickC, origValues);
+        const newFrame = mergeFrame(frame, dimCols[0], newValues.indexs);
+        const sal = assign({}, scales[dimCols[0]], { tickCount: newValues.values.length, values: newValues.values});
+        const newScales = assign({}, scales, {turn: sal});
+        chart.source(newFrame, newScales)
+    }else {
+        chart.source(frame, scales);
+    }
+
     if (!chartConfig.withRate && !metricCols.includes("val")) {
       metricCols.forEach((s: string) => {
         chart.axis(s, { title: {fill: "#999", textAlign: "center"}});
@@ -556,7 +576,7 @@ class Chart extends React.Component <ChartProps, any> {
     }
     geom.position(position.pos);
     if (!chartConfig.shape && color) {
-      if (chartParams.attrs &&  chartParams.attrs.selection) {
+      if (chartParams.attrs &&  chartParams.attrs.selection.length > 0) {
         const colorArray = G2.Global.colors.trend.filter(
           (c: string, i: number) => chartParams.attrs.selection.includes(i)
         );
@@ -843,7 +863,7 @@ class Chart extends React.Component <ChartProps, any> {
           min: 0,
           max: m.isRate ? 1 : undefined,
           formatter: m.isRate ? formatPercent : formatNumber,
-          tickCount: 4
+          // tickCount: 4
         };
       }
     });

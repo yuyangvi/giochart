@@ -1,6 +1,6 @@
 import * as G2 from "g2";
 import * as moment from "moment";
-import { assign, filter, flatten, map, reject, transform, pick } from "lodash";
+import { assign, find, filter, flatten, map, reject, transform, pick } from "lodash";
 import { Source } from "./chartProps";
 /**
  * 数字格式
@@ -24,14 +24,31 @@ export const formatNumber = (n: number): string => {
   return parseFloat((n * Math.pow(0.1, 4 * suffixIndex)).toPrecision(3)) + suffixArray[suffixIndex];
 };
 
-export const getRowIndex = (tickCount: number, rows: number): number[] => {
+export const filterValuesByTickCount = (tickCount: number, values: string[]): { indexs: number[], values: string[] } => {
+  const indexs = values.map((e: string, i: number) => {
+      if (i % tickCount === 0) {
+        return i;
+      }
+    }).filter((e: number) => e !== undefined);
 
+  const fValues = values.filter((e: string, i: number) => {
+    return indexs.includes(i);
+  });
+
+  if (!fValues.includes(values[values.length - 1])) {
+    fValues.push(values[values.length - 1]);
+    indexs.push(values.length - 1);
+  }
+  return {indexs, values: fValues};
 };
 
-export const filterValuesByTickCount = (tickCount: number, values: string[]): string[] => {
-  const step = Math.floor((values.length - 1) / (tickCount - 1));
+export const mergeFrame = (frame: any, dim: string, indexs: number[]) => {
+  const fr = G2.Frame.filter(frame, (obj: any, index: number) => indexs.includes(obj.turn));
+  const dimIndexs = fr.colArray(dim);
+  const newIndexs = dimIndexs.map((i: number) => indexs.indexOf(i));
+  return fr.colReplace(dim, newIndexs);
+}
 
-};
 export const formatPercent = (n: number): string => {
   if (typeof n !== "number") {
     return n;
@@ -161,4 +178,39 @@ export const retentionSourceSelector = (source: Source, dimCols: string[], overT
     return map(combinedResults, (n, i) => assign(n, reservedObj, { turn: i }));
   });
   return flatten(lastResult);
+}
+
+export const getRetentionParams = (chartType: string, columns: any[], params: any, isCOT: boolean) => {
+  let compareCol = filter(columns, (n: any) => (n.id !== "tm" && n.isDim)).reverse();
+  const isCompare = !!compareCol.length;
+  // 处理 turn的问题
+  if (isCOT && !isCompare) {
+    const interval = find(params.granularities, { id: "tm" }).interval;
+    const timeRange = params.timeRange;
+    const filterArray = retentionIntervalColumns(parseInt(interval, 10), timeRange);
+    const filteredColumns = filter(columns, (n: any) => {
+      const matches = n.id.match(/^retention(?:_rate)_(\d+)$/);
+      return (matches && filterArray.includes(matches[1]));
+    });
+
+    compareCol = [{ id: "turn", name: "留存周期", isDim: true, isRate: false, values: map(filteredColumns, "name") }];
+  }
+  const cotCols = isCOT ?
+    { id: "tm", name: "起始时间", isDim: true, isRate: false } :
+    { id: "turn", name: "留存", isDim: true, isRate: false, values: getLabels(columns) };
+  let matricCols = [
+    { id: "retention_rate", name: "留存率", isDim: false, isRate: true },
+    { id: "retention", name: "用户数", isDim: false, isRate: false }
+  ];
+  if (chartType === "count") {
+    matricCols = matricCols.reverse();
+  }
+  return {
+    adjust: "stack",
+    chartType: chartType === "count" ? "retentionColumn" : "retention",
+    columns: [cotCols, ...compareCol, ...matricCols]
+  };
+}
+const getLabels = (columns: any) => {
+  return map(filter(columns, (n: any) => (/^retention_\d+$/.test(n.id))), "name");
 }

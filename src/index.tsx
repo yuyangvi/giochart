@@ -10,6 +10,7 @@ import ContextListener from "./ContextListener";
 import DataSource from "./DataSource";
 import GrTable from "./GrTable";
 import { retentionSourceSelector, retentionIntervalColumns } from "./utils";
+import { getRetention } from "./retention.utils";
 
 const timeWeekRange = (timeRange: string) => {
   if (!timeRange) {
@@ -207,6 +208,7 @@ export {
   DataSource,
   GrTable,
   convertChartParams,
+  getRetention,
   retentionSourceSelector,
   retentionIntervalColumns
 };
