@@ -22,7 +22,17 @@ const retentionData: Source = [
   {"cs18":"北京中关村融汇金融信息服务有限公司","woVjjJDo":8}
 ];
 
-const chartParams: DrawParamsProps = {"adjust":"dodge","aggregates":null,"chartType":"bar","columns":[{"id":"cs18","name":"organization_name","isDim":true,"isRate":false},{"id":"woVjjJDo","name":"页面_主要功能_看板","isDim":false,"metricId":{"id":"woVjjJDo","level":"complex"},"isRate":false}],"granularities":[]};
+const chartParams: DrawParamsProps = {
+    adjust: "dodge",
+    aggregator: null,
+    chartType: "bar",
+    columns: [
+        {id: "cs18", name: "organization_name", isDim: true, isRate: false},
+        {id: "woVjjJDo", name: "页面_主要功能_看板", isDim: false, isRate: false}
+       // {id: "woVjjJDo", name: "页面_主要功能_看板", isDim: false, metricId: {id: "woVjjJDo", level: "complex"}, isRate: false}
+    ],
+    granularities: []
+};
 const EasyChart = (props: any) => (
   <Chart chartParams={chartParams} source={retentionData} />
 );
