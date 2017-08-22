@@ -84,3 +84,5 @@ export const CHARTTHEME: any = {
   fontSize: "12px",
   fontFamily: "Arial"
 };
+
+export const ResizeChartType = ["retention", "retentionColumn"];

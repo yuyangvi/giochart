@@ -56,7 +56,6 @@ export const getRetention = (columns: Metric[], source: Source, params: DataRequ
   const isCompare = !!compareCol.length;
   const retentionDimCols = getRetentionDimCols(columns, isCOT, isTrend, isCompare, filterArray);
   const dimColumnIds = map(retentionDimCols, "id") as string[];
-  console.log(dimColumnIds, filterArray);
   const retentionSource = getRetentionSource(source, isCOT, dimColumnIds, filterArray);
   // 取得source
   let matricCols = [

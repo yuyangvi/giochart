@@ -23,6 +23,32 @@ export const formatNumber = (n: number): string => {
   }
   return parseFloat((n * Math.pow(0.1, 4 * suffixIndex)).toPrecision(3)) + suffixArray[suffixIndex];
 };
+
+export const filterValuesByTickCount = (tickCount: number, values: string[]): { indexs: number[], values: string[] } => {
+  const indexs = values.map((e: string, i: number) => {
+      if (i % tickCount === 0) {
+        return i;
+      }
+    }).filter((e: number) => e !== undefined);
+
+  const fValues = values.filter((e: string, i: number) => {
+    return indexs.includes(i);
+  });
+
+  if (!fValues.includes(values[values.length - 1])) {
+    fValues.push(values[values.length - 1]);
+    indexs.push(values.length - 1);
+  }
+  return {indexs, values: fValues};
+};
+
+export const mergeFrame = (frame: any, dim: string, indexs: number[]) => {
+  const fr = G2.Frame.filter(frame, (obj: any, index: number) => indexs.includes(obj.turn));
+  const dimIndexs = fr.colArray(dim);
+  const newIndexs = dimIndexs.map((i: number) => indexs.indexOf(i));
+  return fr.colReplace(dim, newIndexs);
+}
+
 export const formatPercent = (n: number): string => {
   if (typeof n !== "number") {
     return n;

@@ -49,6 +49,7 @@ export interface DrawParamsProps {
   granularities?: Granulariy[];
   groupCol?: string;
   attrs?: Additional;
+  timeRange?: string;
 }
 export interface Metric {
   id: string;
