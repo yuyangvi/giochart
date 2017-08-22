@@ -109,7 +109,7 @@ const convertChartParams = (v3Params: any): GioProps => {
     granularities = granularities.concat({
       id: "tm",
       interval: v3Params.interval,
-      period: (v3Params.chartType === "comparison" ? " " : undefined)
+      period: (v3Params.chartType === "comparison" ? "auto" : undefined)
     });
   }
   if (dimensions.length < 1 || metrics.length < 1) {
