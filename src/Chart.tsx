@@ -302,6 +302,7 @@ class Chart extends React.Component <ChartProps, any> {
         };
         sourceDef.val = {
           type: "linear",
+          min: 0,
           formatter: metricCols.length > 1 ? formatNumber : sourceDef[metricCols[0]].formatter
         }
         metricCols = ["val"];
@@ -745,6 +746,7 @@ class Chart extends React.Component <ChartProps, any> {
       };
       if (m.isRate) {
         sourceDef[m.id].min = 0;
+        sourceDef[m.id].max = 1;
         sourceDef[m.id].formatter = formatPercent;
       } else if (!m.isDim) {
         sourceDef[m.id].min = 0;
