@@ -38,7 +38,7 @@ const chartParams: DrawParamsProps = {
     { id: "tm", name: "时间", isDim: true, isRate: false},
     { id: "a9amn3z9", name: "总体转化率", isDim: false, isRate: true}
   ],
-  granularities: [{ id: "tm", interval: 6048e5 }]
+  granularities: [{ id: "tm", interval: "604800000" }]
 };
 const WeekChart = (props: any) => (
   <Chart chartParams={chartParams} source={retentionData} />

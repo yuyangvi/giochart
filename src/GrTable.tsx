@@ -57,9 +57,9 @@ class GrTable extends React.Component <ChartProps, any> {
   private checkDate(m: Metric) {
     if (m.id === "tm") {
       const gra = find(this.props.chartParams.granularities, {id: "tm"});
-      if (gra.interval && gra.interval > 6048e5) {
+      if (gra.interval && parseInt(gra.interval, 10) > 6048e5) {
         return (v: number) => moment.unix(v / 1000).format("MMMM");
-      } else if (gra.interval && gra.interval >= 864e5) {
+      } else if (gra.interval && parseInt(gra.interval, 10) >= 864e5) {
         return (v: number) => moment.unix(v / 1000).format("YYYY-MM-DD");
       } else {
         return (v: number) => moment.unix(v / 1000).format("YYYY-MM-DD HH:mm");

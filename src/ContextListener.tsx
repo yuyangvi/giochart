@@ -92,7 +92,7 @@ class ContextListener extends React.Component <SingleChartProps, any> {
         this.context.source,
         ["comparison_value"],
         false,
-        find(chartParams.granularities, {id: "tm"}).interval,
+        parseInt(find(chartParams.granularities, {id: "tm"}).interval, 10),
         this.props.timeRange
       );
       let values: string[] = null;

@@ -13,7 +13,7 @@ const chartParams: DrawParamsProps = {
     adjust:   "stack",
     chartType: "retentionColumn",
     attrs: {selection: []},
-    granularities: [{ id: "tm", interval: 864e5 }],
+    granularities: [{ id: "tm", interval: "86400000" }],
     timeRange: "day:15,1",
     columns: [
         // source
