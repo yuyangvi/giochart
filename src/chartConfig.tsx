@@ -86,3 +86,22 @@ export const CHARTTHEME: any = {
 };
 
 export const ResizeChartType = ["retention", "retentionColumn"];
+export const RetentionCOT: any[string] = {
+  2592000000: {
+    1: "次月留存率",
+    2: "2月留存率",
+    3: "3月留存率"
+  },
+  6048e5: {
+    1: "次周留存率",
+    2: "2周留存率",
+    3: "3周留存率",
+    4: "4周留存率"
+  },
+  864e5: {
+    1: "次日留存率",
+    7: "7日留存率",
+    14: "14日留存率",
+    30: "30日留存率"
+  }
+};

@@ -1,7 +1,7 @@
 import * as G2 from "g2";
 import * as moment from "moment";
 import { assign, find, filter, flatten, map, reject, transform, pick } from "lodash";
-import { Source } from "./chartProps";
+import {Granulariy, Source} from "./chartProps";
 /**
  * 数字格式
  * @param n
@@ -103,10 +103,13 @@ export const countTickCount = (frame: any, width: number, tmInterval: number) =>
 
 export const getTmFormat = (tmInterval: number) => {
   if (tmInterval > 6048e5) { // 按月
-    return (v: number) => moment.unix(v / 1000).format("MMMM");
+     // return (v: number) => moment.unix(v / 1000).format("MMMM");
+    return (v: number) => (
+      `${moment.unix(v / 1000).format("MM-DD ddd")} ~ ${moment.unix(v / 1000).endOf("month").format("MM-DD ddd")}`
+    );
   } else if (tmInterval === 6048e5) { // 按周
     return (v: number) => (
-      `${moment.unix(v / 1000).format("MM-DD ddd")} 到 ${moment.unix(v / 1000).endOf("week").format("MM-DD ddd")}`
+      `${moment.unix(v / 1000).format("MM-DD ddd")} ~ ${moment.unix(v / 1000).endOf("week").format("MM-DD ddd")}`
     );
   } else if (tmInterval === 864e5) { // 按天
     return (v: number) => moment.unix(v / 1000).format("MM-DD ddd");
@@ -116,7 +119,10 @@ export const getTmFormat = (tmInterval: number) => {
   return (v: number) => moment.unix(v / 1000).format("MM-DD ddd");
 }
 export const getAxisFormat = (tmInterval: number) => {
-  if (tmInterval === 6048e5) { // 按周
+  const month = ["一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"];
+  if (tmInterval > 6048e5) {
+      return (n: string) => (month[parseInt(n.slice(0, 2), 10) - 1]);
+  } else if (tmInterval === 6048e5) { // 按周
     return (n: string) => n.slice(0, 8);
   } else if (tmInterval === 36e5) {
     return (n: string) => {
@@ -185,7 +191,8 @@ export const getRetentionParams = (chartType: string, columns: any[], params: an
   const isCompare = !!compareCol.length;
   // 处理 turn的问题
   if (isCOT && !isCompare) {
-    const interval = find(params.granularities, { id: "tm" }).interval;
+    const grua: Granulariy[] = params.granularities;
+    const interval = find(grua, { id: "tm" }).interval;
     const timeRange = params.timeRange;
     const filterArray = retentionIntervalColumns(parseInt(interval, 10), timeRange);
     const filteredColumns = filter(columns, (n: any) => {

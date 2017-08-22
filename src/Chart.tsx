@@ -15,7 +15,7 @@ import {
   ChartProps, DrawParamsProps, Metric, Source, G2Scale, SourceConfig, ChartDimValues,
   Granulariy
 } from "./ChartProps";
-import { CHARTTHEME, CHARTTYPEMAP, ResizeChartType } from "./chartConfig";
+import { CHARTTHEME, CHARTTYPEMAP, ResizeChartType, RetentionCOT } from "./chartConfig";
 import { formatNumber, formatPercent, countTickCount, getTmFormat, getAxisFormat, mergeFrame, filterValuesByTickCount } from "./utils";
 import * as moment from "moment";
 moment.locale("zh-cn");
@@ -70,44 +70,7 @@ const adjustFrame: any = {
     return { frame, sourceDef: {}, metricCols };
   }
 };
-const tooltipMap: any = {
-  funnel: (ev: any) => {
-    const l = ev.items.length;
-    for (let i = 0; i * 2 < l; i += 1) {
-      const origin = ev.items[i * 2].point._origin;
-      const origin2 = ev.items[i * 2 + 1].point._origin;
-      ev.items[i] = ev.items[i * 2];
-      ev.items[i].value = `${ev.items[2 * i].name}: ${formatPercent(origin.conversion_rate)}, ` +
-        `${ev.items[2 * i + 1].name}: ${origin2.conversion}`;
-      ev.items[i].name = origin.comparison_value || origin.metric_name;
-    }
-    ev.items.splice(l / 2, l / 2);
-  },
-  comparison: (ev: any) => {
-    // console.log(ev);
-    /*ev.items[0] = ev.items[1];
-    ev.items[0].name = getTooltipName(ev.items[0], "tm", false);
-    if (ev.items.length > 2) {
-      ev.items[1] = ev.items[2];
-      ev.items[1].name = getTooltipName(ev.items[1], "tm_", false);
-    }*/
-    ev.items.splice(ev.items.length - 1);
-  },
-  retention: (ev: any) => {
-      const itemsGroup = groupBy(ev.items, "color");
-      const keys = Object.keys(itemsGroup);
-      ev.items.splice(0);
-      keys.forEach((key: string)  => {
-          const items: any = itemsGroup[key];
-          const value = items.map((item: any) => (item.name + ": " + item.value)).splice(1).join(", ");
-          let combineValue = items[0].value;
-          if (value.length) {
-              combineValue = combineValue + ", " + value;
-          }
-          ev.items.push(assign({}, items[0], { value: combineValue }));
-      });
-  }
-};
+
 class Chart extends React.Component <ChartProps, any> {
   private chart: any;
   private legends: any;
@@ -355,6 +318,57 @@ class Chart extends React.Component <ChartProps, any> {
     // 如果没有legend, 通常左边会有标题显示
     return { margin, colPixels };
   }
+  private tooltipMap(type: string, interval: number) {
+    if (type === "funnel") {
+      return (ev: any) => {
+        const l = ev.items.length;
+        for (let i = 0; i * 2 < l; i += 1) {
+          const origin = ev.items[i * 2].point._origin;
+          const origin2 = ev.items[i * 2 + 1].point._origin;
+          ev.items[i] = ev.items[i * 2];
+          ev.items[i].value = `${ev.items[2 * i].name}: ${formatPercent(origin.conversion_rate)}, ` +
+          `${ev.items[2 * i + 1].name}: ${origin2.conversion}`;
+          ev.items[i].name = origin.comparison_value || origin.metric_name;
+        }
+        ev.items.splice(l / 2, l / 2);
+      }
+    }
+    if (type === "comparison") {
+      return (ev: any) => {
+            // console.log(ev);
+            /*ev.items[0] = ev.items[1];
+            ev.items[0].name = getTooltipName(ev.items[0], "tm", false);
+            if (ev.items.length > 2) {
+              ev.items[1] = ev.items[2];
+              ev.items[1].name = getTooltipName(ev.items[1], "tm_", false);
+            }*/
+         ev.items.splice(ev.items.length - 1);
+      }
+    }
+    if (type === "retention") {
+      return (ev: any) => {
+        const itemsGroup = groupBy(ev.items, "color");
+        const keys = Object.keys(itemsGroup);
+        ev.items.splice(0);
+        keys.forEach((key: string)  => {
+          const items: any = itemsGroup[key];
+          if (interval !== null && Object.keys(RetentionCOT[interval]).includes(items[0].value)) {
+            ev.items.push(assign({}, items[0], { value: items[1].value }, {name: RetentionCOT[interval][items[0].value]}))
+          }else {
+            const value = items.map((item: any) => (item.name + ": " + item.value)).splice(1).join(", ");
+            let combineValue =  items[0].value ;
+            if (value.length) {
+              combineValue = combineValue + ", " + value;
+            }
+            ev.items.push(assign({}, items[0], { value: combineValue }));
+          }
+        });
+      }
+    }
+
+    return undefined;
+  }
+
   private drawChart(chartParams: DrawParamsProps, source: any[], isThumb: boolean = false) {
     // 防止destroy删除父节点
     const dom: HTMLElement = document.createElement("div");
@@ -374,12 +388,13 @@ class Chart extends React.Component <ChartProps, any> {
 
     // 清洗脏数据
     frame = this.washRecord(frame, metricCols);
-
+    let tInterval: number = null;
     // x轴tickCount
     if (scales.tm) {
       // 寻找时间粒度
       const tmGran: Granulariy = find(chartParams.granularities, { id: "tm" });
-      const tmInterval = tmGran.interval;
+      const tmInterval = parseInt(tmGran.interval, 10);
+      tInterval = tmInterval;
       merge(scales.tm, {
         tickInterval: countTickCount(frame, canvasRect.width, tmInterval),
         formatter: getTmFormat(tmInterval),
@@ -576,7 +591,7 @@ class Chart extends React.Component <ChartProps, any> {
     }
     geom.position(position.pos);
     if (!chartConfig.shape && color) {
-      if (chartParams.attrs &&  chartParams.attrs.selection.length > 0) {
+      if (chartParams.attrs &&  chartParams.attrs.selection.length > 0 ) {
         const colorArray = G2.Global.colors.trend.filter(
           (c: string, i: number) => chartParams.attrs.selection.includes(i)
         );
@@ -608,7 +623,7 @@ class Chart extends React.Component <ChartProps, any> {
     // legend bottom 默认距离canvas底部为30px x轴labe默认距离x轴约20px
     chart.legend(isArray(chartConfig.geom) ? { position: "bottom" } : false);
 
-    if (tooltipMap[chartType]) {
+    if (this.tooltipMap(chartType, tInterval)) {
       if (chartType === "retention" && color) {
         geom.tooltip(color + "*" + metricCols.join("*"));
       }else {
@@ -618,7 +633,7 @@ class Chart extends React.Component <ChartProps, any> {
       //  console.log("rate");
         chart.tooltip(true, {map: {title: "rate"}});
       }
-      chart.on("tooltipchange", tooltipMap[chartType]);
+      chart.on("tooltipchange", this.tooltipMap(chartType, tInterval));
     }
 
     chart.tooltip(true, {

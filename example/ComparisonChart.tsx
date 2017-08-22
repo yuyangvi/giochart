@@ -30,7 +30,7 @@ const chartParams: DrawParamsProps = {
       { id: "tm_", isDim: true, isRate: false},
       { id: "JoOL0rE9_", name: "上一周期", isDim: false, isRate: false }
     ],
-    granularities: [{ id: "tm", interval: 86400000, period: "auto" }]
+    granularities: [{ id: "tm", interval: "86400000", period: "auto" }]
   }
 
 ;

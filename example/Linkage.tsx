@@ -17,16 +17,16 @@ interface SyntheticSeletorEvent extends SyntheticEvent<HTMLSelectElement> {
 const originParams: DataRequestProps = {
   dimensions: ["tm"],
   filters: [{ op: "=", key: "b", value: "Web", name: "网站/手机应用" }],
-  granularities: [{ id: "tm", interval: 3600000 }],
+  granularities: [{ id: "tm", interval: "3600000" }],
   metrics: [{ id: "9yGbpp8x" }],
   timeRange: "day:1,0"
 };
 const lineParams: DrawParamsProps = {
-    chartType: 'table',
-    "granularities": [{"id": "tm", "interval": 86400}],
+    chartType: "table",
+    granularities: [{id: "tm", interval: "86400"}],
     columns: [
-      {"id": "tm", "name": "时间", isDim: true},
-      {"id": "9yGbpp8x", "name": "访问用户量", isDim: false}
+      {id: "tm", name: "时间", isDim: true},
+      {id: "9yGbpp8x", name: "访问用户量", isDim: false}
     ],
 };
 class Demo extends React.Component<any, any> {
