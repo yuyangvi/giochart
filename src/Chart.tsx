@@ -591,7 +591,7 @@ class Chart extends React.Component <ChartProps, any> {
     }
     geom.position(position.pos);
     if (!chartConfig.shape && color) {
-      if (chartParams.attrs &&  chartParams.attrs.selection.length > 0 ) {
+      if (chartParams.attrs &&  chartParams.attrs.selection && chartParams.attrs.selection.length > 0 ) {
         const colorArray = G2.Global.colors.trend.filter(
           (c: string, i: number) => chartParams.attrs.selection.includes(i)
         );

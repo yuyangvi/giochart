@@ -24,7 +24,6 @@ class ContextListener extends React.Component <SingleChartProps, any> {
   public render() {
     const chartParams = this.generateChartParams();
     const withAggregate: boolean = ["comparison", "singleNumber"].includes(chartParams.chartType);
-
     if (chartParams.chartType === "table") {
       return (
         <GrTable

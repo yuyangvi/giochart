@@ -66,7 +66,12 @@ export interface Metric {
 export interface Additional {
   selection?: number[];
   userType?: string;
-  range?: string
+  range?: string;
+  metricType?: string;
+  comment?: string;
+  period?: number;
+  timeRange?: string;
+  metrics?: any;
 }
 
 // ResponseParams
