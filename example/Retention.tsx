@@ -108,21 +108,21 @@ const chartParams: DrawParamsProps = {
   // ["dodge", "stack"]  "stack"
   adjust:   "stack",
   chartType: "retention",
-  attrs: {selection: [1, 2]},
+  attrs: {userType: "uv", range: "day", selection: [0]},
   granularities: [{ id: "tm", interval: "86400000" }],
   timeRange: "day:15,1",
   columns: [
       // source
-      // {id: "turn", name: "留存", isDim: true, isRate: false, values: ["当天", "1天后", "2天后", "3天后", "4天后", "5天后", "6天后", "7天后", "8天后", "9天后", "10天后", "11天后", "12天后", "13天后"]},
-      // {id: "retention_rate", name: "留存率", isDim: false, isRate: true},
-      // {id: "retention", name: "用户数", isDim: false, isRate: false}
-
-      // sourceComparison
       {id: "turn", name: "留存", isDim: true, isRate: false, values: ["当天", "1天后", "2天后", "3天后", "4天后", "5天后", "6天后", "7天后", "8天后", "9天后", "10天后", "11天后", "12天后", "13天后"]},
-      {id: "city", name: "城市", isDim: true, isRate: false},
-      {id: "comparison_value", name: "对比值", isDim: true, isRate: false},
       {id: "retention_rate", name: "留存率", isDim: false, isRate: true},
       {id: "retention", name: "用户数", isDim: false, isRate: false}
+
+      // sourceComparison
+      // {id: "turn", name: "留存", isDim: true, isRate: false, values: ["当天", "1天后", "2天后", "3天后", "4天后", "5天后", "6天后", "7天后", "8天后", "9天后", "10天后", "11天后", "12天后", "13天后"]},
+      // {id: "city", name: "城市", isDim: true, isRate: false},
+      // {id: "comparison_value", name: "对比值", isDim: true, isRate: false},
+      // {id: "retention_rate", name: "留存率", isDim: false, isRate: true},
+      // {id: "retention", name: "用户数", isDim: false, isRate: false}
 
   ]
 };
@@ -130,20 +130,20 @@ const chartParams: DrawParamsProps = {
 // const a = retentionSourceSelector(retentionData, ["tm"], true);
 
 const source = [
-  {retention: 62919, retention_rate: 1, turn: 0},
-  {retention: 12092, retention_rate: 0.2109854829704076, turn: 1},
-  {retention: 7427, retention_rate: 0.14482946900411459, turn: 2},
-  {retention: 6754, retention_rate: 0.15062108338351063, turn: 3},
-  {retention: 7276, retention_rate: 0.16828568785271533, turn: 4},
-  {retention: 6646, retention_rate: 0.16086167251603534, turn: 5},
-  {retention: 5938, retention_rate: 0.16461065062512129, turn: 6},
-  {retention: 5611, retention_rate: 0.18282828282828284, turn: 7},
-  {retention: 3645, retention_rate: 0.14608632920524228, turn: 8},
-  {retention: 1874, retention_rate: 0.09621110997022282, turn: 9},
-  {retention: 1555, retention_rate: 0.11297587910491136, turn: 10},
-  {retention: 2188, retention_rate: 0.17891896312045139, turn: 11},
-  {retention: 1904, retention_rate: 0.17891373801916932, turn: 12},
-  {retention: 929, retention_rate: 0.1665770127308589, turn: 13}
+    {turn: 0, retention: 64195, retention_rate: 1},
+{turn: 1, retention: 12420, retention_rate: 0.2132738044131536},
+{turn: 2, retention: 7546, retention_rate: 0.1447729409281891},
+{turn: 3, retention: 7069, retention_rate: 0.1398777133585294},
+{turn: 4, retention: 7393, retention_rate: 0.15139352487047694},
+{turn: 5, retention: 6965, retention_rate: 0.16002665196213584},
+{turn: 6, retention: 6245, retention_rate: 0.16448061525495153},
+{turn: 7, retention: 5703, retention_rate: 0.1762306480022249},
+{turn: 8, retention: 3514, retention_rate: 0.13345993163691605},
+{turn: 9, retention: 1877, retention_rate: 0.09436902966314731},
+{turn: 10, retention: 1726, retention_rate: 0.09439431227782336},
+{turn: 11, retention: 2157, retention_rate: 0.1318137374725006},
+{turn: 12, retention: 1973, retention_rate: 0.17739615177126417},
+{turn: 13, retention: 926, retention_rate: 0.1613521519428472}
 ];
 
 const sourceComparison = [
@@ -178,6 +178,6 @@ const sourceComparison = [
 ];
 
 const Retention = (props: any) => (
-  <Chart chartParams={chartParams} source={sourceComparison} />
+  <Chart chartParams={chartParams} source={source} />
 );
 export default Retention;

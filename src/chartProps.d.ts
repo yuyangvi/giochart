@@ -3,8 +3,8 @@ export interface DataRequestProps {
   id?: string; // 打点必备
   name?: string; // 打点必备
   type?: string; // Enum: funnel, retention
-  metrics: Metric[]; // 指标
-  dimensions: string[]; // 维度
+  metrics?: Metric[]; // 指标
+  dimensions?: string[]; // 维度
   granularities: Granulariy[]; // 粒度
   filters?: Filter[]; // 过滤
   timeRange: string; // 时间区域 day:8,1
@@ -64,7 +64,9 @@ export interface Metric {
 }
 
 export interface Additional {
-  selection: number[];
+  selection?: number[];
+  userType?: string;
+  range?: string
 }
 
 // ResponseParams
@@ -120,6 +122,7 @@ export interface SingleChartProps {
   sortHandler?: (evt: any) => any;
   isThumb?: boolean;
   timeRange?: string;
+  attrs?: any;
 }
 
 interface LinearScale {
