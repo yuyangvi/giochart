@@ -491,7 +491,7 @@ class Chart extends React.Component <ChartProps, any> {
       }
     });
 
-    const origValues = scales[dimCols[0]].values;
+    const origValues = scales[dimCols[0]] ? scales[dimCols[0]].values : null;
     const maxTicks = G2.Frame.group(frame, dimCols[0]).length;
     const tickC = Math.ceil(60 * maxTicks / (canvasRect.width - 100));
     if (tickC > 1 && ResizeChartType.includes(chartType) && origValues) {
