@@ -70,10 +70,29 @@ export const getRetention = (columns: Metric[], source: Source, params: DataRequ
     params: {
       adjust: "stack",
       chartType: isTrend ? "retention" : "retentionColumn",
-      columns: [...retentionDimCols, ...matricCols]
+      columns: [...retentionDimCols, ...matricCols],
+      timeRange: params.timeRange,
+      granularities: params.granularities,
+      attrs: params.attrs
     },
-    source: retentionSource
+    source: filterSource(retentionSource, source, params, columns, isCOT)
   };
+}
+
+const filterSource = (rsource: Source, source: Source, params: DataRequestProps, columns: Metric[], isCOT: boolean) => {
+    const compareCol = find(columns, { id: "comparison_value" });
+    if (!compareCol) {
+        return rsource;
+    }
+    const selection = params.attrs.selection;
+    const compVals = filter(
+        map(filter(source, { tm: 0 }), "comparison_value"),
+        (n, i) => selection.includes(i)
+    );
+
+    return filter(rsource, (n: any) => (
+        !isCOT && compVals.includes(n.comparison_value)
+    ));
 }
 const getRetentionSource = (
   source: Source,
@@ -89,7 +108,7 @@ const getRetentionSource = (
       forEach(filterArray, (turn) => {
         if (s[`retention_${turn}`]) {
           result.push(assign({
-            turn,
+            turn: parseInt(turn, 10),
             retention: s[`retention_${turn}`],
             retention_rate: s[`retention_rate_${turn}`]
           }, dimObj));

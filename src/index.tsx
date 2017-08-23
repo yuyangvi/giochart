@@ -74,6 +74,7 @@ class ChartV4 extends React.Component <GioProps, any> {
           range={timeWeekRange(props.params.timeRange)}
           sortHandler={this.sortHandler.bind(this)}
           isThumb={props.isThumb}
+          attrs={params.attrs}
         />
       </DataSource>
     );

@@ -7,6 +7,7 @@ import Chart from "./Chart";
 import { SingleChartProps, DrawParamsProps, Metric } from "./ChartProps";
 import GrTable from "./GrTable";
 import { retentionSourceSelector } from "./utils";
+import { getRetention} from "./retention.utils"
 import { map, filter, find } from "lodash";
 class ContextListener extends React.Component <SingleChartProps, any> {
   private static contextTypes: React.ValidationMap<any> = {
@@ -88,32 +89,13 @@ class ContextListener extends React.Component <SingleChartProps, any> {
           />
         </div>);
     } else if (["retention", "retentionTrend"].includes(chartParams.chartType)) {
-      const source = retentionSourceSelector(
-        this.context.source,
-        ["comparison_value"],
-        false,
-        parseInt(find(chartParams.granularities, {id: "tm"}).interval, 10),
-        this.props.timeRange
-      );
-      let values: string[] = null;
-      if (this.context.columns) {
-        values = map(filter(this.context.columns, (n: Metric) => (/^retention_\d+$/.test(n.id))), "name") as string[];
-      }
-      const retentionParams: DrawParamsProps = {
-        adjust: "stack",
-        chartType: chartParams.chartType,
-        columns: [
-          { id: "turn", name: "留存周期", isDim: true, isRate: false, values},
-          { id: "retention", name: "用户数", isDim: false, isRate: false },
-          { id: "retention_rate", name: "留存率", isDim: false, isRate: true }
-        ]
-      };
-
+      const params = { granularities: chartParams.granularities, timeRange: chartParams.timeRange, attrs: chartParams.attrs};
+      const retentions = getRetention(chartParams.columns, this.context.source, params , false, true);
       return (
         <Chart
-          chartParams={retentionParams}
+          chartParams={retentions.params}
           colorTheme={this.props.colorTheme}
-          source={source}
+          source={retentions.source}
           startTime={this.context.startTime}
           trackWords={this.context.trackWords}
           isThumb={this.props.isThumb}
@@ -144,7 +126,9 @@ class ContextListener extends React.Component <SingleChartProps, any> {
       columns: this.context.columns,
       // 以下目前只有表格处用到
       granularities: this.props.granularities,
-      groupCol: this.props.groupCol
+      groupCol: this.props.groupCol,
+      timeRange: this.props.timeRange,
+      attrs: this.props.attrs
     };
   }
 }
