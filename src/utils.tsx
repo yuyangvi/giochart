@@ -156,7 +156,7 @@ export const retentionSourceSelector = (source: Source, dimCols: string[], overT
     const results: Source = filter(flatten(map(fetchedTurns, (turn) =>  map(
       filterSource, (s) => {
         const v =  pick(s, dimCols);
-        if (!s[`retention_${turn}`]) {
+        if (s[`retention_${turn}`] === undefined) {
           return null;
         }
         assign(v, {
