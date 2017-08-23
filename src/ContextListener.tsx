@@ -101,11 +101,6 @@ class ContextListener extends React.Component <SingleChartProps, any> {
         />
       );
     }
-
-
-      console.log("-------------AAA---------------");
-      console.log(chartParams);
-      console.log(this.context.source);
     return (
       <Chart
         chartParams={chartParams}
