@@ -127,7 +127,7 @@ export const getAxisFormat = (tmInterval: number) => {
   } else if (tmInterval === 36e5) {
     return (n: string) => {
       const matches = n.split(" ");
-      return (matches[1] === "00:00") ? matches[0] : matches[1];
+      return (matches[matches.length - 1  ] === "00:00") ? matches[0] : matches[matches.length - 1];
     };
   }
   return;

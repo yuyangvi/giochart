@@ -335,6 +335,13 @@ class Chart extends React.Component <ChartProps, any> {
     }
     if (type === "comparison") {
       return (ev: any) => {
+        const o_title = ev.items[0].title;
+        const n_title = ev.items[3].value;
+        const item0 = assign({}, ev.items[0], {name: o_title}, {title: n_title});
+        const item1 = assign({}, ev.items[1], {name: o_title}, {title: n_title});
+        ev.items.splice(0);
+        ev.items.push(item0);
+        ev.items.push(item1);
             // console.log(ev);
             /*ev.items[0] = ev.items[1];
             ev.items[0].name = getTooltipName(ev.items[0], "tm", false);
@@ -342,7 +349,7 @@ class Chart extends React.Component <ChartProps, any> {
               ev.items[1] = ev.items[2];
               ev.items[1].name = getTooltipName(ev.items[1], "tm_", false);
             }*/
-         ev.items.splice(ev.items.length - 1);
+        // ev.items.splice(ev.items.length - 2);
       }
     }
     if (type === "retention") {
@@ -624,15 +631,17 @@ class Chart extends React.Component <ChartProps, any> {
     chart.legend(isArray(chartConfig.geom) ? { position: "bottom" } : false);
 
     if (this.tooltipMap(chartType, tInterval)) {
-      if (chartType === "retention" && color) {
-        geom.tooltip(color + "*" + metricCols.join("*"));
-      }else {
-        geom.tooltip(metricCols.join("*"));
-      }
-      if (metricCols.includes("rate")) { // rate作为title必须放前面,不然有bug
-      //  console.log("rate");
-        chart.tooltip(true, {map: {title: "rate"}});
-      }
+      //if (chartType !== "comparison") {
+        if (chartType === "retention" && color) {
+          geom.tooltip(color + "*" + metricCols.join("*"));
+        }else {
+          geom.tooltip(metricCols.join("*"));
+        }
+        if (metricCols.includes("rate")) { // rate作为title必须放前面,不然有bug
+        //  console.log("rate");
+        //  chart.tooltip(true, {map: {title: "rate"}});
+        }
+     // }
       chart.on("tooltipchange", this.tooltipMap(chartType, tInterval));
     }
 
@@ -640,7 +649,8 @@ class Chart extends React.Component <ChartProps, any> {
       custom: true,
       html:  '<div class="ac-tooltip" style="position:absolute;visibility: hidden;"><span class="ac-title"></span><ul class="ac-list"></ul></div>',
       itemTpl: '<li><svg fill={color} class="ac-svg"><circle cx="3" cy="7" r="3"/></svg>{name}: {value}</li>',
-      offset: 10
+      offset: 10,
+      crosshairs: true
     });
 
     // 参考线
