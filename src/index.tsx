@@ -134,7 +134,7 @@ const convertChartParams = (v3Params: any): GioProps => {
     aggregator, // 聚合类型: sum, avg
     attrs: v3Params.attrs, // 属性
     dimensions,
-    filters: [v3Params.filter], // 过滤
+    filter: v3Params.filter, // 过滤
     granularities, // 粒度
     id: v3Params.id,
     name: v3Params.name,
