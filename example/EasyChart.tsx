@@ -1,36 +1,59 @@
-// import * as React from "react";
-// import { DrawParamsProps, Source} from "../src/ChartProps";
-// import Chart from "../src/Chart";
-//
-// const retentionData: Source = [
-//     {tm: 1502812800000, ogWZ55d4: 71535, PDjgVV6l: 2014},
-// {tm: 1502899200000, ogWZ55d4: 70307, PDjgVV6l: 1951},
-// {tm: 1502985600000, ogWZ55d4: 66128, PDjgVV6l: 1870},
-// {tm: 1503072000000, ogWZ55d4: 14077, PDjgVV6l: 470},
-// {tm: 1503158400000, ogWZ55d4: 10687, PDjgVV6l: 429},
-// {tm: 1503244800000, ogWZ55d4: 78700, PDjgVV6l: 2079},
-// {tm: 1503331200000, ogWZ55d4: 74361, PDjgVV6l: 1996}
-// ];
-//
+import * as React from "react";
+import { DrawParamsProps, Source} from "../src/ChartProps";
+import Chart from "../src/Chart";
+
+const retentionData: Source = [
+    {p: "/", ogWZ55d4: 16636},
+    {p: "/projects/GRwXNWPZ/circle/QPDKmxRN", ogWZ55d4: 11078},
+    {p: "/login", ogWZ55d4: 10390},
+    {p: "_GrowingLocalCircleSelectView", ogWZ55d4: 4248},
+    {p: "/signup", ogWZ55d4: 3887},
+    {p: "/conversion", ogWZ55d4: 3302},
+    {p: "/projects/DPWAJm9n/dashboards/3oLagmz9/charts/a9BXAYnP", ogWZ55d4: 2297},
+    {p: "/apps/8723870740277419/circle/embedded", ogWZ55d4: 1883},
+    {p: "/projects/nxog09md/overview", ogWZ55d4: 1853},
+    {p: "/growth-academy", ogWZ55d4: 1524}
+];
+
+const ss = [
+    {tm: 1503504000000, ogWZ55d4: 74234},
+    {tm: 1503590400000, ogWZ55d4: 66789},
+    {tm: 1503676800000, ogWZ55d4: 16862},
+    {tm: 1503763200000, ogWZ55d4: 11814},
+    {tm: 1503849600000, ogWZ55d4: 72365},
+    {tm: 1503936000000, ogWZ55d4: 85493},
+    {tm: 1504022400000, ogWZ55d4: 81644}
+];
+
+const chartParams: DrawParamsProps = {
+    adjust: "dodge",
+    aggregator: null,
+    chartType: "vbar",
+    groupCol: undefined,
+    timeRange: "day:8,1",
+    attrs: {metricType: "none"},
+    columns: [
+        {id: "tm", name: "时间", isDim: true, isRate: false},
+        {id: "ogWZ55d4", name: "页面浏览量", isDim: false, metricId: {id: "ogWZ55d4", level: "complex"}, isRate: false}
+   ],
+    granularities: [{id: "tm", interval: "86400000"}]
+};
+
 // const chartParams: DrawParamsProps = {
 //     adjust: "dodge",
-//     aggregator: null,
-//     chartType: "line",
+//     aggregator: {values: [392800]},
+//     chartType: "bar",
 //     colorTheme: undefined,
 //     groupCol: undefined,
 //     timeRange: "day:8,1",
-//     attrs: {metricType: "none", comment: "", period: 7, timeRange: "day:8,1", metrics: {
-//         ogWZ55d4: {metricName: "登录用户量"},
-//         PDjgVV6l: {metricName: "页面浏览量"}}
-// },
+//     attrs: {metricType: "none"},
 //     columns: [
-//         {id: "tm", name: "时间", isDim: true, isRate: false},
-//         // {id: "ogWZ55d4", name: "页面浏览量", isDim: false, metricId: {id: "ogWZ55d4", level: "complex"}, isRate: false},
-//         // {id: "PDjgVV6l", name: "登录用户量", isDim: false, metricId: {id: "PDjgVV6l", level: "complex"}, isRate: false}
-//    ],
-//     granularities: [{id: "tm", interval: 86400000, period: undefined}]
+//         {id: "p", name: "页面", isDim: true, isRate: false},
+//         {id: "ogWZ55d4", name: "页面浏览量", isDim: false, metricId: {id: "ogWZ55d4", level: "complex"}, isRate: false}
+//     ],
+//     granularities: []
 // };
-// const EasyChart = (props: any) => (
-//   <Chart chartParams={chartParams} source={retentionData} />
-// );
-// export default EasyChart;
+const EasyChart = (props: any) => (
+  <Chart chartParams={chartParams} source={ss} />
+);
+export default EasyChart;

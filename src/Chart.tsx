@@ -16,7 +16,7 @@ import {
   Granulariy
 } from "./ChartProps";
 import { CHARTTHEME, CHARTTYPEMAP, ResizeChartType, RetentionCOT } from "./chartConfig";
-import { formatNumber, formatPercent, countTickCount, getTmFormat, getAxisFormat, mergeFrame, filterValuesByTickCount } from "./utils";
+import { formatNumber, formatPercent, countTickCount, getTmFormat, getAxisFormat, mergeFrame, filterValuesByTickCount, rgbToHex } from "./utils";
 import * as moment from "moment";
 moment.locale("zh-cn");
 
@@ -335,21 +335,30 @@ class Chart extends React.Component <ChartProps, any> {
     }
     if (type === "comparison") {
       return (ev: any) => {
-        const o_title = ev.items[0].title;
-        const n_title = ev.items[3].value;
-        const item0 = assign({}, ev.items[0], {name: o_title}, {title: n_title});
-        const item1 = assign({}, ev.items[1], {name: o_title}, {title: n_title});
-        ev.items.splice(0);
-        ev.items.push(item0);
-        ev.items.push(item1);
-            // console.log(ev);
-            /*ev.items[0] = ev.items[1];
-            ev.items[0].name = getTooltipName(ev.items[0], "tm", false);
-            if (ev.items.length > 2) {
-              ev.items[1] = ev.items[2];
-              ev.items[1].name = getTooltipName(ev.items[1], "tm_", false);
-            }*/
-        // ev.items.splice(ev.items.length - 2);
+        if (ev.items.length === 4) {
+            const oTitle = ev.items[0].title;
+            const nTitle = ev.items[3].value;
+            let color0 = ev.items[0].color;
+            let color1 = ev.items[1].color;
+            if (!color0.includes("#")) {
+              color0 = rgbToHex(color0);
+            }
+            if (!color1.includes("#")) {
+                color1 = rgbToHex(color1);
+            }
+            const item0 = assign({}, ev.items[0], {name: oTitle}, {title: nTitle}, {color: color0});
+            const item1 = assign({}, ev.items[1], {name: oTitle}, {title: nTitle}, {color: color1});
+            ev.items.splice(0);
+            ev.items.push(item0);
+            ev.items.push(item1);
+        } else {
+            ev.items.splice(1);
+            let color0 = ev.items[0].color;
+            if (!color0.includes("#")) {
+                color0 = rgbToHex(color0);
+                ev.items[0].color = color0;
+            }
+        }
       }
     }
     if (type === "retention") {
@@ -620,8 +629,14 @@ class Chart extends React.Component <ChartProps, any> {
     }
     if (chartConfig.label) {
       // geom.label(chartConfig.label);
+      // Stat.summary.percent('y')
+      const sumCols = G2.Frame.sum(frame, metricCols[0]);
       geom.label(metricCols[0], {
-        offset: 5
+        offset: 5,
+        renderer: (text: string, item: any, index: number) => {
+           // 配合 custom 为 true 使用，格式化文本的函数
+          return ((parseInt(item.point[metricCols[0]], 10) / sumCols) * 100).toFixed(2) + "%";
+        }
       });
     }
     if (chartConfig.isThumb || chartConfig.tooltip) {
@@ -631,26 +646,25 @@ class Chart extends React.Component <ChartProps, any> {
     chart.legend(isArray(chartConfig.geom) ? { position: "bottom" } : false);
 
     if (this.tooltipMap(chartType, tInterval)) {
-      //if (chartType !== "comparison") {
         if (chartType === "retention" && color) {
           geom.tooltip(color + "*" + metricCols.join("*"));
         }else {
           geom.tooltip(metricCols.join("*"));
         }
-        if (metricCols.includes("rate")) { // rate作为title必须放前面,不然有bug
+        // if (metricCols.includes("rate")) { // rate作为title必须放前面,不然有bug
         //  console.log("rate");
         //  chart.tooltip(true, {map: {title: "rate"}});
-        }
-     // }
-      chart.on("tooltipchange", this.tooltipMap(chartType, tInterval));
+        // }
+        chart.on("tooltipchange", this.tooltipMap(chartType, tInterval));
     }
 
+    const crosshairs = chartConfig.geom !== "interval";
     chart.tooltip(true, {
       custom: true,
       html:  '<div class="ac-tooltip" style="position:absolute;visibility: hidden;"><span class="ac-title"></span><ul class="ac-list"></ul></div>',
       itemTpl: '<li><svg fill={color} class="ac-svg"><circle cx="3" cy="7" r="3"/></svg>{name}: {value}</li>',
       offset: 10,
-      crosshairs: true
+      crosshairs
     });
 
     // 参考线
