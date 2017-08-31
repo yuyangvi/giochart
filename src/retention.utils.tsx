@@ -106,7 +106,7 @@ const getRetentionSource = (
     (result: any[], s: any, key: string) => {
       const dimObj = pick(s, dimColumnIds);
       forEach(filterArray, (turn) => {
-        if (s[`retention_${turn}`]) {
+        if (s[`retention_${turn}`] !== undefined) {
           result.push(assign({
             turn: parseInt(turn, 10),
             retention: s[`retention_${turn}`],
