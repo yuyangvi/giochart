@@ -61,6 +61,7 @@ export interface Metric {
   counter?: string;
   formatterMap?: any;
   values?: string[];
+  metricId?: any;
 }
 
 export interface Additional {

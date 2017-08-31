@@ -184,7 +184,7 @@ export const retentionSourceSelector = (source: Source, dimCols: string[], overT
     return map(combinedResults, (n, i) => assign(n, reservedObj, { turn: i }));
   });
   return flatten(lastResult);
-}
+};
 
 export const getRetentionParams = (chartType: string, columns: any[], params: any, isCOT: boolean) => {
   let compareCol = filter(columns, (n: any) => (n.id !== "tm" && n.isDim)).reverse();
@@ -217,7 +217,33 @@ export const getRetentionParams = (chartType: string, columns: any[], params: an
     chartType: chartType === "count" ? "retentionColumn" : "retention",
     columns: [cotCols, ...compareCol, ...matricCols]
   };
-}
+};
 const getLabels = (columns: any) => {
   return map(filter(columns, (n: any) => (/^retention_\d+$/.test(n.id))), "name");
-}
+};
+
+const componentToHex = (c: number) => {
+    const hex = c.toString(16);
+    return hex.length === 1 ? "0" + hex : hex;
+};
+
+export const rgbToHex = (rgb: string) => {
+    const reg = /\d+/g;
+    const ragValue = rgb.match(reg);
+    return "#" + componentToHex(parseInt(ragValue[0], 10)) + componentToHex(parseInt(ragValue[1], 10)) + componentToHex(parseInt(ragValue[2], 10));
+};
+
+export const hexToRgb = (hex: string)  => {
+    // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
+    const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+    hex = hex.replace(shorthandRegex, (m, r, g, b) => {
+        return r + r + g + g + b + b;
+    });
+
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+    } : null;
+};
