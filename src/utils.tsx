@@ -99,7 +99,23 @@ export const countTickCount = (frame: any, width: number, tmInterval: number) =>
     const divisor = [24, 12, 8, 6, 4, 3, 2, 1].reduce((b, n) => (ceilNum > n ? b : n));
     return (divisor * 3600000);
   }
-}
+};
+
+export const countTickCountTimeCat = (frame: any, dom: HTMLElement, dimCols: string): number => {
+  const currentRect: ClientRect = dom.getBoundingClientRect();
+  const maxTicks = G2.Frame.group(frame, dimCols).length;
+  let step =  Math.ceil(60 * maxTicks / (currentRect.width - 100));
+  if (step === 1) {
+    return maxTicks;
+  }
+  while (step <= Math.ceil(maxTicks / 2 )) {
+    if ((maxTicks - 1) % step === 0) {
+      return (maxTicks - 1) / step + 1;
+    }
+    step++ ;
+  }
+  return 2;
+};
 
 export const getTmFormat = (tmInterval: number) => {
   if (tmInterval > 6048e5) { // 按月

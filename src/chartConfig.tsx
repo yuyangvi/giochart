@@ -53,7 +53,7 @@ export const CHARTTHEME: any = {
       labels: { autoRotate: false },
       line: null,
       tickLine: { lineWidth: 0, stroke: "#fcc" },
-      title: null
+    //  title: null
     },
     right: {
       labels: { autoRotate: false },

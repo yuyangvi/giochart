@@ -16,7 +16,7 @@ import {
   Granulariy
 } from "./ChartProps";
 import { CHARTTHEME, CHARTTYPEMAP, ResizeChartType, RetentionCOT } from "./chartConfig";
-import { formatNumber, formatPercent, countTickCount, getTmFormat, getAxisFormat, mergeFrame, filterValuesByTickCount, rgbToHex } from "./utils";
+import { formatNumber, formatPercent, countTickCount, getTmFormat, getAxisFormat, mergeFrame, filterValuesByTickCount, rgbToHex, countTickCountTimeCat } from "./utils";
 import * as moment from "moment";
 moment.locale("zh-cn");
 
@@ -417,23 +417,40 @@ class Chart extends React.Component <ChartProps, any> {
       if (tmGran) {
         const tmInterval = parseInt(tmGran.interval, 10);
         tInterval = tmInterval;
-        merge(scales.tm, {
-          tickInterval: countTickCount(frame, canvasRect.width, tmInterval),
-          formatter: getTmFormat(tmInterval),
-          axisFormatter: getAxisFormat(tmInterval)
-        });
-
-        window.onresize = () => {
-          const currentRect: ClientRect = dom.getBoundingClientRect();
-          const tm = merge({}, scales.tm, {
-              tickInterval: countTickCount(frame, currentRect.width, tmInterval),
-              formatter: getTmFormat(tmInterval),
-              axisFormatter: getAxisFormat(tmInterval),
-              tickCount: 5
+        if (scales.tm.type === "time") {
+          merge(scales.tm, {
+            tickInterval: countTickCount(frame, canvasRect.width, tmInterval),
+            formatter: getTmFormat(tmInterval),
+            axisFormatter: getAxisFormat(tmInterval)
           });
-          chart.col(dimCols[0], tm);
-          chart.repaint();
-        };
+
+          window.onresize = () => {
+            const currentRect: ClientRect = dom.getBoundingClientRect();
+            const tm = merge({}, scales.tm, {
+                tickInterval: countTickCount(frame, currentRect.width, tmInterval),
+                formatter: getTmFormat(tmInterval),
+                axisFormatter: getAxisFormat(tmInterval),
+            });
+            chart.col(dimCols[0], tm);
+            chart.repaint();
+          };
+        } else {
+          merge(scales.tm, {
+            tickCount: countTickCountTimeCat(frame, dom, dimCols[0]),
+            formatter: getTmFormat(tmInterval),
+            axisFormatter: getAxisFormat(tmInterval)
+          });
+
+          window.onresize = () => {
+            const tm = merge({}, scales.tm, {
+                tickCount: countTickCountTimeCat(frame, dom, dimCols[0]),
+                formatter: getTmFormat(tmInterval),
+                axisFormatter: getAxisFormat(tmInterval),
+            });
+            chart.col(dimCols[0], tm);
+            chart.repaint();
+          };
+        }
       }
     } else if (chartConfig.geom !== "point" && scales[dimCols[0]]) {
       const maxTicks = G2.Frame.group(frame, dimCols[0]).length;
@@ -528,10 +545,16 @@ class Chart extends React.Component <ChartProps, any> {
         chart.source(frame, scales);
     }
 
-    if (!chartConfig.withRate && !metricCols.includes("val")) {
+    if (!chartConfig.withRate && !metricCols.includes("val") && chartType !== "comparison") {
       metricCols.forEach((s: string) => {
         chart.axis(s, { title: {fill: "#999", textAlign: "center"}});
       });
+    } else {
+      // 不知影响范围  留存灰度且看且改
+      metricCols.forEach((s: string) => {
+            chart.axis(s, { title: null});
+      });
+      chart.axis(position.y, { title: null});
     }
     if (scales.tm) {
       chart.axis("tm", {
@@ -575,16 +598,16 @@ class Chart extends React.Component <ChartProps, any> {
       });
     }
 
-    if (chartType === "area" || chartType === "bubble" || chartType === "line" || chartType === "vbar ") {
-      chart.axis(position.y, {
-        titleOffset: CHARTTHEME.titleOffset,
-        title: {
-          fontSize: "12",
-          textAlign: "center",
-          fill: "#999"
-        }
-      });
-    }
+    // if (chartType === "area" || chartType === "bubble" || chartType === "line" || chartType === "vbar") {
+    //   chart.axis(position.y, {
+    //     titleOffset: CHARTTHEME.titleOffset,
+    //     title: {
+    //       fontSize: "12",
+    //       textAlign: "center",
+    //       fill: "#999"
+    //     }
+    //   });
+    // }
 
     if (chartConfig.transpose) {
       coord.transpose(chartConfig.transpose);
