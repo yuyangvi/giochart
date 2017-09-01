@@ -14,6 +14,6 @@ import RetentionLongTime from "./RetentionLongTime";
 import ChangeOverTime from "./ChangeOverTime";
 
 ReactDOM.render(
-  <Funnel />,
+  <EasyChart />,
   document.getElementById("example")
 );
