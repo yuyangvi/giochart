@@ -266,7 +266,12 @@ class Chart extends React.Component <ChartProps, any> {
     if (chartCfg.geom === "point") {
       postion = { pos: metricCols[0] + "*" + metricCols[1], x: metricCols[0], y: metricCols[1] };
     } else if (dimCols[0]) {
-      postion = { pos: dimCols[0] + "*" + metricCols[0], x: dimCols[0], y: metricCols[0] };
+      if (chartCfg.withRate) {
+          const rateIndex = metricCols.findIndex((i: string) => i.includes("rate"));
+          postion = { pos: dimCols[0] + "*" + metricCols[rateIndex], x: dimCols[0], y: metricCols[rateIndex] };
+      } else {
+          postion = { pos: dimCols[0] + "*" + metricCols[0], x: dimCols[0], y: metricCols[0] };
+      }
     } else {
       postion = { pos: metricCols[0], x: undefined, y: undefined };
     }
@@ -409,24 +414,27 @@ class Chart extends React.Component <ChartProps, any> {
     if (scales.tm) {
       // 寻找时间粒度
       const tmGran: Granulariy = find(chartParams.granularities, { id: "tm" });
-      const tmInterval = parseInt(tmGran.interval, 10);
-      tInterval = tmInterval;
-      merge(scales.tm, {
-        tickInterval: countTickCount(frame, canvasRect.width, tmInterval),
-        formatter: getTmFormat(tmInterval),
-        axisFormatter: getAxisFormat(tmInterval)
-      });
-
-      window.onresize = () => {
-        const currentRect: ClientRect = dom.getBoundingClientRect();
-        const tm = merge({}, scales.tm, {
-            tickInterval: countTickCount(frame, currentRect.width, tmInterval),
-            formatter: getTmFormat(tmInterval),
-            axisFormatter: getAxisFormat(tmInterval)
+      if (tmGran) {
+        const tmInterval = parseInt(tmGran.interval, 10);
+        tInterval = tmInterval;
+        merge(scales.tm, {
+          tickInterval: countTickCount(frame, canvasRect.width, tmInterval),
+          formatter: getTmFormat(tmInterval),
+          axisFormatter: getAxisFormat(tmInterval)
         });
-        chart.col(dimCols[0], tm);
-        chart.repaint();
-      };
+
+        window.onresize = () => {
+          const currentRect: ClientRect = dom.getBoundingClientRect();
+          const tm = merge({}, scales.tm, {
+              tickInterval: countTickCount(frame, currentRect.width, tmInterval),
+              formatter: getTmFormat(tmInterval),
+              axisFormatter: getAxisFormat(tmInterval),
+              tickCount: 5
+          });
+          chart.col(dimCols[0], tm);
+          chart.repaint();
+        };
+      }
     } else if (chartConfig.geom !== "point" && scales[dimCols[0]]) {
       const maxTicks = G2.Frame.group(frame, dimCols[0]).length;
       if (scales[dimCols[0]].type === "linear") {

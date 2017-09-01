@@ -8,8 +8,9 @@ const chartParams: DrawParamsProps = {
   columns: [
     { id: "tm", name: "时间", isDim: true, isRate: false },
     { id: "metric_name", name: "指标", isDim: true, isRate: false },
-    { id: "conversion", name: "转化人数", isDim: false, isRate: false },
-    { id: "conversion_rate", name: "转化率", isDim: false, isRate: true }
+    { id: "conversion_rate", name: "转化率", isDim: false, isRate: true },
+    { id: "conversion", name: "转化人数", isDim: false, isRate: false }
+
   ]
 };
 const source: Source = [
