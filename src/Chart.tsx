@@ -281,14 +281,18 @@ class Chart extends React.Component <ChartProps, any> {
     }
     return postion;
   }
-  private calculateColor(dimCols: string[], colorTheme: string, gradual: boolean) {
+  private calculateColor(dimCols: string[], colorTheme: string, isGradual: boolean) {
     if (colorTheme) {
-      return gradual ? `l(90) 0:rgba(${colorTheme}, 0.8) 1:rgba(${colorTheme}, 0.1)` : `rgb(${colorTheme})`;
+      if (isGradual) {
+      // appendLine
+        return `l(90) 0:rgba(${colorTheme}, 0.8) 1:rgba(${colorTheme}, 0.1)`;
+      }
+      return `rgb(${colorTheme})`;
       // return `rgb(${colorTheme})`;
     } else if (dimCols.length > 1) {
       return dimCols[1];
     }
-    return;
+    return '';
   }
   private calculatePlot(frame: any, chartCfg: any, dimCols: string[], chartType: string) {
     let colPixels: any = null;
@@ -340,12 +344,12 @@ class Chart extends React.Component <ChartProps, any> {
     }
     if (type === "comparison") {
       return (ev: any) => {
-        if (ev.items.length === 4) {
+        if (ev.items.length > 4) {
             const nameLast = getTmFormat(interval)(ev.items[0].point._origin.tm_);
             const nameCurrent = getTmFormat(interval)(ev.items[0].point._origin.tm);
             const nTitle = ev.items[3].value;
             let color0 = ev.items[0].color;
-            let color1 = ev.items[1].color;
+            let color1 = ev.items[4].color;
             if (!color0.includes("#")) {
               color0 = rgbToHex(color0);
             }
@@ -358,11 +362,16 @@ class Chart extends React.Component <ChartProps, any> {
             ev.items.push(item0);
             ev.items.push(item1);
         } else {
+            let color0 = ev.items[ev.items.length - 1].color;
             ev.items.splice(1);
-            let color0 = ev.items[0].color;
             if (!color0.includes("#")) {
                 color0 = rgbToHex(color0);
                 ev.items[0].color = color0;
+            }
+            if (ev.items[0].name.indexOf("当前") !== -1) {
+                ev.items[0].title = getTmFormat(interval)(ev.items[0].point._origin.tm);
+            } else {
+                ev.items[0].title = getTmFormat(interval)(ev.items[0].point._origin.tm_);
             }
         }
       }
@@ -419,23 +428,22 @@ class Chart extends React.Component <ChartProps, any> {
         const tmInterval = parseInt(tmGran.interval, 10);
         tInterval = tmInterval;
         if (scales.tm.type === "time") {
-        merge(scales.tm, {
-          tickInterval: countTickCount(frame, canvasRect.width, tmInterval),
-          formatter: getTmFormat(tmInterval),
-          axisFormatter: getAxisFormat(tmInterval),
-
-        });
-
-        window.onresize = () => {
-          const currentRect: ClientRect = dom.getBoundingClientRect();
-          const tm = merge({}, scales.tm, {
-              tickInterval: countTickCount(frame, currentRect.width, tmInterval),
-              formatter: getTmFormat(tmInterval),
-              axisFormatter: getAxisFormat(tmInterval),
+          merge(scales.tm, {
+            tickInterval: countTickCount(frame, canvasRect.width, tmInterval),
+            formatter: getTmFormat(tmInterval),
+            axisFormatter: getAxisFormat(tmInterval)
           });
-          chart.col(dimCols[0], tm);
-          chart.repaint();
-        };
+
+          window.onresize = () => {
+            const currentRect: ClientRect = dom.getBoundingClientRect();
+            const tm = merge({}, scales.tm, {
+                tickInterval: countTickCount(frame, currentRect.width, tmInterval),
+                formatter: getTmFormat(tmInterval),
+                axisFormatter: getAxisFormat(tmInterval),
+            });
+            chart.col(dimCols[0], tm);
+            chart.repaint();
+          };
         } else {
           merge(scales.tm, {
             tickCount: countTickCountTimeCat(frame, dom, dimCols[0]),
@@ -452,7 +460,7 @@ class Chart extends React.Component <ChartProps, any> {
             chart.col(dimCols[0], tm);
             chart.repaint();
           };
-        // }
+        }
       }
     } else if (chartConfig.geom !== "point" && scales[dimCols[0]]) {
       const maxTicks = G2.Frame.group(frame, dimCols[0]).length;
@@ -512,11 +520,12 @@ class Chart extends React.Component <ChartProps, any> {
     const position = this.calculatePosition(metricCols, dimCols, chartConfig, chartParams.adjust);
     // position = G2.Stat.summary.sum(position);
     // color/shape
-    const color = this.calculateColor(
-      dimCols,
-      chartConfig.colorTheme ? (chartParams.colorTheme || chartConfig.colorTheme) : null,
-      (chartType === "singleNum")
-    );
+
+    // 计算colorTheme
+    const colorTheme = (dimCols.length <= 1 && ["line", "area"].includes(chartConfig.geom) || chartConfig.colorTheme) &&
+      (chartParams.colorTheme || chartConfig.colorTheme);
+    // (chartType === "singleNum")
+    const color = this.calculateColor(dimCols, colorTheme, true);
 
     // render配置
     let canvasHeight = canvasRect.height - legendHeight;
@@ -653,6 +662,9 @@ class Chart extends React.Component <ChartProps, any> {
       } else {
         geom.color(color);
       }
+    }
+    if (colorTheme) {
+      chart.line().position(position.pos).color(`rgb(${colorTheme})`).tooltip("");
     }
 
     if (chartConfig.shape) {
