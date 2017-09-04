@@ -341,7 +341,8 @@ class Chart extends React.Component <ChartProps, any> {
     if (type === "comparison") {
       return (ev: any) => {
         if (ev.items.length === 4) {
-            const oTitle = ev.items[0].title;
+            const nameLast = getTmFormat(interval)(ev.items[0].point._origin.tm_);
+            const nameCurrent = getTmFormat(interval)(ev.items[0].point._origin.tm);
             const nTitle = ev.items[3].value;
             let color0 = ev.items[0].color;
             let color1 = ev.items[1].color;
@@ -351,8 +352,8 @@ class Chart extends React.Component <ChartProps, any> {
             if (!color1.includes("#")) {
                 color1 = rgbToHex(color1);
             }
-            const item0 = assign({}, ev.items[0], {name: oTitle}, {title: nTitle}, {color: color0});
-            const item1 = assign({}, ev.items[1], {name: oTitle}, {title: nTitle}, {color: color1});
+            const item0 = assign({}, ev.items[0], {name: nameLast}, {title: nTitle}, {color: color0});
+            const item1 = assign({}, ev.items[1], {name: nameCurrent}, {title: nTitle}, {color: color1});
             ev.items.splice(0);
             ev.items.push(item0);
             ev.items.push(item1);
@@ -418,22 +419,23 @@ class Chart extends React.Component <ChartProps, any> {
         const tmInterval = parseInt(tmGran.interval, 10);
         tInterval = tmInterval;
         if (scales.tm.type === "time") {
-          merge(scales.tm, {
-            tickInterval: countTickCount(frame, canvasRect.width, tmInterval),
-            formatter: getTmFormat(tmInterval),
-            axisFormatter: getAxisFormat(tmInterval)
-          });
+        merge(scales.tm, {
+          tickInterval: countTickCount(frame, canvasRect.width, tmInterval),
+          formatter: getTmFormat(tmInterval),
+          axisFormatter: getAxisFormat(tmInterval),
 
-          window.onresize = () => {
-            const currentRect: ClientRect = dom.getBoundingClientRect();
-            const tm = merge({}, scales.tm, {
-                tickInterval: countTickCount(frame, currentRect.width, tmInterval),
-                formatter: getTmFormat(tmInterval),
-                axisFormatter: getAxisFormat(tmInterval),
-            });
-            chart.col(dimCols[0], tm);
-            chart.repaint();
-          };
+        });
+
+        window.onresize = () => {
+          const currentRect: ClientRect = dom.getBoundingClientRect();
+          const tm = merge({}, scales.tm, {
+              tickInterval: countTickCount(frame, currentRect.width, tmInterval),
+              formatter: getTmFormat(tmInterval),
+              axisFormatter: getAxisFormat(tmInterval),
+          });
+          chart.col(dimCols[0], tm);
+          chart.repaint();
+        };
         } else {
           merge(scales.tm, {
             tickCount: countTickCountTimeCat(frame, dom, dimCols[0]),
@@ -450,7 +452,7 @@ class Chart extends React.Component <ChartProps, any> {
             chart.col(dimCols[0], tm);
             chart.repaint();
           };
-        }
+        // }
       }
     } else if (chartConfig.geom !== "point" && scales[dimCols[0]]) {
       const maxTicks = G2.Frame.group(frame, dimCols[0]).length;
@@ -531,6 +533,11 @@ class Chart extends React.Component <ChartProps, any> {
         margin: plot.margin
       }
     });
+
+    // bar为label设置宽度
+    if (chartType === "bar") {
+      scales[position.y].tickCount = 5;
+    }
 
     const origValues = scales[dimCols[0]] ? scales[dimCols[0]].values : null;
     const maxTicks = G2.Frame.group(frame, dimCols[0]).length;
@@ -666,7 +673,7 @@ class Chart extends React.Component <ChartProps, any> {
         offset: 5,
         renderer: (text: string, item: any, index: number) => {
            // 配合 custom 为 true 使用，格式化文本的函数
-          return ((parseInt(item.point[metricCols[0]], 10) / sumCols) * 100).toFixed(2) + "%";
+          return text + " (" + ((parseInt(item.point[metricCols[0]], 10) / sumCols) * 100).toFixed(2) + "%" + ")";
         }
       });
     }
