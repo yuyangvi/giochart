@@ -281,14 +281,18 @@ class Chart extends React.Component <ChartProps, any> {
     }
     return postion;
   }
-  private calculateColor(dimCols: string[], colorTheme: string, gradual: boolean) {
+  private calculateColor(dimCols: string[], colorTheme: string, isGradual: boolean) {
     if (colorTheme) {
-      return gradual ? `l(90) 0:rgba(${colorTheme}, 0.8) 1:rgba(${colorTheme}, 0.1)` : `rgb(${colorTheme})`;
+      if (isGradual) {
+      // appendLine
+        return `l(90) 0:rgba(${colorTheme}, 0.8) 1:rgba(${colorTheme}, 0.1)`;
+      }
+      return `rgb(${colorTheme})`;
       // return `rgb(${colorTheme})`;
     } else if (dimCols.length > 1) {
       return dimCols[1];
     }
-    return;
+    return '';
   }
   private calculatePlot(frame: any, chartCfg: any, dimCols: string[], chartType: string) {
     let colPixels: any = null;
@@ -340,7 +344,7 @@ class Chart extends React.Component <ChartProps, any> {
     }
     if (type === "comparison") {
       return (ev: any) => {
-        if (ev.items.length === 4) {
+        if (ev.items.length > 4) {
             const oTitle = ev.items[0].title;
             const nTitle = ev.items[3].value;
             let color0 = ev.items[0].color;
@@ -510,11 +514,12 @@ class Chart extends React.Component <ChartProps, any> {
     const position = this.calculatePosition(metricCols, dimCols, chartConfig, chartParams.adjust);
     // position = G2.Stat.summary.sum(position);
     // color/shape
-    const color = this.calculateColor(
-      dimCols,
-      chartConfig.colorTheme ? (chartParams.colorTheme || chartConfig.colorTheme) : null,
-      (chartType === "singleNum")
-    );
+
+    // 计算colorTheme
+    const colorTheme = (dimCols.length <= 1 && ["line", "area"].includes(chartConfig.geom) || chartConfig.colorTheme) &&
+      (chartParams.colorTheme || chartConfig.colorTheme);
+    // (chartType === "singleNum")
+    const color = this.calculateColor(dimCols, colorTheme, true);
 
     // render配置
     let canvasHeight = canvasRect.height - legendHeight;
@@ -646,6 +651,9 @@ class Chart extends React.Component <ChartProps, any> {
       } else {
         geom.color(color);
       }
+    }
+    if (colorTheme) {
+      chart.line().position(position.pos).color(`rgb(${colorTheme})`).tooltip("");
     }
 
     if (chartConfig.shape) {
