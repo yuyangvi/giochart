@@ -292,7 +292,7 @@ class Chart extends React.Component <ChartProps, any> {
     } else if (dimCols.length > 1) {
       return dimCols[1];
     }
-    return '';
+    return "";
   }
   private calculatePlot(frame: any, chartCfg: any, dimCols: string[], chartType: string) {
     let colPixels: any = null;
@@ -545,7 +545,9 @@ class Chart extends React.Component <ChartProps, any> {
 
     // bar为label设置宽度
     if (chartType === "bar") {
-      scales[position.y].tickCount = 5;
+      // scales[position.y].tickCount = 5;
+      const maxY = G2.Frame.max(frame, position.y);
+      scales[position.y].max = Math.ceil(maxY / 4) + maxY
     }
 
     const origValues = scales[dimCols[0]] ? scales[dimCols[0]].values : null;
