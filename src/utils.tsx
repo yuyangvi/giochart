@@ -223,7 +223,7 @@ export const getRetentionParams = (chartType: string, columns: any[], params: an
     { id: "turn", name: "留存", isDim: true, isRate: false, values: getLabels(columns) };
   let matricCols = [
     { id: "retention_rate", name: "留存率", isDim: false, isRate: true },
-    { id: "retention", name: "用户数", isDim: false, isRate: false }
+    { id: "retention", name: "留存人数", isDim: false, isRate: false }
   ];
   if (chartType === "count") {
     matricCols = matricCols.reverse();
