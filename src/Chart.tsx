@@ -281,18 +281,13 @@ class Chart extends React.Component <ChartProps, any> {
     }
     return postion;
   }
-  private calculateColor(dimCols: string[], colorTheme: string, isGradual: boolean) {
+  private calculateColor(dimCols: string[], colorTheme: string) {
     if (colorTheme) {
-      if (isGradual) {
-      // appendLine
-        return `l(90) 0:rgba(${colorTheme}, 0.8) 1:rgba(${colorTheme}, 0.1)`;
-      }
-      return `rgb(${colorTheme})`;
-      // return `rgb(${colorTheme})`;
+      return `l(90) 0:rgba(${colorTheme}, 0.8) 1:rgba(${colorTheme}, 0.1)`;
     } else if (dimCols.length > 1) {
       return dimCols[1];
     }
-    return '';
+    return "";
   }
   private calculatePlot(frame: any, chartCfg: any, dimCols: string[], chartType: string) {
     let colPixels: any = null;
@@ -522,10 +517,9 @@ class Chart extends React.Component <ChartProps, any> {
     // color/shape
 
     // 计算colorTheme
-    const colorTheme = (dimCols.length <= 1 && ["line", "area"].includes(chartConfig.geom) || chartConfig.colorTheme) &&
-      (chartParams.colorTheme || chartConfig.colorTheme);
-    // (chartType === "singleNum")
-    const color = this.calculateColor(dimCols, colorTheme, true);
+    const colorTheme = (dimCols.length <= 1 && ["area"].includes(chartConfig.geom) || chartConfig.colorTheme) &&
+      (chartParams.colorTheme || chartConfig.colorTheme || "95,182,199");
+    const color = this.calculateColor(dimCols, colorTheme);
 
     // render配置
     let canvasHeight = canvasRect.height - legendHeight;
@@ -635,7 +629,7 @@ class Chart extends React.Component <ChartProps, any> {
 
     // 参考线,周期对比图线在后
     if (isArray(chartConfig.geom) && chartConfig.periodOverPeriod) {
-      chart[chartConfig.geom[1]]().position(dimCols[0] + "*" + metricCols[1]).color("#ccc").tooltip("");
+      chart[chartConfig.geom[1]]().position(dimCols[0] + "*" + metricCols[1]).color("#ccc").tooltip("_");
       chart.axis(metricCols[0], false);
     }
     // 本来应该画在legend里面的，但是需要chart.filter
@@ -645,10 +639,6 @@ class Chart extends React.Component <ChartProps, any> {
     }
 
     const geom = chart[geomType](adjust);
-    if (geomType === "area" && dimCols.length < 2) {
-      geom.size(2);
-
-    }    // 参考线，双轴图线在后
     if (isArray(chartConfig.geom) && !chartConfig.periodOverPeriod) {
       chart[chartConfig.geom[1]]().position(dimCols[0] + "*" + metricCols[1]).color("#ccc");
     }
@@ -664,7 +654,8 @@ class Chart extends React.Component <ChartProps, any> {
       }
     }
     if (colorTheme) {
-      chart.line().position(position.pos).color(`rgb(${colorTheme})`).tooltip("");
+      const geomline = chart.line().position(position.pos);
+      geomline.color(`rgb(${colorTheme})`).tooltip("_");
     }
 
     if (chartConfig.shape) {
@@ -678,8 +669,6 @@ class Chart extends React.Component <ChartProps, any> {
       geom.size(metricCols[2], 40, 2);
     }
     if (chartConfig.label) {
-      // geom.label(chartConfig.label);
-      // Stat.summary.percent('y')
       const sumCols = G2.Frame.sum(frame, metricCols[0]);
       geom.label(metricCols[0], {
         offset: 5,
@@ -706,6 +695,13 @@ class Chart extends React.Component <ChartProps, any> {
         //  chart.tooltip(true, {map: {title: "rate"}});
         // }
         chart.on("tooltipchange", this.tooltipMap(chartType, tInterval));
+    } else {
+      // 筛掉_的tooltip，这个是g2的bug造成的
+      chart.on("tooltipchange", (ev: any) => {
+        const items = filter(ev.items, (n: any) => n.name !== "_");
+        const l = ev.items.length;
+        ev.items.splice.apply(ev.items, [0, l].concat(items));
+      });
     }
 
     const crosshairs = chartConfig.geom !== "interval";
@@ -716,31 +712,6 @@ class Chart extends React.Component <ChartProps, any> {
       offset: 10,
       crosshairs
     });
-
-    // 参考线
-    // geom.selected(true, {
-    //   selectedMode: "single", // "multiple" || "single"
-    //   style: {fill: "#fe9929"}
-    // });
-    // chart.on("itemselected", (ev: any) => {
-    //   const data = ev.data;
-    //   if (data) {
-    //     console.log(data._origin);
-    //     console.log(data.x);
-    //     console.log(data.y);
-    //   }
-    //   if (this.inspectDom === null) {
-    //     this.inspectDom = this.createInspectDom(data, scales);
-    //     ReactDOM.findDOMNode(this).appendChild(this.inspectDom);
-    //   }else {
-    //     this.repaintInspectDom(this.inspectDom, data, scales);
-    //   }
-    // });
-    /*
-    const selectCols = (chartConfig.geom === "point" ? metricCols.slice(0, 2) : dimCols) as string[];
-    chart.on("plotclick", (evt: any) => this.selectHandler(evt, selectCols));
-    chart.on("itemunselected", (evt: any) => this.unselectHandler(evt, selectCols));
-    */
 
     if (chartConfig.aggregator) {
       const aggScale = scales[metricCols[0]];

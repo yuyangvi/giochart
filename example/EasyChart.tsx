@@ -28,7 +28,7 @@ const ss = [
 const chartParams: DrawParamsProps = {
     adjust: "dodge",
     aggregator: null,
-    chartType: "vbar",
+    chartType: "area",
     groupCol: undefined,
     timeRange: "day:8,1",
     attrs: {metricType: "none"},

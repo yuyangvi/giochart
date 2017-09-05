@@ -68,7 +68,7 @@ export const CHARTTHEME: any = {
   defaultColor: "#5FB6C7",
   legend: false,
   shape: {
-    area: { fill: "#5FB6C7" },
+    area: { fill: "#5FB6C7", size: 0 },
     hollowPoint: {fill: "#5FB6C7" },
     hollowInterval: { lineDash: [3, 2], lineWidth: 1},
     interval: { fill: "#abce5b", fillOpacity: 1, stroke: "#5FB6C7"},
