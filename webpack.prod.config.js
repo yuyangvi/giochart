@@ -63,7 +63,7 @@ module.exports = {
       'amd': 'react-dom',
       'root': 'ReactDOM'
     },
-    "antd": "antd",
+    "antd/lib/table": "antd/lib/table",
     "moment": "moment",
     "object-hash": "object-hash"
   },

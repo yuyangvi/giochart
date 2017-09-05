@@ -1,13 +1,13 @@
 /***
  * 文档
  */
-import { Table } from "antd";
 import { difference, fill, filter, find, flatMap, forIn, groupBy, map, pick, unionBy, values, isEqual } from "lodash";
 import * as moment from "moment";
 import * as React from "react";
 import {ChartProps, Metric, Source} from "./ChartProps";
 // import Table from 'antd/lib/table';
 import G2 = require("g2");
+import Table = require("antd/lib/table");
 const ATable: any = Table;
 const sorterDecorator = (column: string) => (a: any, b: any) => (a[column] >= b[column] ? 1 : -1);
 moment.locale("zh-cn");
