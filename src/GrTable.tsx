@@ -1,7 +1,7 @@
 /***
  * 文档
  */
-import { Table } from "antd";
+import Table from "antd/lib/table";
 import { difference, fill, filter, find, flatMap, forIn, groupBy, map, pick, unionBy, values, isEqual } from "lodash";
 import * as moment from "moment";
 import * as React from "react";
