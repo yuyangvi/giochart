@@ -631,7 +631,7 @@ class Chart extends React.Component <ChartProps, any> {
 
     // 参考线,周期对比图线在后
     if (isArray(chartConfig.geom) && chartConfig.periodOverPeriod) {
-      chart[chartConfig.geom[1]]().position(dimCols[0] + "*" + metricCols[1]).color("#ccc").tooltip("_");
+      chart[chartConfig.geom[1]]().position(dimCols[0] + "*" + metricCols[1]).color("#ccc");
       chart.axis(metricCols[0], false);
     }
     // 本来应该画在legend里面的，但是需要chart.filter
