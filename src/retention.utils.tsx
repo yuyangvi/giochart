@@ -60,7 +60,7 @@ export const getRetention = (columns: Metric[], source: Source, params: DataRequ
   // 取得source
   let matricCols = [
     { id: "retention_rate", name: "留存率", isDim: false, isRate: true },
-    { id: "retention", name: "用户数", isDim: false, isRate: false }
+    { id: "retention", name: "留存人数", isDim: false, isRate: false }
   ];
   if (!isTrend) {
     matricCols = matricCols.reverse();
@@ -146,7 +146,7 @@ const getRetentionDimCols = (columns: Metric[], isCOT: boolean, isTrend: boolean
     { id: "turn", name: "留存", isDim: true, isRate: false, values: getLabels(columns) };
   let matricCols = [
     { id: "retention_rate", name: "留存率", isDim: false, isRate: true },
-    { id: "retention", name: "用户数", isDim: false, isRate: false }
+    { id: "retention", name: "留存人数", isDim: false, isRate: false }
   ];
   if (!isTrend) {
     matricCols = matricCols.reverse();
