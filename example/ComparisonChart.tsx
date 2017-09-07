@@ -23,20 +23,23 @@ const ss = JSON.parse('[{"tm":1503417600000,"pv":379,"tm_":1502812800000,"pv_":5
 
 const chartParams: DrawParamsProps = {
     adjust: "dodge",
-    aggregator: { values: [13.078740157480315, 17.546332046332047] },
+    aggregator: { values: [2992, 2677] },
     chartType: "comparison",
     colorTheme: "252, 95, 58",
+    attrs: {metricType: "none"},
     columns: [
       { id: "tm", name: "时间", isDim: true, isRate: false },
-      { id: "JoOL0rE9", name: "当前周期", isDim: false, isRate: false },
-      { id: "tm_", isDim: true, isRate: false},
-      { id: "JoOL0rE9_", name: "上一周期", isDim: false, isRate: false }
+      { id: "9yGbpp8x", name: "当前周期", isDim: false, isRate: false, metricId: {id: "9yGbpp8x", level: "complex"} },
+      { id: "tm_", isDim: true, isRate: false, name: undefined},
+      { id: "JoOL0rE9_", name: "上一周期", isDim: false, isRate: false, metricId: {id: "9yGbpp8x", level: "complex"} }
     ],
-    granularities: [{ id: "tm", interval: "86400000", period: "auto" }]
+    granularities: [{ id: "tm", interval: "3600000", period: "auto" }],
+    timeRange: "day:1,0"
   };
 
+const sss = JSON.parse('[{"tm":1504713600000,"9yGbpp8x":110,"tm_":1504108800000,"9yGbpp8x_":95},{"tm":1504717200000,"9yGbpp8x":67,"tm_":1504112400000,"9yGbpp8x_":77},{"tm":1504720800000,"9yGbpp8x":36,"tm_":1504116000000,"9yGbpp8x_":37},{"tm":1504724400000,"9yGbpp8x":32,"tm_":1504119600000,"9yGbpp8x_":28},{"tm":1504728000000,"9yGbpp8x":36,"tm_":1504123200000,"9yGbpp8x_":13},{"tm":1504731600000,"9yGbpp8x":28,"tm_":1504126800000,"9yGbpp8x_":31},{"tm":1504735200000,"9yGbpp8x":28,"tm_":1504130400000,"9yGbpp8x_":17},{"tm":1504738800000,"9yGbpp8x":51,"tm_":1504134000000,"9yGbpp8x_":35},{"tm":1504742400000,"9yGbpp8x":185,"tm_":1504137600000,"9yGbpp8x_":163},{"tm":1504746000000,"9yGbpp8x":829,"tm_":1504141200000,"9yGbpp8x_":794},{"tm":1504749600000,"9yGbpp8x":1180,"tm_":1504144800000,"9yGbpp8x_":992},{"tm":1504753200000,"9yGbpp8x":1002,"tm_":1504148400000,"9yGbpp8x_":936},{"tm":1504756800000,"9yGbpp8x":346,"tm_":1504152000000,"9yGbpp8x_":332},{"tm":1504760400000,"9yGbpp8x":null,"tm_":1504155600000,"9yGbpp8x_":637},{"tm":1504764000000,"9yGbpp8x":null,"tm_":1504159200000,"9yGbpp8x_":1042},{"tm":1504767600000,"9yGbpp8x":null,"tm_":1504162800000,"9yGbpp8x_":1032},{"tm":1504771200000,"9yGbpp8x":null,"tm_":1504166400000,"9yGbpp8x_":956},{"tm":1504774800000,"9yGbpp8x":null,"tm_":1504170000000,"9yGbpp8x_":956},{"tm":1504778400000,"9yGbpp8x":null,"tm_":1504173600000,"9yGbpp8x_":550},{"tm":1504782000000,"9yGbpp8x":null,"tm_":1504177200000,"9yGbpp8x_":393},{"tm":1504785600000,"9yGbpp8x":null,"tm_":1504180800000,"9yGbpp8x_":282},{"tm":1504789200000,"9yGbpp8x":null,"tm_":1504184400000,"9yGbpp8x_":219},{"tm":1504792800000,"9yGbpp8x":null,"tm_":1504188000000,"9yGbpp8x_":188},{"tm":1504796400000,"9yGbpp8x":null,"tm_":1504191600000,"9yGbpp8x_":138}]');
 const cp = JSON.parse('{"adjust":"dodge","aggregator":{"values":[65243,71535]},"chartType":"comparison","columns":[{"id":"tm","name":"时间","isDim":true,"isRate":false},{"id":"pv","name":"当前周期","isDim":false,"metricId":{"id":"pv","level":"expression"},"isRate":false},{"id":"tm_","isDim":true,"isRate":false},{"id":"pv_","name":"上一周期","isDim":false,"metricId":{"id":"pv","level":"expression"},"isRate":false}],"granularities":[{"id":"tm","interval":3600000,"period":"auto"}],"timeRange":"day:2,1","attrs":{"comment":"一段时间内网站网页被浏览的总的次数"}}');
 const ComparisonChart = (props: any) => (
-  <Chart chartParams={cp} source={ss} />
+  <Chart chartParams={chartParams} source={sss} />
 );
 export default ComparisonChart;
