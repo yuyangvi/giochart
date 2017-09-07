@@ -26,25 +26,25 @@ const countTick = (maxTick: number, total: number) => {
 };
 const adjustFrame: any = {
   // 周期对比图，需要给tooltip增加百分比,同时对齐数据
-  comparison: (frame: any, metricCols: string[]) => {
-    frame.addCol("rate", (record: any) => (
-      record[metricCols[1]] ? (record[metricCols[0]] / record[metricCols[1]] - 1) : 0
-    ));
-    const sourceDef: any = {
-      rate: {
-        formatter: formatPercent,
-        type: "linear"
-      }
-    };
-
-    // 获取metricid, 计算最大值,统一两条线的区间范围
-    const maxScale: number = Math.max.apply(null, map(metricCols, (col: string) => G2.Frame.max(frame, col)));
-    metricCols.forEach((id: string) => {
-      sourceDef[id] = { max: maxScale };
-    });
-    metricCols.push("rate");
-    return { frame, sourceDef, metricCols };
-  },
+  // comparison: (frame: any, metricCols: string[]) => {
+  //   frame.addCol("rate", (record: any) => (
+  //     record[metricCols[1]] ? (record[metricCols[0]] / record[metricCols[1]] - 1) : 0
+  //   ));
+  //   const sourceDef: any = {
+  //     rate: {
+  //       formatter: formatPercent,
+  //       type: "linear"
+  //     }
+  //   };
+  //
+  //   // 获取metricid, 计算最大值,统一两条线的区间范围
+  //   const maxScale: number = Math.max.apply(null, map(metricCols, (col: string) => G2.Frame.max(frame, col)));
+  //   metricCols.forEach((id: string) => {
+  //     sourceDef[id] = { max: maxScale };
+  //   });
+  //   metricCols.push("rate");
+  //   return { frame, sourceDef, metricCols };
+  // },
   retentionColumn: (frame: any, metricCols: string[]) => {
     // 增加流失人数字段，并且计为负数
     const lossWord = "loss";
@@ -339,12 +339,12 @@ class Chart extends React.Component <ChartProps, any> {
     }
     if (type === "comparison") {
       return (ev: any) => {
-        if (ev.items.length > 4) {
+        if (ev.items.length === 3) {
             const nameLast = getTmFormat(interval)(ev.items[0].point._origin.tm_);
             const nameCurrent = getTmFormat(interval)(ev.items[0].point._origin.tm);
-            const nTitle = ev.items[3].value;
+            const nTitle = formatPercent(parseInt(ev.items[1].value, 10) / parseInt(ev.items[0].value, 10) - 1);
             let color0 = ev.items[0].color;
-            let color1 = ev.items[4].color;
+            let color1 = ev.items[2].color;
             if (!color0.includes("#")) {
               color0 = rgbToHex(color0);
             }
@@ -413,7 +413,7 @@ class Chart extends React.Component <ChartProps, any> {
     const scales: any = lastCombined.scales;
 
     // 清洗脏数据
-    frame = this.washRecord(frame, metricCols);
+    // frame = this.washRecord(frame, metricCols);
     let tInterval: number = null;
     // x轴tickCount
     if (scales.tm) {
@@ -657,7 +657,7 @@ class Chart extends React.Component <ChartProps, any> {
     }
     if (colorTheme) {
       const geomline = chart.line().position(position.pos);
-      geomline.color(`rgb(${colorTheme})`).tooltip("_");
+      geomline.color(`rgb(${colorTheme})`);
     }
 
     if (chartConfig.shape) {
@@ -690,7 +690,7 @@ class Chart extends React.Component <ChartProps, any> {
         if (chartType === "retention" && color) {
           geom.tooltip(color + "*" + metricCols.join("*"));
         }else {
-          geom.tooltip(metricCols.join("*"));
+        //   geom.tooltip(metricCols.join("*"));
         }
         // if (metricCols.includes("rate")) { // rate作为title必须放前面,不然有bug
         //  console.log("rate");
