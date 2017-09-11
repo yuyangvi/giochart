@@ -10,7 +10,7 @@ export const CHARTTYPEMAP: any[string] = {
   line: { geom: "line" },
   retentionColumn: { geom: "interval", shape: ["hollowRect", "stroke"], withRate: true, combineMetrics: true },
   retention: { geom: "line", withRate: true },
-  singleNumber: { geom: "area", shape: "smooth", isThumb: true, colorTheme: "252, 95, 58" },
+  singleNumber: { geom: "area", shape: "smooth", isThumb: true},
   vbar: { geom: "interval" }, // 329615792
   donut: { geom: "interval", emptyDim: true, coord: "theta", aggregator: true }
 }

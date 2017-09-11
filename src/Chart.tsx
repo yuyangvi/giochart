@@ -213,12 +213,19 @@ class Chart extends React.Component <ChartProps, any> {
       metricCols = preRenderSource.metricCols;
     }
 
+    const rateCol = filter(columns, (col: Metric) => col.isRate === true);
+    let rateMax = 0;
+    rateCol.forEach( (col) => {
+        const colMax = G2.Frame.max(frame, col.id);
+        rateMax = colMax > rateMax ? colMax : rateMax;
+    });
+
     if (!cfg.combineMetrics && (cfg.geom === "point" || isArray(cfg.geom) || cfg.withRate || (metricCols && metricCols.length < 2))) {
       return {
         frame,
         dimCols,
         metricCols,
-        scales: this.buildScales(columns, cfg.geom, sourceDef)
+        scales: this.buildScales(columns, cfg.geom, sourceDef,  rateMax === 0 ? 1 : rateMax),
       };
     }
     // retention 下 metricDict 对应不上 TODO: fix
@@ -323,20 +330,20 @@ class Chart extends React.Component <ChartProps, any> {
     return { margin, colPixels };
   }
   private tooltipMap(type: string, interval: number) {
-    if (type === "funnel") {
-      return (ev: any) => {
-        const l = ev.items.length;
-        for (let i = 0; i * 2 < l; i += 1) {
-          const origin = ev.items[i * 2].point._origin;
-          const origin2 = ev.items[i * 2 + 1].point._origin;
-          ev.items[i] = ev.items[i * 2];
-          ev.items[i].value = `${ev.items[2 * i].name}: ${formatPercent(origin.conversion_rate)}, ` +
-          `${ev.items[2 * i + 1].name}: ${origin2.conversion}`;
-          ev.items[i].name = origin.comparison_value || origin.metric_name;
-        }
-        ev.items.splice(l / 2, l / 2);
-      }
-    }
+    // if (type === "funnel") {
+    //   return (ev: any) => {
+    //     const l = ev.items.length;
+    //     for (let i = 0; i * 2 < l; i += 1) {
+    //       const origin = ev.items[i * 2].point._origin;
+    //       const origin2 = ev.items[i * 2 + 1].point._origin;
+    //       ev.items[i] = ev.items[i * 2];
+    //       ev.items[i].value = `${ev.items[2 * i].name}: ${formatPercent(origin.conversion_rate)}, ` +
+    //       `${ev.items[2 * i + 1].name}: ${origin2.conversion}`;
+    //       ev.items[i].name = origin.comparison_value || origin.metric_name;
+    //     }
+    //     ev.items.splice(l / 2, l / 2);
+    //   }
+    // }
     if (type === "comparison") {
       return (ev: any) => {
         if (ev.items.length === 3) {
@@ -645,7 +652,7 @@ class Chart extends React.Component <ChartProps, any> {
       chart[chartConfig.geom[1]]().position(dimCols[0] + "*" + metricCols[1]).color("#ccc");
     }
     geom.position(position.pos);
-    if (!chartConfig.shape && color) {
+    if (!chartConfig.shape && color || chartType === "singleNumber") {
       if (chartParams.attrs &&  chartParams.attrs.selection && chartParams.attrs.selection.length > 0 ) {
         const colorArray = G2.Global.colors.trend.filter(
           (c: string, i: number) => chartParams.attrs.selection.includes(i)
@@ -658,6 +665,9 @@ class Chart extends React.Component <ChartProps, any> {
     if (colorTheme) {
       const geomline = chart.line().position(position.pos);
       geomline.color(`rgb(${colorTheme})`);
+      if (chartType === "singleNumber") {
+        geomline.shape(chartConfig.shape);
+      }
     }
 
     if (chartConfig.shape) {
@@ -700,13 +710,13 @@ class Chart extends React.Component <ChartProps, any> {
     } else {
       // 筛掉_的tooltip，这个是g2的bug造成的
       chart.on("tooltipchange", (ev: any) => {
-        const items = filter(ev.items, (n: any) => n.name !== "_");
+        const items = filter(ev.items, (n: any) => n.color.indexOf("l") === -1);
         const l = ev.items.length;
         ev.items.splice.apply(ev.items, [0, l].concat(items));
       });
     }
 
-    const crosshairs = chartConfig.geom !== "interval";
+    const crosshairs = chartConfig.geom !== "interval" && chartConfig.geom !== "point";
     chart.tooltip(true, {
       custom: true,
       html:  '<div class="ac-tooltip" style="position:absolute;visibility: hidden;"><span class="ac-title"></span><ul class="ac-list"></ul></div>',
@@ -890,7 +900,8 @@ class Chart extends React.Component <ChartProps, any> {
   private buildScales(
       columns: any[],
       geom: string | string[],
-      defaultScaleDef: SourceConfig): SourceConfig {
+      defaultScaleDef: SourceConfig,
+      rateMax = 1): SourceConfig {
     const scaleDef: SourceConfig = {};
     if (typeof geom !== "string") {
       geom = geom[0];
@@ -923,7 +934,7 @@ class Chart extends React.Component <ChartProps, any> {
           alias: m.name,
           type: "linear",
           min: 0,
-          max: m.isRate ? 1 : undefined,
+          max: m.isRate ? rateMax : undefined,
           formatter: m.isRate ? formatPercent : formatNumber,
           // tickCount: 4
         };

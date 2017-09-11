@@ -113,16 +113,16 @@ const chartParams: DrawParamsProps = {
   timeRange: "day:15,1",
   columns: [
       // source
-      {id: "turn", name: "留存", isDim: true, isRate: false, values: ["当天", "1天后", "2天后", "3天后", "4天后", "5天后", "6天后", "7天后", "8天后", "9天后", "10天后", "11天后", "12天后", "13天后"]},
-      {id: "retention_rate", name: "留存率", isDim: false, isRate: true},
-      {id: "retention", name: "用户数", isDim: false, isRate: false}
-
-      // sourceComparison
       // {id: "turn", name: "留存", isDim: true, isRate: false, values: ["当天", "1天后", "2天后", "3天后", "4天后", "5天后", "6天后", "7天后", "8天后", "9天后", "10天后", "11天后", "12天后", "13天后"]},
-      // {id: "city", name: "城市", isDim: true, isRate: false},
-      // {id: "comparison_value", name: "对比值", isDim: true, isRate: false},
       // {id: "retention_rate", name: "留存率", isDim: false, isRate: true},
       // {id: "retention", name: "用户数", isDim: false, isRate: false}
+
+      // sourceComparison
+      {id: "turn", name: "留存", isDim: true, isRate: false, values: ["当天", "1天后", "2天后", "3天后", "4天后", "5天后", "6天后", "7天后", "8天后", "9天后", "10天后", "11天后", "12天后", "13天后"]},
+      {id: "city", name: "城市", isDim: true, isRate: false},
+      {id: "comparison_value", name: "对比值", isDim: true, isRate: false},
+      {id: "retention_rate", name: "留存率", isDim: false, isRate: true},
+      {id: "retention", name: "用户数", isDim: false, isRate: false}
 
   ]
 };
@@ -178,6 +178,6 @@ const sourceComparison = [
 ];
 
 const Retention = (props: any) => (
-  <Chart chartParams={chartParams} source={source} />
+  <Chart chartParams={chartParams} source={sourceComparison} />
 );
 export default Retention;
