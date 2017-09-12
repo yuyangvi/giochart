@@ -26,25 +26,15 @@ const countTick = (maxTick: number, total: number) => {
 };
 const adjustFrame: any = {
   // 周期对比图，需要给tooltip增加百分比,同时对齐数据
-  // comparison: (frame: any, metricCols: string[]) => {
-  //   frame.addCol("rate", (record: any) => (
-  //     record[metricCols[1]] ? (record[metricCols[0]] / record[metricCols[1]] - 1) : 0
-  //   ));
-  //   const sourceDef: any = {
-  //     rate: {
-  //       formatter: formatPercent,
-  //       type: "linear"
-  //     }
-  //   };
-  //
-  //   // 获取metricid, 计算最大值,统一两条线的区间范围
-  //   const maxScale: number = Math.max.apply(null, map(metricCols, (col: string) => G2.Frame.max(frame, col)));
-  //   metricCols.forEach((id: string) => {
-  //     sourceDef[id] = { max: maxScale };
-  //   });
-  //   metricCols.push("rate");
-  //   return { frame, sourceDef, metricCols };
-  // },
+  comparison: (frame: any, metricCols: string[]) => {
+    const sourceDef: any = {};
+    // 获取metricid, 计算最大值,统一两条线的区间范围
+    const maxScale: number = Math.max.apply(null, map(metricCols, (col: string) => G2.Frame.max(frame, col)));
+    metricCols.forEach((id: string) => {
+      sourceDef[id] = { max: maxScale };
+    });
+    return { frame, sourceDef, metricCols };
+  },
   retentionColumn: (frame: any, metricCols: string[]) => {
     // 增加流失人数字段，并且计为负数
     const lossWord = "loss";
@@ -129,14 +119,14 @@ class Chart extends React.Component <ChartProps, any> {
           // this.chart.get("container").innerHTML = "";
           ReactDOM.findDOMNode(this).innerHTML = "";
         }
-        this.drawChart(nextProps.chartParams, source, nextProps.isThumb);
+        this.drawChart(nextProps.chartParams, source, nextProps.isThumb, nextProps.gridPanel);
       } else if (JSON.stringify(source) !== JSON.stringify(this.props.source)) {
         // this.changeData(source);
         if (this.chart) {
           this.chart.destroy();
           ReactDOM.findDOMNode(this).innerHTML = "";
         }
-        this.drawChart(nextProps.chartParams, source, nextProps.isThumb);
+        this.drawChart(nextProps.chartParams, source, nextProps.isThumb, nextProps.gridPanel);
       }
     }
   }
@@ -157,11 +147,11 @@ class Chart extends React.Component <ChartProps, any> {
       }
       this.chart.changeData(frame);
     } else {
-      this.drawChart(this.props.chartParams, source, this.props.isThumb);
+      this.drawChart(this.props.chartParams, source, this.props.isThumb, this.props.gridPanel);
     }
   }
   private componentDidMount() {
-    const { chartParams, isThumb, source } = this.props;
+    const { chartParams, isThumb, source, gridPanel } = this.props;
 
     if (!this.isValidParams(chartParams, source)) {
       return;
@@ -170,7 +160,7 @@ class Chart extends React.Component <ChartProps, any> {
       if (this.chart) {
         this.chart.destroy();
       }
-      this.drawChart(chartParams, source, isThumb);
+      this.drawChart(chartParams, source, isThumb, gridPanel);
     }
   }
 
@@ -213,12 +203,19 @@ class Chart extends React.Component <ChartProps, any> {
       metricCols = preRenderSource.metricCols;
     }
 
+    const rateCol = filter(columns, (col: Metric) => col.isRate === true);
+    let rateMax = 0;
+    rateCol.forEach( (col) => {
+        const colMax = G2.Frame.max(frame, col.id);
+        rateMax = colMax > rateMax ? colMax : rateMax;
+    });
+
     if (!cfg.combineMetrics && (cfg.geom === "point" || isArray(cfg.geom) || cfg.withRate || (metricCols && metricCols.length < 2))) {
       return {
         frame,
         dimCols,
         metricCols,
-        scales: this.buildScales(columns, cfg.geom, sourceDef)
+        scales: this.buildScales(columns, cfg.geom, sourceDef,  rateMax === 0 ? 1 : rateMax),
       };
     }
     // retention 下 metricDict 对应不上 TODO: fix
@@ -323,20 +320,20 @@ class Chart extends React.Component <ChartProps, any> {
     return { margin, colPixels };
   }
   private tooltipMap(type: string, interval: number) {
-    if (type === "funnel") {
-      return (ev: any) => {
-        const l = ev.items.length;
-        for (let i = 0; i * 2 < l; i += 1) {
-          const origin = ev.items[i * 2].point._origin;
-          const origin2 = ev.items[i * 2 + 1].point._origin;
-          ev.items[i] = ev.items[i * 2];
-          ev.items[i].value = `${ev.items[2 * i].name}: ${formatPercent(origin.conversion_rate)}, ` +
-          `${ev.items[2 * i + 1].name}: ${origin2.conversion}`;
-          ev.items[i].name = origin.comparison_value || origin.metric_name;
-        }
-        ev.items.splice(l / 2, l / 2);
-      }
-    }
+    // if (type === "funnel") {
+    //   return (ev: any) => {
+    //     const l = ev.items.length;
+    //     for (let i = 0; i * 2 < l; i += 1) {
+    //       const origin = ev.items[i * 2].point._origin;
+    //       const origin2 = ev.items[i * 2 + 1].point._origin;
+    //       ev.items[i] = ev.items[i * 2];
+    //       ev.items[i].value = `${ev.items[2 * i].name}: ${formatPercent(origin.conversion_rate)}, ` +
+    //       `${ev.items[2 * i + 1].name}: ${origin2.conversion}`;
+    //       ev.items[i].name = origin.comparison_value || origin.metric_name;
+    //     }
+    //     ev.items.splice(l / 2, l / 2);
+    //   }
+    // }
     if (type === "comparison") {
       return (ev: any) => {
         if (ev.items.length === 3) {
@@ -395,7 +392,7 @@ class Chart extends React.Component <ChartProps, any> {
     return undefined;
   }
 
-  private drawChart(chartParams: DrawParamsProps, source: any[], isThumb: boolean = false) {
+  private drawChart(chartParams: DrawParamsProps, source: any[], isThumb: boolean = false, gridPanel: boolean = false) {
     // 防止destroy删除父节点
     const dom: HTMLElement = document.createElement("div");
     dom.style.height = "100%";
@@ -495,7 +492,7 @@ class Chart extends React.Component <ChartProps, any> {
         scales[dimCols[1]],
         chartConfig.legendSingleMode,
         chartConfig.legendPosition === "top" ? chartParams.aggregator.values : null,
-        chartParams.attrs ? chartParams.attrs.selection : null, chartType);
+        chartParams.attrs ? chartParams.attrs.selection : null, chartType, gridPanel);
       if (chartConfig.legendPosition === "top") {
         legendDom.className = "giochart-legends top-legends";
         ReactDOM.findDOMNode(this).insertBefore(legendDom, dom);
@@ -645,7 +642,7 @@ class Chart extends React.Component <ChartProps, any> {
       chart[chartConfig.geom[1]]().position(dimCols[0] + "*" + metricCols[1]).color("#ccc");
     }
     geom.position(position.pos);
-    if (!chartConfig.shape && color) {
+    if (!chartConfig.shape && color || chartType === "singleNumber") {
       if (chartParams.attrs &&  chartParams.attrs.selection && chartParams.attrs.selection.length > 0 ) {
         const colorArray = G2.Global.colors.trend.filter(
           (c: string, i: number) => chartParams.attrs.selection.includes(i)
@@ -658,6 +655,9 @@ class Chart extends React.Component <ChartProps, any> {
     if (colorTheme) {
       const geomline = chart.line().position(position.pos);
       geomline.color(`rgb(${colorTheme})`);
+      if (chartType === "singleNumber") {
+        geomline.shape(chartConfig.shape);
+      }
     }
 
     if (chartConfig.shape) {
@@ -700,13 +700,13 @@ class Chart extends React.Component <ChartProps, any> {
     } else {
       // 筛掉_的tooltip，这个是g2的bug造成的
       chart.on("tooltipchange", (ev: any) => {
-        const items = filter(ev.items, (n: any) => n.name !== "_");
+        const items = filter(ev.items, (n: any) => n.color.indexOf("l") === -1);
         const l = ev.items.length;
         ev.items.splice.apply(ev.items, [0, l].concat(items));
       });
     }
 
-    const crosshairs = chartConfig.geom !== "interval";
+    const crosshairs = chartConfig.geom !== "interval" && chartConfig.geom !== "point";
     chart.tooltip(true, {
       custom: true,
       html:  '<div class="ac-tooltip" style="position:absolute;visibility: hidden;"><span class="ac-title"></span><ul class="ac-list"></ul></div>',
@@ -737,7 +737,8 @@ class Chart extends React.Component <ChartProps, any> {
     isSingle: boolean,
     aggregates: number[],
     colorSelection: number[],
-    chartType: string
+    chartType: string,
+    panel?: boolean
   ): HTMLElement {
     const dom = document.createElement("div");
     dom.className = "giochart-legends";
@@ -819,26 +820,28 @@ class Chart extends React.Component <ChartProps, any> {
       if (action === "up" && scrollTop > 19) {
         scrollTop -= 20;
         ul.style.transform = `translate(0, ${-scrollTop}px)`;
-      } else if (action === "down" && cHeight > scrollTop + 70) {
+      } else if (action === "down" && cHeight > scrollTop + 20) {
         scrollTop += 20;
         ul.style.transform = `translate(0, ${-scrollTop}px)`;
       }
     });
 
-    // TODO: 这段好像没用
-    document.body.addEventListener("resize", (e) => {
-      const domHeight = dom.getBoundingClientRect().height;
-      const cHeight = ul.getBoundingClientRect().height;
-      dom.style.textAlign = (!isSingle && domHeight < 21) ? "center" : "left";
-      scroller.style.display = cHeight > 70 ? "block" : "none";
-    });
-    const domHeight = dom.getBoundingClientRect().height;
-    const cHeight = ul.getBoundingClientRect().height;
-    ul.style.textAlign = domHeight < 25 ? "center" : "left";
-    scroller.style.display = cHeight > 70 ? "block" : "none";
+    if (panel) {
+        scroller.style.display = "block";
+        dom.style.height = "20px"
+    }
 
-    // document.body.dispatchEvent("resize");
-    // dom.onResize();
+    // TODO: 这段好像没用
+    // document.body.addEventListener("resize", (e) => {
+    //   const domHeight = dom.getBoundingClientRect().height;
+    //   const cHeight = ul.getBoundingClientRect().height;
+    //   dom.style.textAlign = (!isSingle && domHeight < 21) ? "center" : "left";
+    //   scroller.style.display = cHeight > 70 ? "block" : "none";
+    // });
+    // const domHeight = dom.getBoundingClientRect().height;
+    // const cHeight = ul.getBoundingClientRect().height;
+    // ul.style.textAlign = domHeight < 25 ? "center" : "left";
+    // scroller.style.display = cHeight > 70 ? "block" : "none";
 
     return dom;
   }
@@ -890,7 +893,8 @@ class Chart extends React.Component <ChartProps, any> {
   private buildScales(
       columns: any[],
       geom: string | string[],
-      defaultScaleDef: SourceConfig): SourceConfig {
+      defaultScaleDef: SourceConfig,
+      rateMax = 1): SourceConfig {
     const scaleDef: SourceConfig = {};
     if (typeof geom !== "string") {
       geom = geom[0];
@@ -923,7 +927,7 @@ class Chart extends React.Component <ChartProps, any> {
           alias: m.name,
           type: "linear",
           min: 0,
-          max: m.isRate ? 1 : undefined,
+          max: m.isRate ? rateMax : undefined,
           formatter: m.isRate ? formatPercent : formatNumber,
           // tickCount: 4
         };

@@ -113,6 +113,7 @@ export interface ChartProps {
   isThumb?: boolean;
   sortHandler?: any;
   onFiltered?: (dim: string, filterNames: string[]) => void;
+  gridPanel?: boolean;
 }
 // 字段是从数据源取得的Chart的格式
 export interface SingleChartProps {

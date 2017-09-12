@@ -69,7 +69,13 @@ const chartParams1: DrawParamsProps = {
     granularities: [{id: "tm", interval: "3600000"}]
 };
 
+const lineP = JSON.parse('{"adjust":"dodge","aggregator":null,"chartType":"area","columns":[{"id":"tm","name":"时间","isDim":true,"isRate":false},{"id":"orvdqq8Z","name":"平均访问时长 (分钟)","isDim":false,"metricId":{"id":"orvdqq8Z","level":"complex"},"isRate":false}],"granularities":[{"id":"tm","interval":86400000}],"timeRange":"day:8,1","attrs":{"metricType":"none"}}');
+const lineS = JSON.parse('[{"tm":1504281600000,"orvdqq8Z":3.8372421962095875},{"tm":1504368000000,"orvdqq8Z":4.098475697440322},{"tm":1504454400000,"orvdqq8Z":9.52411198600175},{"tm":1504540800000,"orvdqq8Z":9.705192231470471},{"tm":1504627200000,"orvdqq8Z":9.80630314507445},{"tm":1504713600000,"orvdqq8Z":9.33275105397747},{"tm":1504800000000,"orvdqq8Z":9.193236069346995}]');
+
+const sN = JSON.parse('{"adjust":"dodge","aggregator":{"values":[4396,4420]},"chartType":"singleNumber","columns":[{"id":"tm","name":"时间","isDim":true,"isRate":false},{"id":"PDjgVV6l","name":"登录用户量","isDim":false,"metricId":{"id":"PDjgVV6l","level":"complex"},"isRate":false}],"granularities":[{"id":"tm","interval":86400000}],"timeRange":"day:8,1","attrs":{"metricType":"none"}}');
+const sNs = JSON.parse('[{"tm":1504454400000,"PDjgVV6l":1928},{"tm":1504540800000,"PDjgVV6l":1848},{"tm":1504627200000,"PDjgVV6l":1897},{"tm":1504713600000,"PDjgVV6l":1994},{"tm":1504800000000,"PDjgVV6l":1903},{"tm":1504886400000,"PDjgVV6l":527},{"tm":1504972800000,"PDjgVV6l":375}]');
+
 const EasyChart = (props: any) => (
-  <Chart chartParams={chartParams} source={retentionData} />
+  <Chart chartParams={sN} source={sNs} />
 );
 export default EasyChart;
