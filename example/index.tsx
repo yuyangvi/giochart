@@ -13,6 +13,6 @@ import RetentionLongTime from "./RetentionLongTime";
 import ChangeOverTime from "./ChangeOverTime";
 
 ReactDOM.render(
-  <Funnel />,
+  <ComparisonChart />,
   document.getElementById("example")
 );

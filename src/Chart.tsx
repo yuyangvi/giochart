@@ -26,25 +26,15 @@ const countTick = (maxTick: number, total: number) => {
 };
 const adjustFrame: any = {
   // 周期对比图，需要给tooltip增加百分比,同时对齐数据
-  // comparison: (frame: any, metricCols: string[]) => {
-  //   frame.addCol("rate", (record: any) => (
-  //     record[metricCols[1]] ? (record[metricCols[0]] / record[metricCols[1]] - 1) : 0
-  //   ));
-  //   const sourceDef: any = {
-  //     rate: {
-  //       formatter: formatPercent,
-  //       type: "linear"
-  //     }
-  //   };
-  //
-  //   // 获取metricid, 计算最大值,统一两条线的区间范围
-  //   const maxScale: number = Math.max.apply(null, map(metricCols, (col: string) => G2.Frame.max(frame, col)));
-  //   metricCols.forEach((id: string) => {
-  //     sourceDef[id] = { max: maxScale };
-  //   });
-  //   metricCols.push("rate");
-  //   return { frame, sourceDef, metricCols };
-  // },
+  comparison: (frame: any, metricCols: string[]) => {
+    const sourceDef: any = {};
+    // 获取metricid, 计算最大值,统一两条线的区间范围
+    const maxScale: number = Math.max.apply(null, map(metricCols, (col: string) => G2.Frame.max(frame, col)));
+    metricCols.forEach((id: string) => {
+      sourceDef[id] = { max: maxScale };
+    });
+    return { frame, sourceDef, metricCols };
+  },
   retentionColumn: (frame: any, metricCols: string[]) => {
     // 增加流失人数字段，并且计为负数
     const lossWord = "loss";
@@ -129,14 +119,14 @@ class Chart extends React.Component <ChartProps, any> {
           // this.chart.get("container").innerHTML = "";
           ReactDOM.findDOMNode(this).innerHTML = "";
         }
-        this.drawChart(nextProps.chartParams, source, nextProps.isThumb);
+        this.drawChart(nextProps.chartParams, source, nextProps.isThumb, nextProps.gridPanel);
       } else if (JSON.stringify(source) !== JSON.stringify(this.props.source)) {
         // this.changeData(source);
         if (this.chart) {
           this.chart.destroy();
           ReactDOM.findDOMNode(this).innerHTML = "";
         }
-        this.drawChart(nextProps.chartParams, source, nextProps.isThumb);
+        this.drawChart(nextProps.chartParams, source, nextProps.isThumb, nextProps.gridPanel);
       }
     }
   }
@@ -157,11 +147,11 @@ class Chart extends React.Component <ChartProps, any> {
       }
       this.chart.changeData(frame);
     } else {
-      this.drawChart(this.props.chartParams, source, this.props.isThumb);
+      this.drawChart(this.props.chartParams, source, this.props.isThumb, this.props.gridPanel);
     }
   }
   private componentDidMount() {
-    const { chartParams, isThumb, source } = this.props;
+    const { chartParams, isThumb, source, gridPanel } = this.props;
 
     if (!this.isValidParams(chartParams, source)) {
       return;
@@ -170,7 +160,7 @@ class Chart extends React.Component <ChartProps, any> {
       if (this.chart) {
         this.chart.destroy();
       }
-      this.drawChart(chartParams, source, isThumb);
+      this.drawChart(chartParams, source, isThumb, gridPanel);
     }
   }
 
@@ -402,7 +392,7 @@ class Chart extends React.Component <ChartProps, any> {
     return undefined;
   }
 
-  private drawChart(chartParams: DrawParamsProps, source: any[], isThumb: boolean = false) {
+  private drawChart(chartParams: DrawParamsProps, source: any[], isThumb: boolean = false, gridPanel: boolean = false) {
     // 防止destroy删除父节点
     const dom: HTMLElement = document.createElement("div");
     dom.style.height = "100%";
@@ -502,7 +492,7 @@ class Chart extends React.Component <ChartProps, any> {
         scales[dimCols[1]],
         chartConfig.legendSingleMode,
         chartConfig.legendPosition === "top" ? chartParams.aggregator.values : null,
-        chartParams.attrs ? chartParams.attrs.selection : null, chartType);
+        chartParams.attrs ? chartParams.attrs.selection : null, chartType, gridPanel);
       if (chartConfig.legendPosition === "top") {
         legendDom.className = "giochart-legends top-legends";
         ReactDOM.findDOMNode(this).insertBefore(legendDom, dom);
@@ -747,7 +737,8 @@ class Chart extends React.Component <ChartProps, any> {
     isSingle: boolean,
     aggregates: number[],
     colorSelection: number[],
-    chartType: string
+    chartType: string,
+    panel?: boolean
   ): HTMLElement {
     const dom = document.createElement("div");
     dom.className = "giochart-legends";
@@ -829,26 +820,28 @@ class Chart extends React.Component <ChartProps, any> {
       if (action === "up" && scrollTop > 19) {
         scrollTop -= 20;
         ul.style.transform = `translate(0, ${-scrollTop}px)`;
-      } else if (action === "down" && cHeight > scrollTop + 70) {
+      } else if (action === "down" && cHeight > scrollTop + 20) {
         scrollTop += 20;
         ul.style.transform = `translate(0, ${-scrollTop}px)`;
       }
     });
 
-    // TODO: 这段好像没用
-    document.body.addEventListener("resize", (e) => {
-      const domHeight = dom.getBoundingClientRect().height;
-      const cHeight = ul.getBoundingClientRect().height;
-      dom.style.textAlign = (!isSingle && domHeight < 21) ? "center" : "left";
-      scroller.style.display = cHeight > 70 ? "block" : "none";
-    });
-    const domHeight = dom.getBoundingClientRect().height;
-    const cHeight = ul.getBoundingClientRect().height;
-    ul.style.textAlign = domHeight < 25 ? "center" : "left";
-    scroller.style.display = cHeight > 70 ? "block" : "none";
+    if (panel) {
+        scroller.style.display = "block";
+        dom.style.height = "20px"
+    }
 
-    // document.body.dispatchEvent("resize");
-    // dom.onResize();
+    // TODO: 这段好像没用
+    // document.body.addEventListener("resize", (e) => {
+    //   const domHeight = dom.getBoundingClientRect().height;
+    //   const cHeight = ul.getBoundingClientRect().height;
+    //   dom.style.textAlign = (!isSingle && domHeight < 21) ? "center" : "left";
+    //   scroller.style.display = cHeight > 70 ? "block" : "none";
+    // });
+    // const domHeight = dom.getBoundingClientRect().height;
+    // const cHeight = ul.getBoundingClientRect().height;
+    // ul.style.textAlign = domHeight < 25 ? "center" : "left";
+    // scroller.style.display = cHeight > 70 ? "block" : "none";
 
     return dom;
   }
