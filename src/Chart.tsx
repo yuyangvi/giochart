@@ -670,10 +670,7 @@ class Chart extends React.Component <ChartProps, any> {
       const sumCols = G2.Frame.sum(frame, metricCols[0]);
       geom.label(metricCols[0], {
         offset: 5,
-        renderer: (text: string, item: any, index: number) => {
-           // 配合 custom 为 true 使用，格式化文本的函数
-          return text + " (" + ((parseInt(item.point[metricCols[0]], 10) / sumCols) * 100).toFixed(2) + "%" + ")";
-        }
+        renderer: (text: string, item: any, index: number) => `${text}(${formatPercent(item.point[metricCols[0]] / sumCols)}%)`
       });
     }
     if (chartConfig.isThumb || chartConfig.tooltip) {
