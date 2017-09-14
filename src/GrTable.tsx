@@ -5,6 +5,7 @@ import Table = require("antd/lib/table");
 import { difference, fill, filter, find, flatMap, forIn, groupBy, map, pick, unionBy, values, isEqual } from "lodash";
 import * as moment from "moment";
 import * as React from "react";
+import { getTmFormat } from "./utils";
 import {ChartProps, Metric, Source} from "./ChartProps";
 // import Table from 'antd/lib/table';
 import G2 = require("g2");
@@ -44,7 +45,7 @@ const generateColRender = (getBgColor: (v: number) => string, m: Metric): ((v: n
     children: descValue(value, m.isRate), // (value && !Number.isInteger(value) ? value.toPrecision(3) : value),
     props: { style: {backgroundColor: getBgColor(value)}}
   });
-const checkDate = (m: Metric) => (m.id === "tm" ? GrTable.formatDate : undefined);
+// const checkDate = (m: Metric) => (m.id === "tm" ? GrTable.formatDate : undefined);
 
 class GrTable extends React.Component <ChartProps, any> {
   public static formatDate(v: number) {
@@ -57,13 +58,15 @@ class GrTable extends React.Component <ChartProps, any> {
   private checkDate(m: Metric) {
     if (m.id === "tm") {
       const gra = find(this.props.chartParams.granularities, {id: "tm"});
+      return getTmFormat(parseInt(gra.interval, 10));
+      /*
       if (gra.interval && parseInt(gra.interval, 10) > 6048e5) {
         return (v: number) => moment.unix(v / 1000).format("MMMM");
       } else if (gra.interval && parseInt(gra.interval, 10) >= 864e5) {
         return (v: number) => moment.unix(v / 1000).format("YYYY-MM-DD");
       } else {
         return (v: number) => moment.unix(v / 1000).format("YYYY-MM-DD HH:mm");
-      }
+      }*/
     }
   }
   // 将多指标扁平成一条
