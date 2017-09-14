@@ -816,16 +816,30 @@ class Chart extends React.Component <ChartProps, any> {
       if (action === "up" && scrollTop > 19) {
         scrollTop -= 20;
         ul.style.transform = `translate(0, ${-scrollTop}px)`;
-      } else if (action === "down" && cHeight > scrollTop + 20) {
+      } else if (action === "down" && cHeight > scrollTop + 70) {
         scrollTop += 20;
         ul.style.transform = `translate(0, ${-scrollTop}px)`;
       }
     });
 
-    if (panel) {
-        scroller.style.display = "block";
-        dom.style.height = "20px"
-    }
+    document.body.addEventListener("resize", (e) => {
+        const domHeight = dom.getBoundingClientRect().height;
+        const cHeight = ul.getBoundingClientRect().height;
+        dom.style.textAlign = (!isSingle && domHeight < 21) ? "center" : "left";
+        scroller.style.display = cHeight > 70 ? "block" : "none";
+    });
+    const domHeight = dom.getBoundingClientRect().height;
+    const cHeight = ul.getBoundingClientRect().height;
+    ul.style.textAlign = domHeight < 25 ? "center" : "left";
+    scroller.style.display = cHeight > 70 ? "block" : "none";
+
+      // document.body.dispatchEvent("resize");
+      // dom.onResize();
+
+    // if (panel) {
+    //     scroller.style.display = "block";
+    //     dom.style.height = "20px"
+    // }
 
     // TODO: 这段好像没用
     // document.body.addEventListener("resize", (e) => {
