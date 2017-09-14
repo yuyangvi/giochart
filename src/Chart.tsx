@@ -7,7 +7,7 @@ import G2 = require("g2");
 import {
   assign, defaultsDeep, find, filter, fromPairs, groupBy,
   isArray, invokeMap, isEmpty, isEqual, isMatch,
-  map, merge, pick, reverse, some, uniq, zip, zipObject
+  map, max, merge, pick, reverse, some, uniq, zip, zipObject
 } from "lodash";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
@@ -203,12 +203,8 @@ class Chart extends React.Component <ChartProps, any> {
       metricCols = preRenderSource.metricCols;
     }
 
-    const rateCol = filter(columns, (col: Metric) => col.isRate === true);
-    let rateMax = 0;
-    rateCol.forEach( (col) => {
-        const colMax = G2.Frame.max(frame, col.id);
-        rateMax = colMax > rateMax ? colMax : rateMax;
-    });
+    const rateCol: Metric[] = filter(columns, { isRate: true});
+    const rateMax = max(map(rateCol, (col: Metric) => G2.Frame.max(frame, col.id)));
 
     if (!cfg.combineMetrics && (cfg.geom === "point" || isArray(cfg.geom) || cfg.withRate || (metricCols && metricCols.length < 2))) {
       return {
@@ -927,7 +923,7 @@ class Chart extends React.Component <ChartProps, any> {
           alias: m.name,
           type: "linear",
           min: 0,
-          max: m.isRate ? rateMax : undefined,
+          max: m.isRate ? Math.ceil(20 * rateMax) / 20 : undefined,
           formatter: m.isRate ? formatPercent : formatNumber,
           // tickCount: 4
         };
