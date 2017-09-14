@@ -2,26 +2,46 @@
     z-index: 1;
 }
 
+/*.giochart-legends{*/
+    /*margin-top: 15px;*/
+    /*font-size: 11px;*/
+    /*overflow: hidden;*/
+    /*position: relative;*/
+/*}*/
+/*.giochart-legends ul{*/
+    /*transition: transform .4s ease;*/
+    /*font-size: 0;*/
+/*}*/
+/*.giochart-legends li{*/
+    /*display: inline-block;*/
+    /*margin: 0 10px;*/
+    /*height: 20px;*/
+    /*cursor: pointer;*/
+    /*max-width: 100px;*/
+    /*text-overflow: ellipsis;*/
+    /*white-space: nowrap;*/
+    /*overflow: hidden;*/
+    /*font-size: 12px;*/
+/*}*/
 .giochart-legends{
-    margin-top: 15px;
     font-size: 11px;
+    max-height: 60px;
     overflow: hidden;
     position: relative;
 }
 .giochart-legends ul{
     transition: transform .4s ease;
-    font-size: 0;
+    text-align: center;
 }
 .giochart-legends li{
     display: inline-block;
-    margin: 0 10px;
-    height: 20px;
+    margin: 0 10px 0;
+    line-height: 16px;
     cursor: pointer;
-    max-width: 100px;
+    max-width: 90%;
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
-    font-size: 12px;
 }
 .giochart-legends li.disabled {
     color: #ccc;
@@ -41,7 +61,7 @@
     position: absolute;
     top: 20px;
     right: 10px;
-    display: none;
+    /*display: none;*/
 }
 .giochart-legend-scroller span{
     display:block;
