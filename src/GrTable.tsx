@@ -5,7 +5,7 @@ import Table = require("antd/lib/table");
 import { difference, fill, filter, find, flatMap, forIn, groupBy, map, pick, unionBy, values, isEqual } from "lodash";
 import * as moment from "moment";
 import * as React from "react";
-import { getTmFormat } from "./utils";
+import { getTmTableFormat } from "./utils";
 import {ChartProps, Metric, Source} from "./ChartProps";
 // import Table from 'antd/lib/table';
 import G2 = require("g2");
@@ -58,7 +58,7 @@ class GrTable extends React.Component <ChartProps, any> {
   private checkDate(m: Metric) {
     if (m.id === "tm") {
       const gra = find(this.props.chartParams.granularities, {id: "tm"});
-      return getTmFormat(parseInt(gra.interval, 10));
+      return getTmTableFormat(parseInt(gra.interval, 10));
       /*
       if (gra.interval && parseInt(gra.interval, 10) > 6048e5) {
         return (v: number) => moment.unix(v / 1000).format("MMMM");

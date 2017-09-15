@@ -134,6 +134,23 @@ export const getTmFormat = (tmInterval: number) => {
   }
   return (v: number) => moment.unix(v / 1000).format("MM-DD ddd");
 }
+
+export const getTmTableFormat = (tmInterval: number) => {
+  if (tmInterval > 6048e5) { // 按月
+    return (v: number) => (
+      `${moment.unix(v / 1000).format("MM/DD")} ~ ${moment.unix(v / 1000).endOf("month").format("MM-DD")}`
+    );
+  } else if (tmInterval === 6048e5) { // 按周
+    return (v: number) => (
+      `${moment.unix(v / 1000).format("MM/DD")} ~ ${moment.unix(v / 1000).endOf("week").format("MM/DD")}`
+    );
+  } else if (tmInterval === 864e5) { // 按天
+    return (v: number) => moment.unix(v / 1000).format("MM-DD ddd");
+  } else if (tmInterval === 36e5) { // 按小时
+    return (v: number) => moment.unix(v / 1000).format("MM-DD ddd HH:mm");
+  }
+  return (v: number) => moment.unix(v / 1000).format("MM-DD ddd");
+}
 export const getAxisFormat = (tmInterval: number) => {
   const month = ["一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"];
   if (tmInterval > 6048e5) {
