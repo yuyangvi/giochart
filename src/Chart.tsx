@@ -602,7 +602,6 @@ class Chart extends React.Component <ChartProps, any> {
         labelOffset: CHARTTHEME.labelOffset,
       });
     }
-
     // if (chartType === "area" || chartType === "bubble" || chartType === "line" || chartType === "vbar") {
     //   chart.axis(position.y, {
     //     titleOffset: CHARTTHEME.titleOffset,
@@ -698,7 +697,7 @@ class Chart extends React.Component <ChartProps, any> {
         ev.items.splice.apply(ev.items, [0, l].concat(items));
       });
     }
-
+    console.log(scales);
     const crosshairs = chartConfig.geom !== "interval" && chartConfig.geom !== "point";
     chart.tooltip(true, {
       custom: true,
@@ -934,7 +933,8 @@ class Chart extends React.Component <ChartProps, any> {
           alias: m.name,
           type: "linear",
           min: 0,
-          max: m.isRate ? Math.ceil(20 * rateMax) / 20 : undefined,
+          max: m.isRate ? rateMax : undefined,
+          tickCount: 6,
           formatter: m.isRate ? formatPercent : formatNumber,
           // tickCount: 4
         };

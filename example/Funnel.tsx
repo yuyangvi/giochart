@@ -2,47 +2,8 @@ import * as React from "react";
 import { DrawParamsProps, Source} from "../src/ChartProps";
 import Chart from "../src/Chart";
 // import ContextListener from "../src/ContextListener";
-const chartParams: DrawParamsProps = {
-  aggregator: { values: [0.10658520027155464, 0.10658520027155464], offset: 2 },
-  chartType: "funnel",
-  columns: [
-    { id: "tm", name: "时间", isDim: true, isRate: false },
-    { id: "metric_name", name: "指标", isDim: true, isRate: false },
-    { id: "conversion_rate", name: "转化率", isDim: false, isRate: true },
-    { id: "conversion", name: "转化人数", isDim: false, isRate: false }
-
-  ]
-};
-const source: Source = [
-  { tm: 1498665600000, metric_name: "总转化率", conversion: 35, conversion_rate: 0.059726962457337884 },
-  { tm: 1498665600000, metric_name: "第 1 步转化率", conversion: 35, conversion_rate: 0.059726962457337884 },
-  { tm: 1498752000000, metric_name: "总转化率", conversion: 31, conversion_rate: 0.05961538461538462 },
-  { tm: 1498752000000, metric_name: "第 1 步转化率", conversion: 31, conversion_rate: 0.05961538461538462 },
-  { tm: 1498838400000, metric_name: "总转化率", conversion: 7, conversion_rate: 0.04827586206896552 },
-  { tm: 1498838400000, metric_name: "第 1 步转化率", conversion: 7, conversion_rate: 0.04827586206896552 },
-  { tm: 1498924800000, metric_name: "总转化率", conversion: 1, conversion_rate: 0.008771929824561403 },
-  { tm: 1498924800000, metric_name: "第 1 步转化率", conversion: 1, conversion_rate: 0.008771929824561403 },
-  { tm: 1499011200000, metric_name: "总转化率", conversion: 32, conversion_rate: 0.05324459234608985 },
-  { tm: 1499011200000, metric_name: "第 1 步转化率", conversion: 32, conversion_rate: 0.05324459234608985 },
-  { tm: 1499097600000, metric_name: "总转化率", conversion: 33, conversion_rate: 0.0616822429906542 },
-  { tm: 1499097600000, metric_name: "第 1 步转化率", conversion: 33, conversion_rate: 0.0616822429906542 },
-  { tm: 1499184000000, metric_name: "总转化率", conversion: 28, conversion_rate: 0.052336448598130844 },
-  { tm: 1499184000000, metric_name: "第 1 步转化率", conversion: 28, conversion_rate: 0.052336448598130844 },
-  { tm: 1499270400000, metric_name: "总转化率", conversion: 31, conversion_rate: 0.05565529622980251 },
-  { tm: 1499270400000, metric_name: "第 1 步转化率", conversion: 31, conversion_rate: 0.05565529622980251 },
-  { tm: 1499356800000, metric_name: "总转化率", conversion: 23, conversion_rate: 0.04220183486238532 },
-  { tm: 1499356800000, metric_name: "第 1 步转化率", conversion: 23, conversion_rate: 0.04220183486238532 },
-  { tm: 1499443200000, metric_name: "总转化率", conversion: 3, conversion_rate: 0.025423728813559324 },
-  { tm: 1499443200000, metric_name: "第 1 步转化率", conversion: 3, conversion_rate: 0.025423728813559324 },
-  { tm: 1499529600000, metric_name: "总转化率", conversion: 1, conversion_rate: 0.009345794392523364 },
-  { tm: 1499529600000, metric_name: "第 1 步转化率", conversion: 1, conversion_rate: 0.009345794392523364 },
-  { tm: 1499616000000, metric_name: "总转化率", conversion: 38, conversion_rate: 0.06354515050167224 },
-  { tm: 1499616000000, metric_name: "第 1 步转化率", conversion: 38, conversion_rate: 0.06354515050167224 },
-  { tm: 1499702400000, metric_name: "总转化率", conversion: 35, conversion_rate: 0.0641025641025641 },
-  { tm: 1499702400000, metric_name: "第 1 步转化率", conversion: 35, conversion_rate: 0.0641025641025641 },
-  { tm: 1499788800000, metric_name: "总转化率", conversion: 31, conversion_rate: 0.05938697318007663 },
-  { tm: 1499788800000, metric_name: "第 1 步转化率", conversion: 31, conversion_rate: 0.05938697318007663 }
-];
+const chartParams: DrawParamsProps = {"aggregator":[0.07692307692307693],"chartType":"funnel","columns":[{"id":"tm","name":"时间","isDim":true,"isRate":false},{"id":"conversion","name":"转化人数","isDim":false,"isRate":false},{"id":"conversion_rate","name":"转化率","isDim":false,"isRate":true}]};
+const source: Source = [{"tm":1504195200000,"metric_name":"总转化率","conversion":4,"conversion_rate":0.012903225806451613},{"tm":1504281600000,"metric_name":"总转化率","conversion":0,"conversion_rate":0},{"tm":1504368000000,"metric_name":"总转化率","conversion":0,"conversion_rate":0},{"tm":1504454400000,"metric_name":"总转化率","conversion":1,"conversion_rate":0.027777777777777776},{"tm":1504540800000,"metric_name":"总转化率","conversion":2,"conversion_rate":0.004878048780487805},{"tm":1504627200000,"metric_name":"总转化率","conversion":1,"conversion_rate":0.029411764705882353},{"tm":1504713600000,"metric_name":"总转化率","conversion":5,"conversion_rate":0.010638297872340426},{"tm":1504800000000,"metric_name":"总转化率","conversion":2,"conversion_rate":0.007692307692307693},{"tm":1504886400000,"metric_name":"总转化率","conversion":1,"conversion_rate":0.007142857142857142},{"tm":1504972800000,"metric_name":"总转化率","conversion":0,"conversion_rate":0},{"tm":1505059200000,"metric_name":"总转化率","conversion":6,"conversion_rate":0.010909090909090909},{"tm":1505145600000,"metric_name":"总转化率","conversion":6,"conversion_rate":0.01111111111111111},{"tm":1505232000000,"metric_name":"总转化率","conversion":4,"conversion_rate":0.010526315789473684},{"tm":1505318400000,"metric_name":"总转化率","conversion":4,"conversion_rate":0.008888888888888889}];
 const Funnel = (props: any) => (
     <Chart chartParams={chartParams} source={source} />
 );
