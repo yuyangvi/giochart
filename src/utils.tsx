@@ -135,14 +135,28 @@ export const getTmFormat = (tmInterval: number) => {
   return (v: number) => moment.unix(v / 1000).format("MM-DD ddd");
 }
 
-export const getTmTableFormat = (tmInterval: number) => {
+export const getTmTableFormat = (tmInterval: number, isTooltip: boolean = false) => {
   if (tmInterval > 6048e5) { // 按月
+    if (isTooltip) {
+      return (v: number) => {
+        const b = moment.unix(v / 1000);
+        const c = moment.unix(v / 1000).endOf("month");
+        return `${b.format("MM/DD")}~${c.format("MM/DD")},${b.format("ddd")}~${c.format("ddd")},${Math.round((c.unix() - b.unix()) / 86400)}天`;
+      };
+    }
     return (v: number) => (
-      `${moment.unix(v / 1000).format("MM/DD")} ~ ${moment.unix(v / 1000).endOf("month").format("MM-DD")}`
+      `${moment.unix(v / 1000).format("MM/DD")} - ${moment.unix(v / 1000).endOf("month").format("MM/DD")}`
     );
   } else if (tmInterval === 6048e5) { // 按周
+    if (isTooltip) {
+      return (v: number) => {
+        const b = moment.unix(v / 1000);
+        const c = moment.unix(v / 1000).endOf("week");
+        return `${b.format("MM/DD")}~${c.format("MM/DD")},${b.format("ddd")}~${c.format("ddd")},${Math.round((c.unix() - b.unix()) / 86400)}天`;
+      };
+    }
     return (v: number) => (
-      `${moment.unix(v / 1000).format("MM/DD")} ~ ${moment.unix(v / 1000).endOf("week").format("MM/DD")}`
+      `${moment.unix(v / 1000).format("MM/DD")} - ${moment.unix(v / 1000).endOf("week").format("MM/DD")}`
     );
   } else if (tmInterval === 864e5) { // 按天
     return (v: number) => moment.unix(v / 1000).format("MM-DD ddd");

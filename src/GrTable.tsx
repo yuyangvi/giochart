@@ -2,6 +2,9 @@
  * 文档
  */
 import Table = require("antd/lib/table");
+import Tooltip = require("antd/lib/tooltip");
+const ATable: any = Table;
+const ATooltip: any = Tooltip;
 import { difference, fill, filter, find, flatMap, forIn, groupBy, map, pick, unionBy, values, isEqual } from "lodash";
 import * as moment from "moment";
 import * as React from "react";
@@ -9,7 +12,6 @@ import { getTmTableFormat } from "./utils";
 import {ChartProps, Metric, Source} from "./ChartProps";
 // import Table from 'antd/lib/table';
 import G2 = require("g2");
-const AtdTable = Table as any;
 const sorterDecorator = (column: string) => (a: any, b: any) => (a[column] >= b[column] ? 1 : -1);
 moment.locale("zh-cn");
 // 根据中位数计算颜色,这段难理解，自己斟酌
@@ -58,15 +60,11 @@ class GrTable extends React.Component <ChartProps, any> {
   private checkDate(m: Metric) {
     if (m.id === "tm") {
       const gra = find(this.props.chartParams.granularities, {id: "tm"});
-      return getTmTableFormat(parseInt(gra.interval, 10));
-      /*
-      if (gra.interval && parseInt(gra.interval, 10) > 6048e5) {
-        return (v: number) => moment.unix(v / 1000).format("MMMM");
-      } else if (gra.interval && parseInt(gra.interval, 10) >= 864e5) {
-        return (v: number) => moment.unix(v / 1000).format("YYYY-MM-DD");
-      } else {
-        return (v: number) => moment.unix(v / 1000).format("YYYY-MM-DD HH:mm");
-      }*/
+      return (n: number) => (
+        <ATooltip title={getTmTableFormat(parseInt(gra.interval, 10), true)(n)}>
+          {getTmTableFormat(parseInt(gra.interval, 10))(n)}
+        </ATooltip>
+      );
     }
   }
   // 将多指标扁平成一条
@@ -159,11 +157,10 @@ class GrTable extends React.Component <ChartProps, any> {
        }*/
       // 这步就是成功
       return (
-        <AtdTable
+        <ATable
           bordered
           columns={cols}
           dataSource={source}
-          emptyText={ () => "" }
           pagination={source.length > 10 ? { pageSize: 10 } : false}
           rowKey={GrTable.getRowKey}
           onChange={this.onChange.bind(this)}

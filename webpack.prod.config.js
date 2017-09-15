@@ -64,6 +64,7 @@ module.exports = {
       'root': 'ReactDOM'
     },
     "antd/lib/table": "antd/lib/table",
+    "antd/lib/tooltip": "antd/lib/tooltip",
     "moment": "moment",
     "object-hash": "object-hash"
   },
