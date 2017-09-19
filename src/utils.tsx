@@ -117,16 +117,17 @@ export const countTickCountTimeCat = (frame: any, dom: HTMLElement, dimCols: str
   return 2;
 };
 
-export const getTmFormat = (tmInterval: number) => {
+export const getTmFormat = (tmInterval: number, timeRange: string) => {
+  const flattenRange = flattenDateRange(timeRange);
   if (tmInterval > 6048e5) { // 按月
      // return (v: number) => moment.unix(v / 1000).format("MMMM");
     return (v: number) => (
-      `${moment.unix(v / 1000).format("MM-DD ddd")} ~ ${moment.unix(v / 1000).endOf("month").format("MM-DD ddd")}`
+      `${moment.unix(Math.max(flattenRange.startTime, v) / 1000).format("MM-DD ddd")} ~ ${moment.min(moment.unix(flattenRange.endTime / 1000), moment.unix(v / 1000).endOf("month")).format("MM-DD ddd")}`
     );
   } else if (tmInterval === 6048e5) { // 按周
-    return (v: number) => (
-      `${moment.unix(v / 1000).format("MM-DD ddd")} ~ ${moment.unix(v / 1000).endOf("week").format("MM-DD ddd")}`
-    );
+    return (v: number) => {
+      return `${moment.unix(Math.max(flattenRange.startTime, v) / 1000).format("MM-DD ddd")} ~ ${moment.min(moment.unix(flattenRange.endTime / 1000), moment.unix(v / 1000).endOf("week")).format("MM-DD ddd")}`
+    };
   } else if (tmInterval === 864e5) { // 按天
     return (v: number) => moment.unix(v / 1000).format("MM-DD ddd");
   } else if (tmInterval === 36e5) { // 按小时
@@ -135,29 +136,34 @@ export const getTmFormat = (tmInterval: number) => {
   return (v: number) => moment.unix(v / 1000).format("MM-DD ddd");
 }
 
-export const getTmTableFormat = (tmInterval: number, isTooltip: boolean = false) => {
+export const getTmTableFormat = (tmInterval: number, timeRange: string, isTooltip: boolean = false) => {
+  const flattenRange = flattenDateRange(timeRange);
   if (tmInterval > 6048e5) { // 按月
     if (isTooltip) {
       return (v: number) => {
-        const b = moment.unix(v / 1000);
-        const c = moment.unix(v / 1000).endOf("month");
+        const b = moment.unix(Math.max(flattenRange.startTime, v) / 1000);
+        const c = moment.min(moment.unix(flattenRange.endTime / 1000), moment.unix(v / 1000).endOf("month"));
         return `${b.format("MM/DD")}~${c.format("MM/DD")},${b.format("ddd")}~${c.format("ddd")},${Math.round((c.unix() - b.unix()) / 86400)}天`;
       };
     }
-    return (v: number) => (
-      `${moment.unix(v / 1000).format("MM/DD")} - ${moment.unix(v / 1000).endOf("month").format("MM/DD")}`
-    );
+    return (v: number) => {
+      const b = moment.unix(Math.max(flattenRange.startTime, v) / 1000);
+      const c = moment.min(moment.unix(flattenRange.endTime / 1000), moment.unix(v / 1000).endOf("month"));
+      return `${b.format("MM/DD")} - ${c.format("MM/DD")}`
+    };
   } else if (tmInterval === 6048e5) { // 按周
     if (isTooltip) {
       return (v: number) => {
-        const b = moment.unix(v / 1000);
-        const c = moment.unix(v / 1000).endOf("week");
+        const b = moment.unix(Math.max(flattenRange.startTime, v) / 1000);
+        const c = moment.min(moment.unix(flattenRange.endTime / 1000), moment.unix(v / 1000).endOf("week"));
         return `${b.format("MM/DD")}~${c.format("MM/DD")},${b.format("ddd")}~${c.format("ddd")},${Math.round((c.unix() - b.unix()) / 86400)}天`;
       };
     }
-    return (v: number) => (
-      `${moment.unix(v / 1000).format("MM/DD")} - ${moment.unix(v / 1000).endOf("week").format("MM/DD")}`
-    );
+    return (v: number) => {
+      const b = moment.unix(Math.max(flattenRange.startTime, v) / 1000);
+      const c = moment.min(moment.unix(flattenRange.endTime / 1000), moment.unix(v / 1000).endOf("week"));
+      return `${b.format("MM/DD")} - ${c.format("MM/DD")}`
+    };
   } else if (tmInterval === 864e5) { // 按天
     return (v: number) => moment.unix(v / 1000).format("MM-DD ddd");
   } else if (tmInterval === 36e5) { // 按小时
@@ -294,3 +300,45 @@ export const hexToRgb = (hex: string)  => {
         b: parseInt(result[3], 16)
     } : null;
 };
+
+/**
+ * 将formatted格式的时间范围数据转化为flat格式的时间范围数据
+ * @param range 时间范围
+ * @returns {*}
+ */
+export const flattenDateRange = (range: any = "day:7,1") => {
+  const dateRange = {};
+  if (typeof range === "object") {
+    range.type = "absolute";
+    return range;
+  }
+
+  // 这里对解析本月、本周和今年,暴力一点
+  range = range.trim();
+  const matches = range.match(/(day|week|month|year)\:(1\,0|prev)/);
+  if (matches) {
+    const startKw = matches[1] === "week" ? "isoWeek" : matches[1];
+    const endKw = matches[2] === "prev" ? startKw : "day";
+    const intervalKw = matches[2] === "prev" ? matches[1] : "day";
+    return {
+      type: "relative",
+      startTime: moment().subtract(1, intervalKw).startOf(startKw).valueOf(),
+      endTime: moment().subtract(1, intervalKw).endOf(endKw).valueOf()
+    }
+  }
+  const absMatches = range.match(/(\w+)\:(\d+),(\d+)/);
+  if (absMatches[1] === "abs") {
+    return {
+      type: "absolute",
+      startTime: parseInt(absMatches[2], 10),
+      endTime: parseInt(absMatches[3], 10),
+    }
+  } else if (absMatches) {
+    return {
+      type: "relative",
+      startTime: moment().subtract(parseInt(absMatches[2], 10) - 1, "days").startOf("day").valueOf(),
+      endTime: moment().subtract(parseInt(absMatches[3], 10), "days").endOf("day").valueOf()
+    };
+  }
+  return;
+}
