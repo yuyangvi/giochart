@@ -669,7 +669,7 @@ class Chart extends React.Component <ChartProps, any> {
       const sumCols = G2.Frame.sum(frame, metricCols[0]);
       geom.label(metricCols[0], {
         offset: 5,
-        renderer: (text: string, item: any, index: number) => `${text}(${formatPercent(item.point[metricCols[0]] / sumCols)}%)`
+        renderer: (text: string, item: any, index: number) => `${text}(${formatPercent(item.point[metricCols[0]] / sumCols)})`
       });
     }
     if (chartConfig.isThumb || chartConfig.tooltip) {
@@ -681,13 +681,7 @@ class Chart extends React.Component <ChartProps, any> {
     if (this.tooltipMap(chartType, tInterval)) {
         if (chartType === "retention" && color) {
           geom.tooltip(color + "*" + metricCols.join("*"));
-        }else {
-        //   geom.tooltip(metricCols.join("*"));
         }
-        // if (metricCols.includes("rate")) { // rate作为title必须放前面,不然有bug
-        //  console.log("rate");
-        //  chart.tooltip(true, {map: {title: "rate"}});
-        // }
         chart.on("tooltipchange", this.tooltipMap(chartType, tInterval));
     } else {
       // 筛掉_的tooltip，这个是g2的bug造成的
@@ -697,7 +691,6 @@ class Chart extends React.Component <ChartProps, any> {
         ev.items.splice.apply(ev.items, [0, l].concat(items));
       });
     }
-    console.log(scales);
     const crosshairs = chartConfig.geom !== "interval" && chartConfig.geom !== "point";
     chart.tooltip(true, {
       custom: true,
