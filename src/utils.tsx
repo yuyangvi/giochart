@@ -141,7 +141,7 @@ export const getTmTableFormat = (tmInterval: number, isTooltip: boolean = false)
       return (v: number) => {
         const b = moment.unix(v / 1000);
         const c = moment.unix(v / 1000).endOf("month");
-        return `${b.format("MM/DD")}~${c.format("MM/DD")},${b.format("ddd")}~${c.format("ddd")},${Math.round((c.unix() - b.unix()) / 86400)}天`;
+        return `${b.format("MM/DD")}~${c.format("MM/DD")},${Math.round((c.unix() - b.unix()) / 86400)}天`;
       };
     }
     return (v: number) => (
