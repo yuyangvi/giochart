@@ -424,10 +424,13 @@ class Chart extends React.Component <ChartProps, any> {
 
           window.onresize = () => {
             const currentRect: ClientRect = dom.getBoundingClientRect();
+            if (!frame || !currentRect.width || tmInterval) {
+              return;
+            }
             const tm = merge({}, scales.tm, {
-                tickInterval: countTickCount(frame, currentRect.width, tmInterval),
-                formatter: getTmFormat(tmInterval),
-                axisFormatter: getAxisFormat(tmInterval),
+                tickInterval: countTickCount(frame, currentRect.width, tmInterval)
+                // formatter: getTmFormat(tmInterval),
+                // axisFormatter: getAxisFormat(tmInterval),
             });
             chart.col(dimCols[0], tm);
             chart.repaint();
@@ -440,10 +443,13 @@ class Chart extends React.Component <ChartProps, any> {
           });
 
           window.onresize = () => {
+            if (!frame || !dom.getBoundingClientRect().width || dimCols[0]) {
+                return;
+            }
             const tm = merge({}, scales.tm, {
-                tickCount: countTickCountTimeCat(frame, dom, dimCols[0]),
-                formatter: getTmFormat(tmInterval),
-                axisFormatter: getAxisFormat(tmInterval),
+                tickCount: countTickCountTimeCat(frame, dom, dimCols[0])
+                // formatter: getTmFormat(tmInterval),
+                // axisFormatter: getAxisFormat(tmInterval),
             });
             chart.col(dimCols[0], tm);
             chart.repaint();
@@ -459,6 +465,9 @@ class Chart extends React.Component <ChartProps, any> {
           const origValues = scales[dimCols[0]].values;
           window.onresize = () => {
              const currentRect: ClientRect = dom.getBoundingClientRect();
+             if (!frame || !currentRect.width) {
+                 return;
+             }
              const tickC = Math.ceil(60 * maxTicks / (currentRect.width - 100));
              if (tickC > 1) {
                const newValues = filterValuesByTickCount(tickC, origValues);
