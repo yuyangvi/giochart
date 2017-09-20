@@ -9,7 +9,7 @@ import {DataRequestProps, Granulariy, GioProps} from "./ChartProps";
 import ContextListener from "./ContextListener";
 import DataSource from "./DataSource";
 import GrTable from "./GrTable";
-import { retentionSourceSelector, retentionIntervalColumns } from "./utils";
+import { retentionSourceSelector, retentionIntervalColumns, formatPercent, formatNumber } from "./utils";
 import { getRetention } from "./retention.utils";
 
 const timeWeekRange = (timeRange: string) => {
@@ -62,7 +62,7 @@ class ChartV4 extends React.Component <GioProps, any> {
       }
     }
     return (
-      <DataSource params={params} cacheOptions={props.cacheOptions}>
+      <DataSource params={params} cacheOptions={props.cacheOptions} onLoad={props.onLoad}>
         <ContextListener
           chartType={props.chartType}
           colorTheme={props.colorTheme}
@@ -75,6 +75,7 @@ class ChartV4 extends React.Component <GioProps, any> {
           sortHandler={this.sortHandler.bind(this)}
           isThumb={props.isThumb}
           attrs={params.attrs}
+          noAggregate={props.noAggregate}
         />
       </DataSource>
     );
@@ -199,6 +200,8 @@ const GioChart = (props: GioProps) => {
       {...convertV4}
       cacheOptions={props.cacheOptions}
       isThumb={props.isThumb}
+      noAggregate={props.noAggregate}
+      onLoad={props.onLoad}
     />
   );
 };
@@ -209,8 +212,11 @@ export {
   DataSource,
   GrTable,
   convertChartParams,
+  timeWeekRange,
   getRetention,
   retentionSourceSelector,
-  retentionIntervalColumns
+  retentionIntervalColumns,
+  formatPercent,
+  formatNumber
 };
 export default GioChart;

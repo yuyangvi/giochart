@@ -208,6 +208,9 @@ class DataSource extends React.Component <DataLoaderProps, any> {
       const chartDataInCache = DataCache.getChartData(params, this.props.hashKeys);
       if (chartDataInCache) {
         this.setState(chartDataInCache);
+        if (this.props.onLoad) {
+          this.props.onLoad(chartDataInCache);
+        }
         return;
       }
     }
@@ -303,7 +306,7 @@ class DataSource extends React.Component <DataLoaderProps, any> {
     }
     this.setState(state);
     if (this.props.onLoad) {
-      this.props.onLoad(this.state);
+      this.props.onLoad(state);
     }
   }
 }

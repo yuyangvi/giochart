@@ -130,6 +130,7 @@ export interface SingleChartProps {
   isThumb?: boolean;
   timeRange?: string;
   attrs?: any;
+  noAggregate?: boolean;
 }
 
 interface LinearScale {
@@ -156,6 +157,8 @@ export interface GioProps {
   sourceUrl?: string;
   cacheOptions?: any;
   isThumb?: boolean;
+  noAggregate?: boolean;
+  onLoad?: (state: any) => void;
 }
 
 export interface G2Scale {

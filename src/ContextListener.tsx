@@ -58,19 +58,30 @@ class ContextListener extends React.Component <SingleChartProps, any> {
     } else if (withAggregate) {
       const isRate = !!(this.context.columns && this.context.columns.length > 1 && this.context.columns[1].isRate);
       return (
-        <div className={`gr-chart-wrapper ${chartParams.chartType}`}>
-          <Aggregate data={this.context.aggregator.values} period={this.props.range} isRate={isRate} />
-          <Chart
-            chartParams={chartParams}
-            colorTheme={this.props.colorTheme}
-            source={this.context.source}
-            select={this.props.select}
-            selected={this.context.selected}
-            startTime={this.context.startTime}
-            trackWords={this.context.trackWords}
-            isThumb={this.props.isThumb}
-          />
-        </div>);
+        this.props.noAggregate ? (
+           <Chart
+             chartParams={chartParams}
+             colorTheme={this.props.colorTheme}
+             source={this.context.source}
+             select={this.props.select}
+             selected={this.context.selected}
+             startTime={this.context.startTime}
+             trackWords={this.context.trackWords}
+             isThumb={this.props.isThumb}/>) : (
+          <div className={`gr-chart-wrapper ${chartParams.chartType}`}>
+            <Aggregate data={this.context.aggregator.values} period={this.props.range} isRate={isRate} />
+            <Chart
+               chartParams={chartParams}
+               colorTheme={this.props.colorTheme}
+               source={this.context.source}
+               select={this.props.select}
+               selected={this.context.selected}
+               startTime={this.context.startTime}
+               trackWords={this.context.trackWords}
+               isThumb={this.props.isThumb}
+            />
+          </div>)
+      );
     } else if (chartParams.chartType === "singleNumber") {
       return (
         <div className="gr-chart-wrapper">
