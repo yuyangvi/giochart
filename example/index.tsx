@@ -13,6 +13,6 @@ import RetentionLongTime from "./RetentionLongTime";
 import ChangeOverTime from "./ChangeOverTime";
 
 ReactDOM.render(
-  <EasyChart />,
+  <ComparisonChart />,
   document.getElementById("example")
 );
