@@ -472,7 +472,6 @@ class Chart extends React.Component <ChartProps, any> {
           };
       }
     }
-
     // 百分比
     if (chartParams.adjust === "percent") {
       scales["..percent"] = { formatter: formatPercent, type: "linear" };

@@ -89,7 +89,7 @@ export const countTickCount = (frame: any, width: number, tmInterval: number) =>
 
   const [startTime, endTime] = G2.Frame.range(frame, "tm");
   const interval = (endTime - startTime)  / width * 80;
-  if (endTime - startTime > tmInterval && tmInterval > 86400000) {
+  if (tmInterval > 86400000) {
     return Math.ceil(interval / tmInterval) * tmInterval;
   } else if (endTime - startTime > 86400000) {
     return Math.ceil(interval / 86400000) * 86400000;
@@ -122,18 +122,18 @@ export const getTmFormat = (tmInterval: number, timeRange: string) => {
   if (tmInterval > 6048e5) { // 按月
      // return (v: number) => moment.unix(v / 1000).format("MMMM");
     return (v: number) => (
-      `${moment.unix(Math.max(flattenRange.startTime, v) / 1000).format("MM-DD ddd")} ~ ${moment.min(moment.unix(flattenRange.endTime / 1000), moment.unix(v / 1000).endOf("month")).format("MM-DD ddd")}`
+      `${moment.unix(Math.max(flattenRange.startTime, v) / 1000).format("MM/DD ddd")} ~ ${moment.min(moment.unix(flattenRange.endTime / 1000), moment.unix(v / 1000).endOf("month")).format("MM/DD ddd")}`
     );
   } else if (tmInterval === 6048e5) { // 按周
     return (v: number) => {
-      return `${moment.unix(Math.max(flattenRange.startTime, v) / 1000).format("MM-DD ddd")} ~ ${moment.min(moment.unix(flattenRange.endTime / 1000), moment.unix(v / 1000).endOf("week")).format("MM-DD ddd")}`
+      return `${moment.unix(Math.max(flattenRange.startTime, v) / 1000).format("MM/DD ddd")} ~ ${moment.min(moment.unix(flattenRange.endTime / 1000), moment.unix(v / 1000).endOf("week")).format("MM/DD ddd")}`
     };
   } else if (tmInterval === 864e5) { // 按天
-    return (v: number) => moment.unix(v / 1000).format("MM-DD ddd");
+    return (v: number) => moment.unix(v / 1000).format("MM/DD ddd");
   } else if (tmInterval === 36e5) { // 按小时
-    return (v: number) => moment.unix(v / 1000).format("MM-DD ddd HH:mm");
+    return (v: number) => moment.unix(v / 1000).format("MM/DD ddd HH:mm");
   }
-  return (v: number) => moment.unix(v / 1000).format("MM-DD ddd");
+  return (v: number) => moment.unix(v / 1000).format("MM/DD ddd");
 }
 
 export const getTmTableFormat = (tmInterval: number, timeRange: string, isTooltip: boolean = false) => {
@@ -176,11 +176,11 @@ export const getAxisFormat = (tmInterval: number) => {
   if (tmInterval > 6048e5) {
       return (n: string) => (month[parseInt(n.slice(0, 2), 10) - 1]);
   } else if (tmInterval === 6048e5) { // 按周
-    return (n: string) => n.slice(0, 8);
+    return (n: string) => n.replace(/(\d+\-\d+)\s[^\s]+\s~\s(\d+\-\d+)\s[^\s]+/, ($1, $2, $3) => ($2 + "~" + $3));
   } else if (tmInterval === 36e5) {
     return (n: string) => {
       const matches = n.split(" ");
-      return (matches[matches.length - 1  ] === "00:00") ? matches[0] : matches[matches.length - 1];
+      return (matches[matches.length - 1] === "00:00") ? matches[0] : matches[matches.length - 1];
     };
   }
   return;
