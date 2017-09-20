@@ -67,6 +67,7 @@ class ContextListener extends React.Component <SingleChartProps, any> {
              selected={this.context.selected}
              startTime={this.context.startTime}
              trackWords={this.context.trackWords}
+             legendEnable={this.props.legendEnable}
              isThumb={this.props.isThumb}/>) : (
           <div className={`gr-chart-wrapper ${chartParams.chartType}`}>
             <Aggregate data={this.context.aggregator.values} period={this.props.range} isRate={isRate} />
@@ -79,6 +80,7 @@ class ContextListener extends React.Component <SingleChartProps, any> {
                startTime={this.context.startTime}
                trackWords={this.context.trackWords}
                isThumb={this.props.isThumb}
+               legendEnable={this.props.legendEnable}
             />
           </div>)
       );
@@ -96,6 +98,7 @@ class ContextListener extends React.Component <SingleChartProps, any> {
             startTime={this.context.startTime}
             trackWords={this.context.trackWords}
             isThumb={this.props.isThumb}
+            legendEnable={this.props.legendEnable}
           />
         </div>);
     } else if (["retention", "retentionTrend"].includes(chartParams.chartType)) {
@@ -109,6 +112,7 @@ class ContextListener extends React.Component <SingleChartProps, any> {
           startTime={this.context.startTime}
           trackWords={this.context.trackWords}
           isThumb={this.props.isThumb}
+          legendEnable={this.props.legendEnable}
         />
       );
     }
@@ -121,6 +125,7 @@ class ContextListener extends React.Component <SingleChartProps, any> {
         startTime={this.context.startTime}
         trackWords={this.context.trackWords}
         isThumb={this.props.isThumb}
+        legendEnable={this.props.legendEnable}
       />
     );
   }

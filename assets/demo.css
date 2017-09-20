@@ -57,21 +57,25 @@ label{margin-right: 10px;}
     font-size: 11px;
     overflow: hidden;
     position: relative;
+    max-height: 40px;
 }
 .giochart-legends ul {
     transition: transform .4s ease;
     font-size: 0;
+    width: calc(100% - 50px);
+    padding-left: 10px;
 }
 .giochart-legends li {
     display: inline-block;
-    margin: 0 10px;
     height: 20px;
     cursor: pointer;
-    max-width: 100px;
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
     font-size: 12px;
+    width: 20%;
+    padding-right: 8px;
+}
 }
 .giochart-legends li.disabled {
     color: #ccc;
@@ -89,8 +93,8 @@ label{margin-right: 10px;}
 }
 .giochart-legend-scroller {
     position: absolute;
-    top: 0;
-    right: 0;
+    top: 9px;
+    right: 34px;
     display: none;
 }
 .giochart-legend-scroller span {
