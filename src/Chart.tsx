@@ -333,8 +333,8 @@ class Chart extends React.Component <ChartProps, any> {
     if (type === "comparison") {
       return (ev: any) => {
         if (ev.items.length === 3) {
-            const nameLast = getTmFormat(interval)(ev.items[0].point._origin.tm_);
-            const nameCurrent = getTmFormat(interval)(ev.items[0].point._origin.tm);
+            const nameLast = getTmFormat(interval, this.props.chartParams.timeRange)(ev.items[0].point._origin.tm_);
+            const nameCurrent = getTmFormat(interval, this.props.chartParams.timeRange)(ev.items[0].point._origin.tm);
             const nTitle = formatPercent(parseInt(ev.items[1].value, 10) / parseInt(ev.items[0].value, 10) - 1);
             let color0 = ev.items[0].color;
             let color1 = ev.items[2].color;
@@ -357,9 +357,9 @@ class Chart extends React.Component <ChartProps, any> {
                 ev.items[0].color = color0;
             }
             if (ev.items[0].name.indexOf("当前") !== -1) {
-                ev.items[0].title = getTmFormat(interval)(ev.items[0].point._origin.tm);
+                ev.items[0].title = getTmFormat(interval, this.props.chartParams.timeRange)(ev.items[0].point._origin.tm);
             } else {
-                ev.items[0].title = getTmFormat(interval)(ev.items[0].point._origin.tm_);
+                ev.items[0].title = getTmFormat(interval, this.props.chartParams.timeRange)(ev.items[0].point._origin.tm_);
             }
         }
       }
@@ -418,7 +418,7 @@ class Chart extends React.Component <ChartProps, any> {
         if (scales.tm.type === "time") {
           merge(scales.tm, {
             tickInterval: countTickCount(frame, canvasRect.width, tmInterval),
-            formatter: getTmFormat(tmInterval),
+            formatter: getTmFormat(tmInterval, chartParams.timeRange),
             axisFormatter: getAxisFormat(tmInterval)
           });
 
@@ -438,7 +438,7 @@ class Chart extends React.Component <ChartProps, any> {
         } else {
           merge(scales.tm, {
             tickCount: countTickCountTimeCat(frame, dom, dimCols[0]),
-            formatter: getTmFormat(tmInterval),
+            formatter: getTmFormat(tmInterval, this.props.chartParams.timeRange),
             axisFormatter: getAxisFormat(tmInterval)
           });
 
@@ -481,7 +481,6 @@ class Chart extends React.Component <ChartProps, any> {
           };
       }
     }
-
     // 百分比
     if (chartParams.adjust === "percent") {
       scales["..percent"] = { formatter: formatPercent, type: "linear" };

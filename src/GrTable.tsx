@@ -61,8 +61,8 @@ class GrTable extends React.Component <ChartProps, any> {
     if (m.id === "tm") {
       const gra = find(this.props.chartParams.granularities, {id: "tm"});
       return (n: number) => (
-        <ATooltip title={getTmTableFormat(parseInt(gra.interval, 10), true)(n)}>
-          {getTmTableFormat(parseInt(gra.interval, 10))(n)}
+        <ATooltip title={getTmTableFormat(parseInt(gra.interval, 10), this.props.chartParams.timeRange, true)(n)}>
+          {getTmTableFormat(parseInt(gra.interval, 10), this.props.chartParams.timeRange)(n)}
         </ATooltip>
       );
     }
