@@ -80,6 +80,7 @@
     position: absolute;
     top: 9px;
     right: 34px;
+    font-size: 14px;
     display: none;
 }
 .giochart-legend-scroller span{

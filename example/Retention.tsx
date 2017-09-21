@@ -17,6 +17,6 @@ const s2 = JSON.parse('{"adjust":"stack","timeRange":"day:15,1","granularities":
 const p2 = JSON.parse('[{"retention":68294,"retention_rate":1,"turn":0},{"retention":12307,"retention_rate":0.19973383968709935,"turn":1},{"retention":7497,"retention_rate":0.13681655595298928,"turn":2},{"retention":6778,"retention_rate":0.13811794432897256,"turn":3},{"retention":7250,"retention_rate":0.15269908801786053,"turn":4},{"retention":6642,"retention_rate":0.14561318893322225,"turn":5},{"retention":6018,"retention_rate":0.14985059760956176,"turn":6},{"retention":5720,"retention_rate":0.16617762412480752,"turn":7},{"retention":3612,"retention_rate":0.12592385999163297,"turn":8},{"retention":1870,"retention_rate":0.0824696802646086,"turn":9},{"retention":1652,"retention_rate":0.10255136880004966,"turn":10},{"retention":2219,"retention_rate":0.15392619311875694,"turn":11},{"retention":1901,"retention_rate":0.1545277190700699,"turn":12},{"retention":975,"retention_rate":0.15582547546747644,"turn":13}]');
 
 const Retention = (props: any) => (
-  <Chart chartParams={s2} source={p2} gridPanel={true} />
+  <Chart chartParams={s} source={p} gridPanel={true} />
 );
 export default Retention;
