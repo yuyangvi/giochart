@@ -285,7 +285,7 @@ class Chart extends React.Component <ChartProps, any> {
   private calculatePlot(frame: any, chartCfg: any, dimCols: string[], chartType: string) {
     let colPixels: any = null;
     let pixels: number[] = null;
-    const margin = [20, 30, 30, 50];
+    const margin = [20, 40, 30, 50];
     if (chartCfg.isThumb) {
       return { margin: [0, 0, 0, 0], colPixels: null };
     }
