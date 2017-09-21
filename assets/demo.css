@@ -52,35 +52,74 @@ label{margin-right: 10px;}
 .giochart>div canvas:nth-child(0n+3){
     z-index: 9999;
 }
-.giochart-legends {
+.giochart-legends{
     margin-top: 15px;
     font-size: 11px;
+    max-height: 60px;
     overflow: hidden;
     position: relative;
 }
-.giochart-legends ul {
+.giochart-legends ul{
     transition: transform .4s ease;
-    font-size: 0;
+    text-align: center;
 }
-.giochart-legends li {
+.giochart-legends li{
     display: inline-block;
-    margin: 0 10px;
-    height: 20px;
+    margin: 0 10px 0;
+    line-height: 16px;
     cursor: pointer;
-    max-width: 100px;
+    max-width: 90%;
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
-    font-size: 12px;
 }
 .giochart-legends li.disabled {
     color: #ccc;
 }
-.giochart-legends li.disabled svg {
+.giochart-legends li.disabled svg{
     fill: #ccc!important;
 }
 
-.giochart-legends svg {
+.giochart-legends svg{
+    width:11px;
+    height:11px;
+    vertical-align: middle;
+    margin-right: 5px;
+    margin-top: -2px;
+}
+
+.giochart-panel-legends{
+    margin-top: 15px;
+    font-size: 11px;
+    overflow: hidden;
+    position: relative;
+    max-height: 40px;
+}
+.giochart-panel-legends ul{
+    transition: transform .4s ease;
+    font-size: 0;
+    width: calc(100% - 50px);
+    padding-left: 10px;
+}
+.giochart-panel-legends li{
+    display: inline-block;
+    height: 20px;
+    cursor: pointer;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    font-size: 12px;
+    width: 20%;
+    padding-right: 8px;
+}
+.giochart-panel-legends li.disabled {
+    color: #ccc;
+}
+.giochart-panel-legends li.disabled svg{
+    fill: #ccc!important;
+}
+
+.giochart-panel-legends svg{
     width:11px;
     height:11px;
     vertical-align: middle;
@@ -89,35 +128,57 @@ label{margin-right: 10px;}
 }
 .giochart-legend-scroller {
     position: absolute;
-    top: 0;
-    right: 0;
+    top: 9px;
+    right: 34px;
     display: none;
 }
-.giochart-legend-scroller span {
+.giochart-legend-scroller span{
     display:block;
     height: 8px;
     line-height: 6px;
     transform: scale(.7) rotate(0deg);
     cursor: pointer;
 }
-.giochart-legend-scroller span:hover {
+.giochart-legend-scroller span:hover{
     color: #ea6947;
     transform: scale(.8) rotate(0deg);
 }
-.ant-table th, .ant-table td {
-    white-space: nowrap;
+.giochart-legends.top-legends ul{
+    text-align: left;
+    float:right;
 }
-.ant-table td{
-    text-align: right;
+.giochart-legends.top-legends  li {
+    display: block;
+    margin: 10px;
+    max-width: inherit;
+    font-size: 14px;
+    color: #999;
+}
+.giochart-legends.top-legends li span{
+    color:#000;
+}
+.chart-error{
+    -webkit-box-orient: vertical;
+    -webkit-box-pack: center;
+    display: -webkit-box;
+    height: 100%;
+}
+.chart-error div{
+    color: #999;
+    font-size: 16px;
+    width: 210px;
+    margin: auto;
+    padding-left: 50px;
+    background: url(../assets/images/error@2x.png) 10px center no-repeat;
+    background-size: auto 50%;
 }
 
 .ac-tooltip{
-    z-index: 9999;
     position:absolute;
     visibility:hidden;
     border-radius: 5px;
     background-color: black;
-    opacity: .8;
+    opacity: .7;
     padding: 12px;
     color: white;
     font-size: 12px;
@@ -125,6 +186,7 @@ label{margin-right: 10px;}
     -moz-transition:  top 200ms,left 200ms;
     -webkit-transition:  top 200ms,left 200ms;
     -o-transition:  top 200ms,left 200ms;
+    z-index: 9999;
 }
 .ac-tooltip .ac-title{
     margin: 0;

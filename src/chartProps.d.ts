@@ -114,6 +114,7 @@ export interface ChartProps {
   sortHandler?: any;
   onFiltered?: (dim: string, filterNames: string[]) => void;
   gridPanel?: boolean;
+  legendEnable?: boolean;
 }
 // 字段是从数据源取得的Chart的格式
 export interface SingleChartProps {
@@ -131,6 +132,7 @@ export interface SingleChartProps {
   timeRange?: string;
   attrs?: any;
   noAggregate?: boolean;
+  legendEnable?: boolean;
 }
 
 interface LinearScale {
@@ -159,6 +161,7 @@ export interface GioProps {
   isThumb?: boolean;
   noAggregate?: boolean;
   onLoad?: (state: any) => void;
+  legendEnable?: boolean;
 }
 
 export interface G2Scale {

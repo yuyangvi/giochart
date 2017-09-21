@@ -119,14 +119,14 @@ class Chart extends React.Component <ChartProps, any> {
           // this.chart.get("container").innerHTML = "";
           ReactDOM.findDOMNode(this).innerHTML = "";
         }
-        this.drawChart(nextProps.chartParams, source, nextProps.isThumb, nextProps.gridPanel);
+        this.drawChart(nextProps.chartParams, source, nextProps.isThumb, nextProps.gridPanel, this.props.legendEnable);
       } else if (JSON.stringify(source) !== JSON.stringify(this.props.source)) {
         // this.changeData(source);
         if (this.chart) {
           this.chart.destroy();
           ReactDOM.findDOMNode(this).innerHTML = "";
         }
-        this.drawChart(nextProps.chartParams, source, nextProps.isThumb, nextProps.gridPanel);
+        this.drawChart(nextProps.chartParams, source, nextProps.isThumb, nextProps.gridPanel, this.props.legendEnable);
       }
     }
   }
@@ -147,11 +147,11 @@ class Chart extends React.Component <ChartProps, any> {
       }
       this.chart.changeData(frame);
     } else {
-      this.drawChart(this.props.chartParams, source, this.props.isThumb, this.props.gridPanel);
+      this.drawChart(this.props.chartParams, source, this.props.isThumb, this.props.gridPanel, this.props.legendEnable);
     }
   }
   private componentDidMount() {
-    const { chartParams, isThumb, source, gridPanel } = this.props;
+    const { chartParams, isThumb, source, gridPanel, legendEnable } = this.props;
 
     if (!this.isValidParams(chartParams, source)) {
       return;
@@ -160,7 +160,7 @@ class Chart extends React.Component <ChartProps, any> {
       if (this.chart) {
         this.chart.destroy();
       }
-      this.drawChart(chartParams, source, isThumb, gridPanel);
+      this.drawChart(chartParams, source, isThumb, gridPanel, legendEnable);
     }
   }
 
@@ -388,7 +388,7 @@ class Chart extends React.Component <ChartProps, any> {
     return undefined;
   }
 
-  private drawChart(chartParams: DrawParamsProps, source: any[], isThumb: boolean = false, gridPanel: boolean = false) {
+  private drawChart(chartParams: DrawParamsProps, source: any[], isThumb: boolean = false, gridPanel: boolean = false, legendEnable: boolean = false) {
     // 防止destroy删除父节点
     const dom: HTMLElement = document.createElement("div");
     dom.style.height = "100%";
@@ -496,7 +496,7 @@ class Chart extends React.Component <ChartProps, any> {
         scales[dimCols[1]],
         chartConfig.legendSingleMode,
         chartConfig.legendPosition === "top" ? chartParams.aggregator.values : null,
-        chartParams.attrs ? chartParams.attrs.selection : null, chartType, gridPanel);
+        chartParams.attrs ? chartParams.attrs.selection : null, chartType, gridPanel, legendEnable);
       if (chartConfig.legendPosition === "top") {
         legendDom.className = "giochart-legends top-legends";
         ReactDOM.findDOMNode(this).insertBefore(legendDom, dom);
@@ -505,6 +505,8 @@ class Chart extends React.Component <ChartProps, any> {
       }
       legendHeight = legendDom.getBoundingClientRect().height;
     }
+
+    legendHeight = legendHeight > 0 ? legendHeight + 15 : legendHeight;
     dom.style.height = `calc( 100% - ${legendHeight}px)`;
     // canvasHeight = canvasRect.height - legendHeight;
 
@@ -645,14 +647,26 @@ class Chart extends React.Component <ChartProps, any> {
       chart[chartConfig.geom[1]]().position(dimCols[0] + "*" + metricCols[1]).color("#ccc");
     }
     geom.position(position.pos);
+    let colorArray = null;
     if (!chartConfig.shape && color || chartType === "singleNumber") {
       if (chartParams.attrs &&  chartParams.attrs.selection && chartParams.attrs.selection.length > 0 ) {
-        const colorArray = G2.Global.colors.trend.filter(
+        colorArray = G2.Global.colors.trend.filter(
           (c: string, i: number) => chartParams.attrs.selection.includes(i)
         );
         geom.color(color, colorArray);
       } else {
         geom.color(color);
+      }
+    }
+    const colColor = frame.colArray(color);
+    if (chartType === "retention" && ((colColor && uniq(colColor).length <= 5) || !color)) {
+      const geomPoint = chart.point().position(position.pos);
+      if (colorArray) {
+          geomPoint.color(color, colorArray).shape("circle").opacity(1);
+      } else if (color) {
+          geomPoint.color(color).shape("circle").opacity(1);
+      } else {
+          geomPoint.color("#5FB6C7").shape("circle").opacity(1);
       }
     }
     if (colorTheme) {
@@ -731,10 +745,11 @@ class Chart extends React.Component <ChartProps, any> {
     aggregates: number[],
     colorSelection: number[],
     chartType: string,
-    panel?: boolean
+    panel?: boolean,
+    legendEnable?: boolean
   ): HTMLElement {
     const dom = document.createElement("div");
-    dom.className = "giochart-legends";
+    dom.className = legendEnable ? "giochart-panel-legends" : "giochart-legends";
     let colorArray: string[] = null;
     if (colorSelection && colorSelection.length === coloredDim.length) {
       colorArray = G2.Global.colors.trend;
@@ -810,25 +825,29 @@ class Chart extends React.Component <ChartProps, any> {
       const target = e.target as HTMLElement;
       const cHeight = ul.getBoundingClientRect().height;
       const action = target.getAttribute("data-action");
-      if (action === "up" && scrollTop > 19) {
-        scrollTop -= 20;
+      if (action === "up" && scrollTop > 39) {
+        scrollTop -= 40;
         ul.style.transform = `translate(0, ${-scrollTop}px)`;
-      } else if (action === "down" && cHeight > scrollTop + 70) {
-        scrollTop += 20;
+      } else if (action === "down" && cHeight > scrollTop + 40) {
+        scrollTop += 40;
         ul.style.transform = `translate(0, ${-scrollTop}px)`;
       }
     });
 
-    document.body.addEventListener("resize", (e) => {
-        const domHeight = dom.getBoundingClientRect().height;
-        const cHeight = ul.getBoundingClientRect().height;
-        dom.style.textAlign = (!isSingle && domHeight < 21) ? "center" : "left";
-        scroller.style.display = cHeight > 70 ? "block" : "none";
-    });
-    const domHeight = dom.getBoundingClientRect().height;
-    const cHeight = ul.getBoundingClientRect().height;
-    ul.style.textAlign = domHeight < 25 ? "center" : "left";
-    scroller.style.display = cHeight > 70 ? "block" : "none";
+    if (chartType === "donut") {
+      ul.style.textAlign = "center";
+      ul.style.width = "100%";
+    }
+    scroller.style.display = legendEnable && ul.children.length > 10 ? "block" : "none";
+    // document.body.addEventListener("resize", (e) => {
+    //     const domHeight = dom.getBoundingClientRect().height;
+    //     const cHeight = ul.getBoundingClientRect().height;
+    //     dom.style.textAlign = (!isSingle && domHeight < 21) ? "center" : "left";
+    //     scroller.style.display = cHeight > 70 ? "block" : "none";
+    // });
+    // const domHeight = dom.getBoundingClientRect().height;
+    // const cHeight = ul.getBoundingClientRect().height;
+    // ul.style.textAlign = domHeight < 25 ? "center" : "left";
 
       // document.body.dispatchEvent("resize");
       // dom.onResize();
