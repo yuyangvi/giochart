@@ -647,14 +647,26 @@ class Chart extends React.Component <ChartProps, any> {
       chart[chartConfig.geom[1]]().position(dimCols[0] + "*" + metricCols[1]).color("#ccc");
     }
     geom.position(position.pos);
+    let colorArray = null;
     if (!chartConfig.shape && color || chartType === "singleNumber") {
       if (chartParams.attrs &&  chartParams.attrs.selection && chartParams.attrs.selection.length > 0 ) {
-        const colorArray = G2.Global.colors.trend.filter(
+        colorArray = G2.Global.colors.trend.filter(
           (c: string, i: number) => chartParams.attrs.selection.includes(i)
         );
         geom.color(color, colorArray);
       } else {
         geom.color(color);
+      }
+    }
+    const colColor = frame.colArray(color);
+    if (chartType === "retention" && ((colColor && uniq(colColor).length <= 5) || !color)) {
+      const geomPoint = chart.point().position(position.pos);
+      if (colorArray) {
+          geomPoint.color(color, colorArray).shape("circle").opacity(1);
+      } else if (color) {
+          geomPoint.color(color).shape("circle").opacity(1);
+      } else {
+          geomPoint.color("#5FB6C7").shape("circle").opacity(1);
       }
     }
     if (colorTheme) {
