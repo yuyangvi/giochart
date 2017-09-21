@@ -176,7 +176,7 @@ export const getAxisFormat = (tmInterval: number) => {
   if (tmInterval > 6048e5) {
       return (n: string) => (month[parseInt(n.slice(0, 2), 10) - 1]);
   } else if (tmInterval === 6048e5) { // 按周
-    return (n: string) => n.replace(/(\d+\-\d+)\s[^\s]+\s~\s(\d+\-\d+)\s[^\s]+/, ($1, $2, $3) => ($2 + "~" + $3));
+    return (n: string) => n.replace(/(\d+\/\d+)\s[^\s]+\s~\s(\d+\/\d+)\s[^\s]+/, ($1, $2, $3) => ($2 + "~" + $3));
   } else if (tmInterval === 36e5) {
     return (n: string) => {
       const matches = n.split(" ");
