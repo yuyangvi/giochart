@@ -89,6 +89,7 @@ export const countTickCount = (frame: any, width: number, tmInterval: number) =>
 
   const [startTime, endTime] = G2.Frame.range(frame, "tm");
   const interval = (endTime - startTime)  / width * 80;
+  if (!interval) { return }
   if (tmInterval > 86400000) {
     return Math.ceil(interval / tmInterval) * tmInterval;
   } else if (endTime - startTime > 86400000) {
