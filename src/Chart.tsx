@@ -18,7 +18,9 @@ import {
 import { CHARTTHEME, CHARTTYPEMAP, ResizeChartType, RetentionCOT } from "./chartConfig";
 import { formatNumber, formatPercent, countTickCount, getTmFormat, getAxisFormat, mergeFrame, filterValuesByTickCount, rgbToHex, countTickCountTimeCat } from "./utils";
 import * as moment from "moment";
+import Tooltip = require("antd/lib/tooltip");
 moment.locale("zh-cn");
+const ATooltip: any = Tooltip;
 
 const countTick = (maxTick: number, total: number) => {
   const interval = Math.ceil(total / maxTick);
@@ -282,11 +284,11 @@ class Chart extends React.Component <ChartProps, any> {
     }
     return "";
   }
-  private calculatePlot(frame: any, chartCfg: any, dimCols: string[], chartType: string) {
+  private calculatePlot(frame: any, chartCfg: any, dimCols: string[], chartType: string, isThumb: boolean) {
     let colPixels: any = null;
     let pixels: number[] = null;
     const margin = [20, 40, 30, 50];
-    if (chartCfg.isThumb) {
+    if (chartCfg.isThumb || isThumb) {
       return { margin: [0, 0, 0, 0], colPixels: null };
     }
     if (chartCfg.transpose) {
@@ -488,7 +490,7 @@ class Chart extends React.Component <ChartProps, any> {
 
     // legend
     let legendHeight = 0;
-    if (dimCols.length > 1 && !isArray(chartConfig.geom)) {
+    if (dimCols.length > 1 && !isArray(chartConfig.geom) && !isThumb) {
       const colNames: string[] = frame.colArray(dimCols[1]);
       const legendDom = this.drawLegend(
         dimCols[1],
@@ -530,7 +532,7 @@ class Chart extends React.Component <ChartProps, any> {
       canvasHeight = Math.max(15 * frame.rowCount(), canvasHeight);
     }
 
-    const plot = this.calculatePlot(frame, chartConfig, dimCols, chartParams.chartType);
+    const plot = this.calculatePlot(frame, chartConfig, dimCols, chartParams.chartType, isThumb);
     const chart = new G2.Chart({
       container: dom,
       forceFit: true,
@@ -732,6 +734,11 @@ class Chart extends React.Component <ChartProps, any> {
       );
     }
 
+    if (isThumb) {
+      chart.axis(false);
+      chart.legend(false);
+    }
+
     chart.render();
     this.chart = chart;
   }
@@ -759,6 +766,12 @@ class Chart extends React.Component <ChartProps, any> {
     }
     const ul: HTMLElement = document.createElement("ul");
     ul.innerHTML = coloredDim.map((n: string, i: number): string => {
+        let name = n;
+        if (scaleDef.mapValues) {
+            name = scaleDef.mapValues[i];
+        } else if (scaleDef.formatter) {
+            name = scaleDef.formatter(n);
+        }
         const li =  `<li data-val="${n}" ` +
             `title="${scaleDef.formatter ? scaleDef.formatter(n) : n}" class="${isSingle && i > 0 ? "disabled" : ""}">`;
         let svg = null;
@@ -770,12 +783,6 @@ class Chart extends React.Component <ChartProps, any> {
           }
         }else {
           svg = `<svg fill="${colorArray[colorSelection[i] % colorArray.length]}"><rect width="11" height="11" zIndex="3"></rect></svg>`;
-        }
-        let name = n;
-        if (scaleDef.mapValues) {
-          name = scaleDef.mapValues[i];
-        } else if (scaleDef.formatter) {
-          name = scaleDef.formatter(n);
         }
         return li + svg + name +
             (aggregates ? `：<span>${formatPercent(aggregates[i])}</span>` : "") +
