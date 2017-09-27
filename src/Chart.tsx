@@ -18,9 +18,7 @@ import {
 import { CHARTTHEME, CHARTTYPEMAP, ResizeChartType, RetentionCOT } from "./chartConfig";
 import { formatNumber, formatPercent, countTickCount, getTmFormat, getAxisFormat, mergeFrame, filterValuesByTickCount, rgbToHex, countTickCountTimeCat } from "./utils";
 import * as moment from "moment";
-import Tooltip = require("antd/lib/tooltip");
 moment.locale("zh-cn");
-const ATooltip: any = Tooltip;
 
 const countTick = (maxTick: number, total: number) => {
   const interval = Math.ceil(total / maxTick);
