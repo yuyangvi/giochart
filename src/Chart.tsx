@@ -4,6 +4,7 @@
  */
 
 import G2 = require("g2");
+import elementResizeEvent = require("element-resize-event");
 import {
   assign, defaultsDeep, find, filter, fromPairs, groupBy,
   isArray, invokeMap, isEmpty, isEqual, isMatch,
@@ -416,25 +417,27 @@ class Chart extends React.Component <ChartProps, any> {
         const tmInterval = parseInt(tmGran.interval, 10);
         tInterval = tmInterval;
         if (scales.tm.type === "time") {
-          merge(scales.tm, {
-            tickInterval: countTickCount(frame, canvasRect.width, tmInterval),
+          const formatAxis: any = {
             formatter: getTmFormat(tmInterval, chartParams.timeRange),
             axisFormatter: getAxisFormat(tmInterval)
-          });
-
-          window.onresize = () => {
-            const currentRect: ClientRect = dom.getBoundingClientRect();
-            if (!frame || !currentRect.width || tmInterval) {
-              return;
-            }
-            const tm = merge({}, scales.tm, {
-                tickInterval: countTickCount(frame, currentRect.width, tmInterval)
-                // formatter: getTmFormat(tmInterval),
-                // axisFormatter: getAxisFormat(tmInterval),
-            });
-            chart.col(dimCols[0], tm);
-            chart.repaint();
           };
+          if (tmInterval <= 6048e5) {
+            formatAxis.tickInterval = countTickCount(frame, canvasRect.width, tmInterval);
+            window.onresize = () => {
+              const currentRect: ClientRect = dom.getBoundingClientRect();
+              if (!frame || !currentRect.width || !tmInterval) {
+                  return;
+              }
+              const tm = merge({}, scales.tm, {
+                  tickInterval: countTickCount(frame, currentRect.width, tmInterval)
+              });
+              chart.col(dimCols[0], tm);
+              chart.repaint();
+            };
+          } else {
+            formatAxis.tickCount = Math.ceil(uniq(frame.colArray("tm")).length / 2);
+          }
+          merge(scales.tm, formatAxis);
         } else {
           merge(scales.tm, {
             tickCount: countTickCountTimeCat(frame, dom, dimCols[0]),
@@ -443,13 +446,11 @@ class Chart extends React.Component <ChartProps, any> {
           });
 
           window.onresize = () => {
-            if (!frame || !dom.getBoundingClientRect().width || dimCols[0]) {
+            if (!frame || !dom.getBoundingClientRect().width || !dimCols[0]) {
                 return;
             }
             const tm = merge({}, scales.tm, {
                 tickCount: countTickCountTimeCat(frame, dom, dimCols[0])
-                // formatter: getTmFormat(tmInterval),
-                // axisFormatter: getAxisFormat(tmInterval),
             });
             chart.col(dimCols[0], tm);
             chart.repaint();
@@ -464,20 +465,20 @@ class Chart extends React.Component <ChartProps, any> {
       if (ResizeChartType.includes(chartType) && scales[dimCols[0]].values) {
           const origValues = scales[dimCols[0]].values;
           window.onresize = () => {
-             const currentRect: ClientRect = dom.getBoundingClientRect();
-             if (!frame || !currentRect.width) {
-                 return;
-             }
-             const tickC = Math.ceil(60 * maxTicks / (currentRect.width - 100));
-             if (tickC > 1) {
-               const newValues = filterValuesByTickCount(tickC, origValues);
-               const newFrame = mergeFrame(frame, dimCols[0], newValues.indexs);
-               chart.col(dimCols[0], assign({}, scales[dimCols[0]], { tickCount: newValues.values.length, values: newValues.values}));
-               chart.changeData(newFrame);
-             }else {
-                 chart.col(dimCols[0], assign({}, scales[dimCols[0]], { tickCount: origValues.length, values: origValues}));
-                 chart.changeData(frame);
-             }
+            const currentRect: ClientRect = dom.getBoundingClientRect();
+            if (!frame || !currentRect.width) {
+                return;
+            }
+            const tickC = Math.ceil(60 * maxTicks / (currentRect.width - 100));
+            if (tickC > 1) {
+                const newValues = filterValuesByTickCount(tickC, origValues);
+                const newFrame = mergeFrame(frame, dimCols[0], newValues.indexs);
+                chart.col(dimCols[0], assign({}, scales[dimCols[0]], { tickCount: newValues.values.length, values: newValues.values}));
+                chart.changeData(newFrame);
+            }else {
+                chart.col(dimCols[0], assign({}, scales[dimCols[0]], { tickCount: origValues.length, values: origValues}));
+                chart.changeData(frame);
+            }
           };
       }
     }
