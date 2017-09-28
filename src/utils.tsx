@@ -102,7 +102,7 @@ export const countTickCount = (frame: any, width: number, tmInterval: number) =>
   }
 };
 
-export const countTickCountTimeCat = (frame: any, dom: HTMLElement, dimCols: string): number => {
+export const countTickCountTimeCat = (frame: any, dom: Element, dimCols: string): number => {
   const currentRect: ClientRect = dom.getBoundingClientRect();
   const maxTicks = G2.Frame.group(frame, dimCols).length;
   let step =  Math.ceil(60 * maxTicks / (currentRect.width - 100));
@@ -121,7 +121,6 @@ export const countTickCountTimeCat = (frame: any, dom: HTMLElement, dimCols: str
 export const getTmFormat = (tmInterval: number, timeRange: string) => {
   const flattenRange = flattenDateRange(timeRange);
   if (tmInterval > 6048e5) { // 按月
-     // return (v: number) => moment.unix(v / 1000).format("MMMM");
     return (v: number) => (
       `${moment.unix(Math.max(flattenRange.startTime, v) / 1000).format("MM/DD ddd")} ~ ${moment.min(moment.unix(flattenRange.endTime / 1000), moment.unix(v / 1000).endOf("month")).format("MM/DD ddd")}`
     );
