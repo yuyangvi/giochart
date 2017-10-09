@@ -31,13 +31,17 @@ export const filterValuesByTickCount = (tickCount: number, values: string[]): { 
       }
     }).filter((e: number) => e !== undefined);
 
-  const fValues = values.filter((e: string, i: number) => {
-    return indexs.includes(i);
-  });
+  const fValues = values.filter((e: string, i: number) => indexs.includes(i));
 
+  // 最后一日/周/月
   if (!fValues.includes(values[values.length - 1])) {
     fValues.push(values[values.length - 1]);
     indexs.push(values.length - 1);
+  }
+  // 次日/周/月
+  if (!fValues.includes(values[1])) {
+     fValues.splice(1, 0, values[1]);
+     indexs.splice(1, 0, 1);
   }
   return {indexs, values: fValues};
 };
@@ -47,7 +51,7 @@ export const mergeFrame = (frame: any, dim: string, indexs: number[]) => {
   const dimIndexs = fr.colArray(dim);
   const newIndexs = dimIndexs.map((i: number) => indexs.indexOf(i));
   return fr.colReplace(dim, newIndexs);
-}
+};
 
 export const formatPercent = (n: number): string => {
   if (typeof n !== "number") {
