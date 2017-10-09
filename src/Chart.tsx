@@ -4,7 +4,6 @@
  */
 
 import G2 = require("g2");
-import elementResizeEvent = require("element-resize-event");
 import {
   assign, defaultsDeep, find, filter, fromPairs, groupBy,
   isArray, invokeMap, isEmpty, isEqual, isMatch,
