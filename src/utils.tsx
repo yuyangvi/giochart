@@ -190,7 +190,7 @@ export const getAxisFormat = (tmInterval: number) => {
   return;
 };
 // 留存周和月颗粒度下，不完整数据点
-export const pickUnfinishRetentionByTime = (frame: any, tmInterval: number) => {
+export const pickUnfinishRetentionByTime = (frame: any, tmInterval: number, color: string) => {
   const duration = tmInterval > 6048e5 ? "months" : "weeks";
   const frameJSON = frame.toJSON();
   const unFinishFrameJSON: any[] = [];
@@ -199,8 +199,7 @@ export const pickUnfinishRetentionByTime = (frame: any, tmInterval: number) => {
     const endTime = moment().subtract(1, "days");
     if (moment(endTimeInFrame.format("YYYY-MM-DD")).isAfter(endTime.format("YYYY-MM-DD"))) {
       // 把上一个放进去
-      if (index - 1 >= 0 && obj.turn === array[index - 1].turn) {
-        // unFinishFrameJSON.push(array[index - 1]);
+      if (index - 1 >= 0 && obj[color] === array[index - 1][color]) {
         unFinishFrameJSON.splice(unFinishFrameJSON.length - 1, 1, array[index - 1])
       }
       unFinishFrameJSON.push(array[index]);

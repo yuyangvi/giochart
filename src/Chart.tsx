@@ -660,8 +660,8 @@ class Chart extends React.Component <ChartProps, any> {
     }
 
     // 留存趋势图，周/月颗粒度下，不完整周期数据点与上个数据点连接线为虚线
-    if (chartType === "retention" && tInterval >= 6048e5  && frame.colNames().includes("tm") && frame.colNames().includes("turn")) {
-      const unFinishFrame = pickUnfinishRetentionByTime(frame, tInterval);
+    if (chartType === "retention" && tInterval >= 6048e5  && find(chartParams.columns, {id: "tm"}) && find(chartParams.columns, {id: color})) {
+      const unFinishFrame = pickUnfinishRetentionByTime(frame, tInterval, color);
       if (unFinishFrame.rowCount()) {
         const viewDash = chart.createView();
         viewDash.source(unFinishFrame, scales);
