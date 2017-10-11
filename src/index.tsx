@@ -3,7 +3,7 @@
  * 用来简易使用单图的模块，将获取数据和绘制图表用在一起
  */
 import { clone, find } from "lodash";
-import React from "react";
+import React, { Component } from "react";
 import Chart from "./Chart";
 import {DataRequestProps, Granulariy, GioProps} from "./ChartProps";
 import ContextListener from "./ContextListener";
@@ -27,7 +27,7 @@ const timeWeekRange = (timeRange: string) => {
 };
 
 // 表格的sorter，在ChartV4里处理，这样可以避免在其他地方用到。
-class ChartV4 extends React.Component <GioProps, any> {
+class ChartV4 extends Component <GioProps, any> {
   private constructor(props: GioProps) {
     super(props);
     // 加载状态

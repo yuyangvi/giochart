@@ -1,7 +1,7 @@
 /*
  * ContextListener 负责监听的控件，并把context传递给Chart
  */
-import React from "react";
+import React, { Component } from "react";
 import Aggregate from "./Aggregate";
 import Chart from "./Chart";
 import { SingleChartProps, DrawParamsProps, Metric } from "./ChartProps";
@@ -9,7 +9,7 @@ import GrTable from "./GrTable";
 import { retentionSourceSelector } from "./utils";
 import { getRetention} from "./retention.utils"
 import { map, filter, find } from "lodash";
-class ContextListener extends React.Component <SingleChartProps, any> {
+class ContextListener extends Component <SingleChartProps, any> {
   private static contextTypes: React.ValidationMap<any> = {
     aggregator: React.PropTypes.any,
     columns: React.PropTypes.array,
