@@ -177,6 +177,8 @@ label{margin-right: 10px;}
     position:absolute;
     visibility:hidden;
     border-radius: 5px;
+    top: 0;
+    left: 0;
     background-color: black;
     opacity: .7;
     padding: 12px;
