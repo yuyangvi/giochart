@@ -43,7 +43,7 @@ export const filterValuesByTickCount = (tickCount: number, values: string[]): { 
      fValues.splice(1, 0, values[1]);
      indexs.splice(1, 0, 1);
   }
-  return {indexs, values: fValues};
+  return { indexs, values: fValues };
 };
 
 export const mergeFrame = (frame: any, dim: string, indexs: number[]) => {
@@ -66,7 +66,7 @@ export const formatPercent = (n: number): string => {
     return "> -0.1%";
   }
   return `${parseFloat((100 * n).toPrecision(3))}%`;
-}
+};
 // 计量时间区间
 export const calculateTimeRange = (timeRange: string) => {
   if (!timeRange) {
@@ -83,7 +83,7 @@ export const calculateTimeRange = (timeRange: string) => {
   } else if  (cate === "month") {
     return (parseInt(start, 10) - parseInt(end, 10)) * 25920e5;
   }
-}
+};
 
 // 如果是要从倍数里面去取，小时要照顾到天
 export const countTickCount = (frame: any, width: number, tmInterval: number) => {
@@ -138,7 +138,7 @@ export const getTmFormat = (tmInterval: number, timeRange: string) => {
     return (v: number) => moment.unix(v / 1000).format("MM/DD ddd HH:mm");
   }
   return (v: number) => moment.unix(v / 1000).format("MM/DD ddd");
-}
+};
 
 export const getTmTableFormat = (tmInterval: number, timeRange: string, isTooltip: boolean = false) => {
   const flattenRange = flattenDateRange(timeRange);
@@ -174,7 +174,7 @@ export const getTmTableFormat = (tmInterval: number, timeRange: string, isToolti
     return (v: number) => moment.unix(v / 1000).format("MM-DD ddd HH:mm");
   }
   return (v: number) => moment.unix(v / 1000).format("MM-DD ddd");
-}
+};
 export const getAxisFormat = (tmInterval: number) => {
   const month = ["一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"];
   if (tmInterval > 6048e5) {
@@ -188,7 +188,28 @@ export const getAxisFormat = (tmInterval: number) => {
     };
   }
   return;
-}
+};
+// 留存周和月颗粒度下，不完整数据点
+export const pickUnfinishRetentionByTime = (frame: any, tmInterval: number, color: string) => {
+  const duration = tmInterval > 6048e5 ? "months" : "weeks";
+  const frameJSON = frame.toJSON();
+  const unFinishFrameJSON: any[] = [];
+  frameJSON.forEach((obj: any, index: number, array: any) => {
+    const endTimeInFrame = moment.unix(obj.tm / 1000).add(parseInt(obj.turn, 10), duration).endOf("week");
+    const endTime = moment().subtract(1, "days");
+    if (moment(endTimeInFrame.format("YYYY-MM-DD")).isAfter(endTime.format("YYYY-MM-DD"))) {
+      // 把上一个放进去
+      if (index - 1 >= 0 && obj[color] === array[index - 1][color]) {
+        unFinishFrameJSON.splice(unFinishFrameJSON.length - 1, 1, array[index - 1])
+      }
+      unFinishFrameJSON.push(array[index]);
+    } else {
+      unFinishFrameJSON.push(assign({}, array[index], {retention: null, retention_rate: null}));
+    }
+  });
+  return new G2.Frame(unFinishFrameJSON);
+};
+
 // 根据调整
 export const retentionIntervalColumns = (interval: number, timeRange: string): string[] => {
   const mx = Math.floor(calculateTimeRange(timeRange) / interval);
@@ -201,7 +222,7 @@ export const retentionIntervalColumns = (interval: number, timeRange: string): s
     result = [1, 7, 14, 30];
   }
   return map(filter(result, (n) => (n <= mx)), (n) => n.toString()) as string[];
-}
+};
 // 根据留存的数据源图形进行处理
 export const retentionSourceSelector = (source: Source, dimCols: string[], overTime: boolean, interval: number, timeRange: string): Source => {
   const filterSource = (overTime ? reject : filter)(source, { tm: 0 });
@@ -345,4 +366,4 @@ export const flattenDateRange = (range: any = "day:7,1") => {
     };
   }
   return;
-}
+};

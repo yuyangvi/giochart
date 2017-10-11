@@ -16,7 +16,7 @@ import {
   Granulariy
 } from "./ChartProps";
 import { CHARTTHEME, CHARTTYPEMAP, ResizeChartType, RetentionCOT } from "./chartConfig";
-import { formatNumber, formatPercent, countTickCount, getTmFormat, getAxisFormat, mergeFrame, filterValuesByTickCount, rgbToHex, countTickCountTimeCat } from "./utils";
+import { formatNumber, formatPercent, countTickCount, getTmFormat, getAxisFormat, mergeFrame, filterValuesByTickCount, rgbToHex, countTickCountTimeCat, pickUnfinishRetentionByTime } from "./utils";
 import * as moment from "moment";
 moment.locale("zh-cn");
 
@@ -658,9 +658,37 @@ class Chart extends React.Component <ChartProps, any> {
         geom.color(color);
       }
     }
+
+    // 留存趋势图，周/月颗粒度下，不完整周期数据点与上个数据点连接线为虚线
+    if (chartType === "retention" && tInterval >= 6048e5  && find(chartParams.columns, {id: "tm"}) && find(chartParams.columns, {id: color})) {
+      const unFinishFrame = pickUnfinishRetentionByTime(frame, tInterval, color);
+      if (unFinishFrame.rowCount()) {
+        const viewDash = chart.createView();
+        viewDash.source(unFinishFrame, scales);
+        const white = map(uniq(frame.colArray(color)), () => "white");
+        viewDash.line().position(position.pos).color(color, white).size(3).style({
+            lineDash: [ 4, 4 ]
+        });
+        viewDash.tooltip(false);
+        viewDash.axis(false);
+      }
+    }
+
+    // 留存线小于5条显示点
     const colColor = frame.colArray(color);
     if (chartType === "retention" && ((colColor && uniq(colColor).length <= 5) || !color)) {
-      const geomPoint = chart.point().position(position.pos);
+      // rentention是tm使用view cat使用chart
+      let geomPoint = null;
+      let viewPoint = null;
+      if (scales[position.x].type === "cat") {
+        geomPoint = chart.point().position(position.pos);
+      } else {
+        viewPoint = chart.createView();
+        viewPoint.source(frame, scales);
+        geomPoint = viewPoint.point().position(position.pos);
+        viewPoint.tooltip(false);
+        viewPoint.axis(false);
+      }
       if (colorArray) {
           geomPoint.color(color, colorArray).shape("circle").opacity(1);
       } else if (color) {
@@ -669,6 +697,7 @@ class Chart extends React.Component <ChartProps, any> {
           geomPoint.color("#5FB6C7").shape("circle").opacity(1);
       }
     }
+
     if (colorTheme) {
       const geomline = chart.line().position(position.pos);
       geomline.color(`rgb(${colorTheme})`);
