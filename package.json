@@ -1,6 +1,6 @@
 {
   "name": "giochart",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "",
   "main": "dist/giochart.min.js",
   "scripts": {
