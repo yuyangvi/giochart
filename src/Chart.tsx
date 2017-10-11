@@ -9,15 +9,15 @@ import {
   isArray, invokeMap, isEmpty, isEqual, isMatch,
   map, max, merge, pick, reverse, some, uniq, zip, zipObject
 } from "lodash";
-import React from "react";
-import ReactDOM from "react-dom";
+import * as React from "react";
+import { findDOMNode } from "react-dom";
 import {
   ChartProps, DrawParamsProps, Metric, Source, G2Scale, SourceConfig, ChartDimValues,
   Granulariy
 } from "./ChartProps";
 import { CHARTTHEME, CHARTTYPEMAP, ResizeChartType, RetentionCOT } from "./chartConfig";
 import { formatNumber, formatPercent, countTickCount, getTmFormat, getAxisFormat, mergeFrame, filterValuesByTickCount, rgbToHex, countTickCountTimeCat, pickUnfinishRetentionByTime } from "./utils";
-import moment from "moment";
+import * as moment from "moment";
 moment.locale("zh-cn");
 
 const countTick = (maxTick: number, total: number) => {
@@ -117,14 +117,14 @@ class Chart extends React.Component <ChartProps, any> {
         if (this.chart) {
           this.chart.destroy();
           // this.chart.get("container").innerHTML = "";
-          ReactDOM.findDOMNode(this).innerHTML = "";
+          findDOMNode(this).innerHTML = "";
         }
         this.drawChart(nextProps.chartParams, source, nextProps.isThumb, nextProps.gridPanel, this.props.legendEnable);
       } else if (JSON.stringify(source) !== JSON.stringify(this.props.source)) {
         // this.changeData(source);
         if (this.chart) {
           this.chart.destroy();
-          ReactDOM.findDOMNode(this).innerHTML = "";
+          findDOMNode(this).innerHTML = "";
         }
         this.drawChart(nextProps.chartParams, source, nextProps.isThumb, nextProps.gridPanel, this.props.legendEnable);
       }
@@ -392,7 +392,7 @@ class Chart extends React.Component <ChartProps, any> {
     // 防止destroy删除父节点
     const dom: HTMLElement = document.createElement("div");
     dom.style.height = "100%";
-    ReactDOM.findDOMNode(this).appendChild(dom);
+    findDOMNode(this).appendChild(dom);
     const canvasRect: ClientRect = dom.getBoundingClientRect();
     // 建立Frame, 并后期修正
     const chartConfig = CHARTTYPEMAP[chartParams.chartType];
@@ -499,9 +499,9 @@ class Chart extends React.Component <ChartProps, any> {
         chartParams.attrs ? chartParams.attrs.selection : null, chartType, gridPanel, legendEnable);
       if (chartConfig.legendPosition === "top") {
         legendDom.className = "giochart-legends top-legends";
-        ReactDOM.findDOMNode(this).insertBefore(legendDom, dom);
+        findDOMNode(this).insertBefore(legendDom, dom);
       } else {
-        ReactDOM.findDOMNode(this).appendChild(legendDom);
+        findDOMNode(this).appendChild(legendDom);
       }
       legendHeight = legendDom.getBoundingClientRect().height;
     }

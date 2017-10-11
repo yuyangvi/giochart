@@ -2,7 +2,7 @@
  * 文档
  */
 import { assign, flatten, isEqual, map, uniqBy, zipObject, zipWith } from "lodash";
-import React from "react";
+import React, { Component } from "react";
 import DataCache from "./DataCache";
 import {DataLoaderProps, DataRequestProps, Metric, ResponseParams, Source} from "./ChartProps";
 
@@ -43,7 +43,7 @@ const getErrorMsg = (data: string): string => {
   }
   return errorMsg;
 }
-class DataSource extends React.Component <DataLoaderProps, any> {
+class DataSource extends Component <DataLoaderProps, any> {
   private static childContextTypes: React.ValidationMap<any> = {
     aggregator: React.PropTypes.any,
     columns: React.PropTypes.array,

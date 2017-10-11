@@ -6,10 +6,10 @@ import Tooltip = require("antd/lib/tooltip");
 const ATable: any = Table;
 const ATooltip: any = Tooltip;
 import { difference, fill, filter, find, flatMap, forIn, groupBy, map, pick, unionBy, values, isEqual } from "lodash";
-import moment from "moment";
-import React from "react";
+import * as moment from "moment";
+import React, { Component } from "react";
 import { getTmTableFormat } from "./utils";
-import {ChartProps, Metric, Source} from "./ChartProps";
+import { ChartProps, Metric, Source } from "./ChartProps";
 // import Table from 'antd/lib/table';
 import G2 = require("g2");
 const sorterDecorator = (column: string) => (a: any, b: any) => (a[column] >= b[column] ? 1 : -1);
@@ -49,7 +49,7 @@ const generateColRender = (getBgColor: (v: number) => string, m: Metric): ((v: n
   });
 // const checkDate = (m: Metric) => (m.id === "tm" ? GrTable.formatDate : undefined);
 
-class GrTable extends React.Component <ChartProps, any> {
+class GrTable extends Component <ChartProps, any> {
   public static formatDate(v: number) {
     return moment.unix(v / 1000).format("YYYY-MM-DD");
   }

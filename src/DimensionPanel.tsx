@@ -1,7 +1,7 @@
 /*
 * 分为 来源\设备\地区\用户广告几种
 * */
-import React from "react";
+import React, { Component } from"react";
 import { Menu } from "antd";
 const MenuItem = Menu.Item;
 

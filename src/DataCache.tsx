@@ -3,7 +3,7 @@
  * { cacheKey: {expire, chartData}}
  */
 import objectHash from "object-hash";
-import {DataRequestProps} from "./chartProps";
+import { DataRequestProps } from "./chartProps";
 import { assign } from "lodash";
 let chartDataCache: any = {};
 

@@ -1,5 +1,5 @@
-import G2 from "g2";
-import moment from "moment";
+import G2 = require("g2");
+import * as moment from "moment";
 import { assign, find, filter, flatten, map, reject, transform, pick } from "lodash";
 import {Granulariy, Source} from "./chartProps";
 /**
