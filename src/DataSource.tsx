@@ -2,8 +2,8 @@
  * 文档
  */
 import { assign, flatten, isEqual, map, uniqBy, zipObject, zipWith } from "lodash";
-import React from "react";
-import DataCache from "./DataCache";
+import * as React from "react";
+import * as DataCache from "./DataCache";
 import {DataLoaderProps, DataRequestProps, Metric, ResponseParams, Source} from "./ChartProps";
 
 declare const project: any;

@@ -1,7 +1,7 @@
 /*
  * ContextListener 负责监听的控件，并把context传递给Chart
  */
-import React from "react";
+import * as React from "react";
 import Aggregate from "./Aggregate";
 import Chart from "./Chart";
 import {SingleChartProps} from "./ChartProps";

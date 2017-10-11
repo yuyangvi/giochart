@@ -6,11 +6,11 @@
 import G2 = require("g2");
 import { find, filter, fromPairs, isEmpty, isEqual,
   isMatch, map, merge, pick, some, uniq, zip, zipObject } from "lodash";
-import React from "react";
-import ReactDOM from "react-dom";
+import * as React from "react";
+import * as ReactDOM from "react-dom";
 import {ChartProps, DrawParamsProps, Granulariy, Metric, Source} from "./ChartProps";
 import { formatNumber, formatPercent } from "./utils";
-import moment from "moment";
+import * as moment from "moment";
 moment.locale("zh-cn");
 
 interface G2Scale {

@@ -3,7 +3,7 @@
  * 用来简易使用单图的模块，将获取数据和绘制图表用在一起
  */
 import { clone, find } from "lodash";
-import React from "react";
+import * as React from "react";
 import Chart from "./Chart";
 import {DataRequestProps, Granulariy} from "./ChartProps";
 import ContextListener from "./ContextListener";

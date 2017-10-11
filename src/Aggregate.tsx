@@ -1,7 +1,7 @@
 /***
  * 文档
  */
-import React from "react";
+import * as React from "react";
 import { formatNumber, formatPercent } from "./utils";
 
 const Aggregate = (props: any) => {
