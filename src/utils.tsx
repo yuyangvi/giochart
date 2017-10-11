@@ -195,7 +195,8 @@ export const pickUnfinishRetentionByTime = (frame: any, tmInterval: number, colo
   const frameJSON = frame.toJSON();
   const unFinishFrameJSON: any[] = [];
   frameJSON.forEach((obj: any, index: number, array: any) => {
-    const endTimeInFrame = moment.unix(obj.tm / 1000).add(parseInt(obj.turn, 10), duration).endOf("week");
+    const addDuration = duration === "months" ? "month" : "week";
+    const endTimeInFrame = moment.unix(obj.tm / 1000).add(parseInt(obj.turn, 10), duration).endOf(addDuration);
     const endTime = moment().subtract(1, "days");
     if (moment(endTimeInFrame.format("YYYY-MM-DD")).isAfter(endTime.format("YYYY-MM-DD"))) {
       // 把上一个放进去
