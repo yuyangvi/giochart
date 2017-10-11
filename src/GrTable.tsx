@@ -2,8 +2,8 @@
  * 文档
  */
 import { difference, fill, filter, find, flatMap, forIn, groupBy, map, pick, unionBy, values, isEqual } from "lodash";
-import * as moment from "moment";
-import * as React from "react";
+import moment from "moment";
+import React from "react";
 import {ChartProps, Metric, Source} from "./ChartProps";
 
 import G2 = require("g2");
