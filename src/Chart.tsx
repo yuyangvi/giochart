@@ -9,15 +9,15 @@ import {
   isArray, invokeMap, isEmpty, isEqual, isMatch,
   map, max, merge, pick, reverse, some, uniq, zip, zipObject
 } from "lodash";
-import * as React from "react";
-import * as ReactDOM from "react-dom";
+import React from "react";
+import ReactDOM from "react-dom";
 import {
   ChartProps, DrawParamsProps, Metric, Source, G2Scale, SourceConfig, ChartDimValues,
   Granulariy
 } from "./ChartProps";
 import { CHARTTHEME, CHARTTYPEMAP, ResizeChartType, RetentionCOT } from "./chartConfig";
 import { formatNumber, formatPercent, countTickCount, getTmFormat, getAxisFormat, mergeFrame, filterValuesByTickCount, rgbToHex, countTickCountTimeCat, pickUnfinishRetentionByTime } from "./utils";
-import * as moment from "moment";
+import moment from "moment";
 moment.locale("zh-cn");
 
 const countTick = (maxTick: number, total: number) => {
