@@ -67,6 +67,7 @@ class Chart extends React.Component <ChartProps, any> {
   private inspectDom: HTMLElement;
   // private selectMode: string = "multiple";
   private lastSelectedShape: any = null;
+  private views: any = [];
   private constructor(props: ChartProps) {
     super();
     // G2 的主题有bug，legend读的是G2.Theme的颜色，因此直接覆盖Theme更合适
@@ -671,6 +672,7 @@ class Chart extends React.Component <ChartProps, any> {
         });
         viewDash.tooltip(false);
         viewDash.axis(false);
+        this.views.push(viewDash);
       }
     }
 
@@ -688,6 +690,7 @@ class Chart extends React.Component <ChartProps, any> {
         geomPoint = viewPoint.point().position(position.pos);
         viewPoint.tooltip(false);
         viewPoint.axis(false);
+        this.views.push(viewPoint);
       }
       if (colorArray) {
           geomPoint.color(color, colorArray).shape("circle").opacity(1);
@@ -923,6 +926,11 @@ class Chart extends React.Component <ChartProps, any> {
         v.isChecked = false;
       }
     });
+    if (this.views.length > 0) {
+      this.views.forEach((v: any)  => {
+          v.filter(dim, filterNames);
+      });
+    }
     this.chart.filter(dim, filterNames);
     // this.props.onFiltered && this.props.onFiltered(dim, filterNames);
     this.chart.repaint();
