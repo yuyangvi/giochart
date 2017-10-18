@@ -1,6 +1,6 @@
-/*.giochart>div canvas:nth-child(0n+3){*/
-    /*z-index: 1;*/
-/*}*/
+.giochart>div canvas:nth-child(0n+3){
+    z-index: 1;
+}
 
 .giochart-legends{
     margin-top: 15px;
