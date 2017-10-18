@@ -1,6 +1,6 @@
-.giochart>div canvas:nth-child(0n+3){
-    z-index: 1;
-}
+/*.giochart>div canvas:nth-child(0n+3){*/
+    /*z-index: 1;*/
+/*}*/
 
 .giochart-legends{
     margin-top: 15px;
@@ -109,6 +109,11 @@
   color:#000;
 }
 .chart-error{
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   -webkit-box-orient: vertical;
   -webkit-box-pack: center;
   display: -webkit-box;
