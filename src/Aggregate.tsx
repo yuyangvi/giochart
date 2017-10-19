@@ -6,10 +6,11 @@ import { formatNumber, formatPercent } from "./utils";
 
 const Aggregate = (props: any) => {
   const { data, period }  = props;
+  const isFormat = props.chartType === "comparison";
   return props.data ? (
     <div className="gr-chart-aggregate-info">
       <div className="gr-chart-aggregate-inner">
-        <div className="gr-chart-aggregate-num">{props.isRate ? formatPercent(props.data[0]) : formatNumber(props.data[0])}<span className="suffix" /></div>
+        <div className="gr-chart-aggregate-num">{props.isRate ? formatPercent(props.data[0]) : (isFormat ? milliFormat(props.data[0]) : formatNumber(props.data[0]) )}<span className="suffix" /></div>
         {data[1] ? <AggregatePercent percent={props.data[0] / props.data[1] - 1} period={props.period} /> : null}
       </div>
     </div>
@@ -28,5 +29,12 @@ const AggregatePercent = (props: any) => (
     <span className="gr-chart-trend-desc">{props.period ? "相比上周期" : "相比7天前"}</span>
   </div>
 );
+
+const milliFormat = (num: number) => {
+    if (typeof num !== "number" || !isFinite(num)) {
+        return num.toString();
+    }
+    return num.toString().replace(/^\d+/g, (m) => m.replace(/(?=(?!^)(\d{3})+$)/g, ","));
+};
 
 export default Aggregate;

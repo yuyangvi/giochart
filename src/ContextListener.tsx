@@ -70,7 +70,7 @@ class ContextListener extends React.Component <SingleChartProps, any> {
              legendEnable={this.props.legendEnable}
              isThumb={this.props.isThumb}/>) : (
           <div className={`gr-chart-wrapper ${chartParams.chartType}`}>
-            <Aggregate data={this.context.aggregator.values} period={this.props.range} isRate={isRate} />
+            <Aggregate data={this.context.aggregator.values} period={this.props.range} isRate={isRate} chartType={chartParams.chartType}/>
             <Chart
                chartParams={chartParams}
                colorTheme={this.props.colorTheme}
