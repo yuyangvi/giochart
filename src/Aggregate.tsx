@@ -34,7 +34,13 @@ const milliFormat = (num: number) => {
     if (typeof num !== "number" || !isFinite(num)) {
         return num.toString();
     }
-    return num.toString().replace(/^\d+/g, (m) => m.replace(/(?=(?!^)(\d{3})+$)/g, ","));
+    let n = "";
+    if (num >= 100) {
+        n = num.toFixed(0);
+    } else {
+        n = num < 10 ? num.toFixed(2) : num.toFixed(1);
+    }
+    return n.replace(/^\d+/g, (m) => m.replace(/(?=(?!^)(\d{3})+$)/g, ","));
 };
 
 export default Aggregate;
