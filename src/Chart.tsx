@@ -792,7 +792,7 @@ class Chart extends React.Component <ChartProps, any> {
       colorArray = G2.Global.colors.trend;
     } else {
       colorArray = G2.Global.colors.default;
-      colorSelection = Array.apply(null, Array(20)).map((v: undefined, i: number) => i);
+      colorSelection = Array.apply(null, Array(16)).map((v: undefined, i: number) => i);
     }
     const ul: HTMLElement = document.createElement("ul");
     ul.innerHTML = coloredDim.map((n: string, i: number): string => {
