@@ -77,6 +77,7 @@ class ChartV4 extends React.Component <GioProps, any> {
           attrs={params.attrs}
           noAggregate={props.noAggregate}
           legendEnable={props.legendEnable}
+          view={props.view}
         />
       </DataSource>
     );
@@ -203,6 +204,7 @@ const GioChart = (props: GioProps) => {
       isThumb={props.isThumb}
       noAggregate={props.noAggregate}
       onLoad={props.onLoad}
+      view={props.view}
       legendEnable={props.legendEnable}
     />
   );

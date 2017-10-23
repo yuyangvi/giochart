@@ -829,7 +829,7 @@ class Chart extends React.Component <ChartProps, any> {
       color: G2.Global.colors.default[i],
       dotDom: dom.querySelector(`li:nth-child(${1 + i})`),
       isChecked: !(isSingle && i > 0),
-      name: n
+      name: n.toString()
     }));
     // 绑定事件
     ul.addEventListener("click", (e) => {
