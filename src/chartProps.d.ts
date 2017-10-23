@@ -133,6 +133,7 @@ export interface SingleChartProps {
   attrs?: any;
   noAggregate?: boolean;
   legendEnable?: boolean;
+  view?: string;
 }
 
 interface LinearScale {
@@ -162,6 +163,7 @@ export interface GioProps {
   noAggregate?: boolean;
   onLoad?: (state: any) => void;
   legendEnable?: boolean;
+  view?: string;
 }
 
 export interface G2Scale {

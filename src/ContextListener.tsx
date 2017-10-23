@@ -103,7 +103,7 @@ class ContextListener extends React.Component <SingleChartProps, any> {
         </div>);
     } else if (["retention", "retentionTrend"].includes(chartParams.chartType)) {
       const params = { granularities: chartParams.granularities, timeRange: chartParams.timeRange, attrs: chartParams.attrs};
-      const retentions = getRetention(chartParams.columns, this.context.source, params , false, true);
+      const retentions = getRetention(chartParams.columns, this.context.source, params , this.props.view === "time", true);
       return (
         <Chart
           chartParams={retentions.params}
