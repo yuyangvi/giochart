@@ -317,20 +317,15 @@ class Chart extends React.Component <ChartProps, any> {
     return { margin, colPixels };
   }
   private tooltipMap(type: string, interval: number) {
-    // if (type === "funnel") {
-    //   return (ev: any) => {
-    //     const l = ev.items.length;
-    //     for (let i = 0; i * 2 < l; i += 1) {
-    //       const origin = ev.items[i * 2].point._origin;
-    //       const origin2 = ev.items[i * 2 + 1].point._origin;
-    //       ev.items[i] = ev.items[i * 2];
-    //       ev.items[i].value = `${ev.items[2 * i].name}: ${formatPercent(origin.conversion_rate)}, ` +
-    //       `${ev.items[2 * i + 1].name}: ${origin2.conversion}`;
-    //       ev.items[i].name = origin.comparison_value || origin.metric_name;
-    //     }
-    //     ev.items.splice(l / 2, l / 2);
-    //   }
-    // }
+    if (type === "funnel") {
+      return (ev: any) => {
+        const l = ev.items.length;
+        ev.items.forEach((item: any) => {
+            const data = item.point._origin;
+            item.value = item.value + ", 转化人数" + data.conversion;
+        });
+      }
+    }
     if (type === "comparison") {
       return (ev: any) => {
         if (ev.items.length === 3) {
